@@ -17,8 +17,8 @@ $ npm install --save normalize-url
 ```js
 var normalizeUrl = require('normalize-url');
 
-normalizeUrl('todomvc.com');
-//=> http://todomvc.com
+normalizeUrl('sindresorhus.com');
+//=> http://sindresorhus.com
 
 normalizeUrl('HTTP://xn--xample-hva.com:80/?b=bar&a=foo');
 //=> http://êxample.com/?a=foo&b=bar
