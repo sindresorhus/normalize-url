@@ -35,6 +35,7 @@ module.exports = function (str) {
 
 	// sort query parameters
 	urlObj.search = querystring.stringify(sortKeys(querystring.parse(urlObj.query)));
+	urlObj.search = decodeURIComponent(urlObj.search);
 
 	// take advantage of many of the Node `url` normalizations
 	str = url.format(urlObj);
@@ -44,9 +45,6 @@ module.exports = function (str) {
 
 	// remove ending `/`
 	str = str.replace(/\/$/, '');
-
-	// decode query strings
-	str = decodeURI(str);
 
 	return str;
 };
