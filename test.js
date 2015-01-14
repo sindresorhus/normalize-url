@@ -18,5 +18,6 @@ test(function (t) {
 	t.assert(nu('http://xn--xample-hva.com') === 'http://êxample.com');
 	t.assert(nu('http://sindresorhus.com/?b=bar&a=foo') === 'http://sindresorhus.com/?a=foo&b=bar');
 	t.assert(nu('http://sindresorhus.com/?foo=bar*|<>:"') === 'http://sindresorhus.com/?foo=bar*|<>:"');
+	t.assert(nu('http://sindresorhus.com:5000') === 'http://sindresorhus.com:5000');
 	t.end();
 });

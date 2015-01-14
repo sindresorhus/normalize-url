@@ -33,6 +33,7 @@
   ],
   "dependencies": {
     "prepend-http": "^1.0.0",
+    "query-string": "^1.0.0",
     "sort-keys": "^1.0.0"
   },
   "devDependencies": {
