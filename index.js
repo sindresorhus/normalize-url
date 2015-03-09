@@ -37,6 +37,9 @@ module.exports = function (str) {
 	// remove `www.`
 	urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
 
+	// remove duplicate slashes
+	urlObj.pathname = urlObj.pathname.replace(/\/{2,}/, '/');
+
 	// remove URL with empty query string
 	if (urlObj.search === '?') {
 		delete urlObj.search;
