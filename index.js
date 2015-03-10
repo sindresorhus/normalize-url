@@ -39,14 +39,19 @@ module.exports = function (str, opts) {
 		delete urlObj.port;
 	}
 
+	// remove duplicate slashes
+	urlObj.pathname = urlObj.pathname.replace(/\/{2,}/, '/');
+
+	// resolve relative paths
+	var domain = urlObj.protocol + '//' + urlObj.hostname;
+	var relative = url.resolve(domain, urlObj.pathname);
+	urlObj.pathname = relative.replace(domain, '');
+
 	// IDN to Unicode
 	urlObj.hostname = punycode.toUnicode(urlObj.hostname).toLowerCase();
 
 	// remove `www.`
 	urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
-
-	// remove duplicate slashes
-	urlObj.pathname = urlObj.pathname.replace(/\/{2,}/, '/');
 
 	// remove URL with empty query string
 	if (urlObj.search === '?') {
