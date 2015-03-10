@@ -30,6 +30,9 @@ module.exports = function (str, opts) {
 	delete urlObj.host;
 	delete urlObj.query;
 
+	// remove fragment
+	delete urlObj.hash;
+
 	// remove default port
 	var port = DEFAULT_PORTS[urlObj.protocol];
 	if (Number(urlObj.port) === port) {
