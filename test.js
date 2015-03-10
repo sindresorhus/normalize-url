@@ -22,5 +22,6 @@ test(function (t) {
 	t.assert(nu('http://sindresorhus.com////foo/bar') === 'http://sindresorhus.com/foo/bar');
 	t.assert(nu('//sindresorhus.com/', {normalizeProtocol: false}) === '//sindresorhus.com');
 	t.assert(nu('//sindresorhus.com:80/', {normalizeProtocol: false}) === '//sindresorhus.com');
+	t.assert(nu('http://sindresorhus.com/foo#bar') === 'http://sindresorhus.com/foo');
 	t.end();
 });
