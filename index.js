@@ -4,6 +4,7 @@ var punycode = require('punycode');
 var queryString = require('query-string');
 var prependHttp = require('prepend-http');
 var sortKeys = require('sort-keys');
+var objectAssign = require('object-assign');
 
 var DEFAULT_PORTS = {
 	'http:': 80,
@@ -12,7 +13,7 @@ var DEFAULT_PORTS = {
 };
 
 module.exports = function (str, opts) {
-	opts = opts || {normalizeProtocol: true};
+	opts = objectAssign({normalizeProtocol: true}, opts);
 
 	if (typeof str !== 'string') {
 		throw new TypeError('Expected a string');

@@ -34,12 +34,16 @@ normalizeUrl('HTTP://xn--xample-hva.com:80/?b=bar&a=foo');
 *Required*  
 Type: `string`
 
-#### options.normalizeProtocol
+URL to normalize.
 
-Type: `boolean`
+#### options
+
+##### normalizeProtocol
+
+Type: `boolean`  
 Default: `true`
 
-Adds a protocol to protocol-relative URLs.
+Prepend `http:` to protocol-relative URLs.
 
 ```js
 normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false});
