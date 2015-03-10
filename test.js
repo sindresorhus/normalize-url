@@ -20,5 +20,7 @@ test(function (t) {
 	t.assert(nu('http://sindresorhus.com/?foo=bar*|<>:"') === 'http://sindresorhus.com/?foo=bar*|<>:"');
 	t.assert(nu('http://sindresorhus.com:5000') === 'http://sindresorhus.com:5000');
 	t.assert(nu('http://sindresorhus.com////foo/bar') === 'http://sindresorhus.com/foo/bar');
+	t.assert(nu('//sindresorhus.com/', {normalizeProtocol: false}) === '//sindresorhus.com');
+	t.assert(nu('//sindresorhus.com:80/', {normalizeProtocol: false}) === '//sindresorhus.com');
 	t.end();
 });

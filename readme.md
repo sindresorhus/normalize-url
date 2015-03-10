@@ -25,6 +25,28 @@ normalizeUrl('HTTP://xn--xample-hva.com:80/?b=bar&a=foo');
 ```
 
 
+## API
+
+### normalizeUrl(url, [options])
+
+#### url
+
+*Required*  
+Type: `string`
+
+#### options.normalizeProtocol
+
+Type: `boolean`
+Default: `true`
+
+Adds a protocol to protocol-relative URLs.
+
+```js
+normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false});
+//=> //sindresorhus.com
+```
+
+
 ## License
 
 MIT © [Sindre Sorhus](http://sindresorhus.com)

@@ -11,10 +11,14 @@ var DEFAULT_PORTS = {
 	'ftp:': 21
 };
 
-module.exports = function (str) {
+module.exports = function (str, opts) {
+	opts = opts || {normalizeProtocol: true};
+
 	if (typeof str !== 'string') {
 		throw new TypeError('Expected a string');
 	}
+
+	var hasRelativeProtocol = str.indexOf('//') === 0;
 
 	// prepend protocol
 	str = prependHttp(str.trim()).replace(/^\/\//, 'http://');
@@ -56,6 +60,11 @@ module.exports = function (str) {
 
 	// remove ending `/`
 	str = str.replace(/\/$/, '');
+
+	// restore relative protocol, if applicable
+	if (hasRelativeProtocol && !opts.normalizeProtocol) {
+		str = str.replace(/^http:\/\//, '//');
+	}
 
 	return str;
 };
