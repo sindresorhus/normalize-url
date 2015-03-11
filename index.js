@@ -13,7 +13,10 @@ var DEFAULT_PORTS = {
 };
 
 module.exports = function (str, opts) {
-	opts = objectAssign({normalizeProtocol: true}, opts);
+	opts = objectAssign({
+		normalizeProtocol: true,
+		stripFragment: true
+	}, opts);
 
 	if (typeof str !== 'string') {
 		throw new TypeError('Expected a string');
@@ -31,7 +34,9 @@ module.exports = function (str, opts) {
 	delete urlObj.query;
 
 	// remove fragment
-	delete urlObj.hash;
+	if (opts.stripFragment) {
+		delete urlObj.hash;
+	}
 
 	// remove default port
 	var port = DEFAULT_PORTS[urlObj.protocol];

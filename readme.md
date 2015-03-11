@@ -50,6 +50,17 @@ normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false});
 //=> //sindresorhus.com
 ```
 
+##### stripFragment
+
+Type: `boolean`  
+Default: `true`
+
+Remove the fragment at the end of the URL.
+
+```js
+normalizeUrl('sindresorhus.com/about.html#contact', {stripFragment: false});
+//=> http://sindresorhus.com/about.html#contact
+```
 
 ## License
 

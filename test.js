@@ -23,6 +23,7 @@ test(function (t) {
 	t.assert(nu('//sindresorhus.com/', {normalizeProtocol: false}) === '//sindresorhus.com');
 	t.assert(nu('//sindresorhus.com:80/', {normalizeProtocol: false}) === '//sindresorhus.com');
 	t.assert(nu('http://sindresorhus.com/foo#bar') === 'http://sindresorhus.com/foo');
+	t.assert(nu('http://sindresorhus.com/foo#bar', {stripFragment: false}) === 'http://sindresorhus.com/foo#bar');
 	t.assert(nu('http://sindresorhus.com/foo/bar/../baz') === 'http://sindresorhus.com/foo/baz');
 	t.assert(nu('http://sindresorhus.com/foo/bar/./baz') === 'http://sindresorhus.com/foo/bar/baz');
 	t.end();
