@@ -28,11 +28,17 @@
     "normalise",
     "normalization",
     "normalisation",
+    "query",
+    "string",
     "querystring",
-    "unicode"
+    "unicode",
+    "simplify",
+    "strip",
+    "trim",
+    "canonical"
   ],
   "dependencies": {
-    "object-assign": "^2.0.0",
+    "object-assign": "^3.0.0",
     "prepend-http": "^1.0.0",
     "query-string": "^2.1.0",
     "sort-keys": "^1.0.0"

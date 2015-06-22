@@ -18,10 +18,10 @@ $ npm install --save normalize-url
 var normalizeUrl = require('normalize-url');
 
 normalizeUrl('sindresorhus.com');
-//=> http://sindresorhus.com
+//=> 'http://sindresorhus.com'
 
 normalizeUrl('HTTP://xn--xample-hva.com:80/?b=bar&a=foo');
-//=> http://êxample.com/?a=foo&b=bar
+//=> 'http://êxample.com/?a=foo&b=bar'
 ```
 
 
@@ -43,11 +43,14 @@ URL to normalize.
 Type: `boolean`  
 Default: `true`
 
-Prepend `http:` to protocol-relative URLs.
+Prepend `http:` to the URL if it's protocol-relative.
 
 ```js
+normalizeUrl('//sindresorhus.com:80/');
+//=> 'http://sindresorhus.com'
+
 normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false});
-//=> //sindresorhus.com
+//=> '//sindresorhus.com'
 ```
 
 ##### stripFragment
@@ -58,8 +61,11 @@ Default: `true`
 Remove the fragment at the end of the URL.
 
 ```js
+normalizeUrl('sindresorhus.com/about.html#contact');
+//=> 'http://sindresorhus.com/about.html'
+
 normalizeUrl('sindresorhus.com/about.html#contact', {stripFragment: false});
-//=> http://sindresorhus.com/about.html#contact
+//=> 'http://sindresorhus.com/about.html#contact'
 ```
 
 ##### stripWWW
@@ -67,17 +73,21 @@ normalizeUrl('sindresorhus.com/about.html#contact', {stripFragment: false});
 Type: `boolean`  
 Default: `true`
 
-Remove www from the URL if present.
+Remove `www.` from the URL.
 
 ```js
-normalizeUrl('http://www.sindresorhus.com/about.html#contact', {stripWWW: true});
-//=> http://sindresorhus.com/about.html#contact
-```
+normalizeUrl('http://www.sindresorhus.com/about.html#contact');
+//=> 'http://sindresorhus.com/about.html#contact'
 
-```js
 normalizeUrl('http://www.sindresorhus.com/about.html#contact', {stripWWW: false});
-//=> http://www.sindresorhus.com/about.html#contact
+//=> 'http://www.sindresorhus.com/about.html#contact'
 ```
+
+
+## Related
+
+- [compare-urls](https://github.com/sindresorhus/compare-urls) - Compare URLs by first normalizing them
+
 
 ## License
 

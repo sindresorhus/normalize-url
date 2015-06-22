@@ -16,7 +16,7 @@ module.exports = function (str, opts) {
 	opts = objectAssign({
 		normalizeProtocol: true,
 		stripFragment: true,
-		stripWWW: true,
+		stripWWW: true
 	}, opts);
 
 	if (typeof str !== 'string') {
