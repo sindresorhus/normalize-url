@@ -29,8 +29,8 @@ test(function (t) {
 	t.end();
 });
 
-test(function testRemoveWWW(t) {
-	var opts = {removeWWW: false};
+test(function testStripWWW(t) {
+	var opts = {stripWWW: false};
 	t.assert(nu('http://www.sindresorhus.com', opts) === 'http://www.sindresorhus.com');
 	t.assert(nu('www.sindresorhus.com', opts) === 'http://www.sindresorhus.com');
 	t.assert(nu('http://www.xn--xample-hva.com', opts) === 'http://www.êxample.com');

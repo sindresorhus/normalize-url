@@ -16,7 +16,7 @@ module.exports = function (str, opts) {
 	opts = objectAssign({
 		normalizeProtocol: true,
 		stripFragment: true,
-		removeWWW: true,
+		stripWWW: true,
 	}, opts);
 
 	if (typeof str !== 'string') {
@@ -57,7 +57,7 @@ module.exports = function (str, opts) {
 	urlObj.hostname = punycode.toUnicode(urlObj.hostname).toLowerCase();
 
 	// remove `www.`
-	if (opts.removeWWW) {
+	if (opts.stripWWW) {
 		urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
 	}
 
