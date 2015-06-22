@@ -62,6 +62,23 @@ normalizeUrl('sindresorhus.com/about.html#contact', {stripFragment: false});
 //=> http://sindresorhus.com/about.html#contact
 ```
 
+##### stripWWW
+
+Type: `boolean`  
+Default: `true`
+
+Remove www from the URL if present.
+
+```js
+normalizeUrl('http://www.sindresorhus.com/about.html#contact', {stripWWW: true});
+//=> http://sindresorhus.com/about.html#contact
+```
+
+```js
+normalizeUrl('http://www.sindresorhus.com/about.html#contact', {stripWWW: false});
+//=> http://www.sindresorhus.com/about.html#contact
+```
+
 ## License
 
 MIT © [Sindre Sorhus](http://sindresorhus.com)
