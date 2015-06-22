@@ -28,3 +28,11 @@ test(function (t) {
 	t.assert(nu('http://sindresorhus.com/foo/bar/./baz') === 'http://sindresorhus.com/foo/bar/baz');
 	t.end();
 });
+
+test(function testRemoveWWW(t) {
+	var opts = {removeWWW: false};
+  t.assert(nu('http://www.sindresorhus.com', opts) === 'http://www.sindresorhus.com');
+  t.assert(nu('www.sindresorhus.com', opts) === 'http://www.sindresorhus.com');
+  t.assert(nu('http://www.xn--xample-hva.com', opts) === 'http://www.êxample.com');
+  t.end();
+});

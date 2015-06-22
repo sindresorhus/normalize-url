@@ -15,7 +15,8 @@ var DEFAULT_PORTS = {
 module.exports = function (str, opts) {
 	opts = objectAssign({
 		normalizeProtocol: true,
-		stripFragment: true
+		stripFragment: true,
+		removeWWW: true,
 	}, opts);
 
 	if (typeof str !== 'string') {
@@ -56,7 +57,9 @@ module.exports = function (str, opts) {
 	urlObj.hostname = punycode.toUnicode(urlObj.hostname).toLowerCase();
 
 	// remove `www.`
-	urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
+	if (opts.removeWWW) {
+		urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
+	}
 
 	// remove URL with empty query string
 	if (urlObj.search === '?') {
