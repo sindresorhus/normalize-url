@@ -1,38 +1,37 @@
-'use strict';
-var test = require('ava');
-var nu = require('./');
+import test from 'ava';
+import fn from './';
 
-test(function (t) {
-	t.assert(nu('sindresorhus.com') === 'http://sindresorhus.com');
-	t.assert(nu('HTTP://sindresorhus.com') === 'http://sindresorhus.com');
-	t.assert(nu('//sindresorhus.com') === 'http://sindresorhus.com');
-	t.assert(nu('http://sindresorhus.com') === 'http://sindresorhus.com');
-	t.assert(nu('http://sindresorhus.com:80') === 'http://sindresorhus.com');
-	t.assert(nu('https://sindresorhus.com:443') === 'https://sindresorhus.com');
-	t.assert(nu('ftp://sindresorhus.com:21') === 'ftp://sindresorhus.com');
-	t.assert(nu('http://www.sindresorhus.com') === 'http://sindresorhus.com');
-	t.assert(nu('www.sindresorhus.com') === 'http://sindresorhus.com');
-	t.assert(nu('http://sindresorhus.com/foo/') === 'http://sindresorhus.com/foo');
-	t.assert(nu('sindresorhus.com/?foo=bar%20baz') === 'http://sindresorhus.com/?foo=bar baz');
-	t.assert(nu('http://sindresorhus.com/?') === 'http://sindresorhus.com');
-	t.assert(nu('http://xn--xample-hva.com') === 'http://êxample.com');
-	t.assert(nu('http://sindresorhus.com/?b=bar&a=foo') === 'http://sindresorhus.com/?a=foo&b=bar');
-	t.assert(nu('http://sindresorhus.com/?foo=bar*|<>:"') === 'http://sindresorhus.com/?foo=bar*|<>:"');
-	t.assert(nu('http://sindresorhus.com:5000') === 'http://sindresorhus.com:5000');
-	t.assert(nu('http://sindresorhus.com////foo/bar') === 'http://sindresorhus.com/foo/bar');
-	t.assert(nu('//sindresorhus.com/', {normalizeProtocol: false}) === '//sindresorhus.com');
-	t.assert(nu('//sindresorhus.com:80/', {normalizeProtocol: false}) === '//sindresorhus.com');
-	t.assert(nu('http://sindresorhus.com/foo#bar') === 'http://sindresorhus.com/foo');
-	t.assert(nu('http://sindresorhus.com/foo#bar', {stripFragment: false}) === 'http://sindresorhus.com/foo#bar');
-	t.assert(nu('http://sindresorhus.com/foo/bar/../baz') === 'http://sindresorhus.com/foo/baz');
-	t.assert(nu('http://sindresorhus.com/foo/bar/./baz') === 'http://sindresorhus.com/foo/bar/baz');
+test('main', t => {
+	t.is(fn('sindresorhus.com'), 'http://sindresorhus.com');
+	t.is(fn('HTTP://sindresorhus.com'), 'http://sindresorhus.com');
+	t.is(fn('//sindresorhus.com'), 'http://sindresorhus.com');
+	t.is(fn('http://sindresorhus.com'), 'http://sindresorhus.com');
+	t.is(fn('http://sindresorhus.com:80'), 'http://sindresorhus.com');
+	t.is(fn('https://sindresorhus.com:443'), 'https://sindresorhus.com');
+	t.is(fn('ftp://sindresorhus.com:21'), 'ftp://sindresorhus.com');
+	t.is(fn('http://www.sindresorhus.com'), 'http://sindresorhus.com');
+	t.is(fn('www.sindresorhus.com'), 'http://sindresorhus.com');
+	t.is(fn('http://sindresorhus.com/foo/'), 'http://sindresorhus.com/foo');
+	t.is(fn('sindresorhus.com/?foo=bar%20baz'), 'http://sindresorhus.com/?foo=bar baz');
+	t.is(fn('http://sindresorhus.com/?'), 'http://sindresorhus.com');
+	t.is(fn('http://xn--xample-hva.com'), 'http://êxample.com');
+	t.is(fn('http://sindresorhus.com/?b=bar&a=foo'), 'http://sindresorhus.com/?a=foo&b=bar');
+	t.is(fn('http://sindresorhus.com/?foo=bar*|<>:"'), 'http://sindresorhus.com/?foo=bar*|<>:"');
+	t.is(fn('http://sindresorhus.com:5000'), 'http://sindresorhus.com:5000');
+	t.is(fn('http://sindresorhus.com////foo/bar'), 'http://sindresorhus.com/foo/bar');
+	t.is(fn('//sindresorhus.com/', {normalizeProtocol: false}), '//sindresorhus.com');
+	t.is(fn('//sindresorhus.com:80/', {normalizeProtocol: false}), '//sindresorhus.com');
+	t.is(fn('http://sindresorhus.com/foo#bar'), 'http://sindresorhus.com/foo');
+	t.is(fn('http://sindresorhus.com/foo#bar', {stripFragment: false}), 'http://sindresorhus.com/foo#bar');
+	t.is(fn('http://sindresorhus.com/foo/bar/../baz'), 'http://sindresorhus.com/foo/baz');
+	t.is(fn('http://sindresorhus.com/foo/bar/./baz'), 'http://sindresorhus.com/foo/bar/baz');
 	t.end();
 });
 
-test(function testStripWWW(t) {
-	var opts = {stripWWW: false};
-	t.assert(nu('http://www.sindresorhus.com', opts) === 'http://www.sindresorhus.com');
-	t.assert(nu('www.sindresorhus.com', opts) === 'http://www.sindresorhus.com');
-	t.assert(nu('http://www.xn--xample-hva.com', opts) === 'http://www.êxample.com');
+test('stripWWW option', t => {
+	const opts = {stripWWW: false};
+	t.is(fn('http://www.sindresorhus.com', opts), 'http://www.sindresorhus.com');
+	t.is(fn('www.sindresorhus.com', opts), 'http://www.sindresorhus.com');
+	t.is(fn('http://www.xn--xample-hva.com', opts), 'http://www.êxample.com');
 	t.end();
 });

@@ -13,7 +13,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "test": "node test.js"
+    "test": "ava"
   },
   "files": [
     "index.js"
