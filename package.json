@@ -40,7 +40,7 @@
   "dependencies": {
     "object-assign": "^4.0.1",
     "prepend-http": "^1.0.0",
-    "query-string": "^2.1.0",
+    "query-string": "^3.0.0",
     "sort-keys": "^1.0.0"
   },
   "devDependencies": {
