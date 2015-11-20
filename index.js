@@ -11,6 +11,7 @@ var DEFAULT_PORTS = {
 	'https:': 443,
 	'ftp:': 21
 };
+
 // protocols that always contain a // bit.
 var slashedProtocol = {
 	'http': true,
