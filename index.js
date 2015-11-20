@@ -63,10 +63,10 @@ module.exports = function (str, opts) {
 		urlObj.pathname = urlObj.pathname.replace(/\/{2,}/, '/');
 	}
 
-	// resolve relative paths
-	var domain = urlObj.protocol + '//' + urlObj.hostname;
-	var relative = url.resolve(domain, urlObj.pathname || '');
+	// resolve relative paths, but only for slashed protocols
 	if (slashedProtocol[urlObj.protocol]) {
+		var domain = urlObj.protocol + '//' + urlObj.hostname;
+		var relative = url.resolve(domain, urlObj.pathname);
 		urlObj.pathname = relative.replace(domain, '');
 	}
 
