@@ -12,7 +12,7 @@ var DEFAULT_PORTS = {
 	'ftp:': 21
 };
 // protocols that always contain a // bit.
-const slashedProtocol = {
+var slashedProtocol = {
 	'http': true,
 	'https': true,
 	'ftp': true,
