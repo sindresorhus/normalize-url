@@ -11,6 +11,19 @@ var DEFAULT_PORTS = {
 	'https:': 443,
 	'ftp:': 21
 };
+// protocols that always contain a // bit.
+const slashedProtocol = {
+	'http': true,
+	'https': true,
+	'ftp': true,
+	'gopher': true,
+	'file': true,
+	'http:': true,
+	'https:': true,
+	'ftp:': true,
+	'gopher:': true,
+	'file:': true
+};
 
 module.exports = function (str, opts) {
 	opts = objectAssign({
@@ -46,12 +59,16 @@ module.exports = function (str, opts) {
 	}
 
 	// remove duplicate slashes
-	urlObj.pathname = urlObj.pathname.replace(/\/{2,}/, '/');
+	if (urlObj.pathname) {
+		urlObj.pathname = urlObj.pathname.replace(/\/{2,}/, '/');
+	}
 
 	// resolve relative paths
 	var domain = urlObj.protocol + '//' + urlObj.hostname;
-	var relative = url.resolve(domain, urlObj.pathname);
-	urlObj.pathname = relative.replace(domain, '');
+	var relative = url.resolve(domain, urlObj.pathname || '');
+	if (slashedProtocol[urlObj.protocol]) {
+		urlObj.pathname = relative.replace(domain, '');
+	}
 
 	// IDN to Unicode
 	urlObj.hostname = punycode.toUnicode(urlObj.hostname).toLowerCase();
