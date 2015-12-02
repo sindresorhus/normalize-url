@@ -13,6 +13,7 @@ test('main', t => {
 	t.is(fn('www.sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(fn('http://sindresorhus.com/foo/'), 'http://sindresorhus.com/foo');
 	t.is(fn('sindresorhus.com/?foo=bar%20baz'), 'http://sindresorhus.com/?foo=bar baz');
+	t.is(fn('sindresorhus.com/?foo=bar&amp;baz=baz'), 'http://sindresorhus.com/?baz=baz&foo=bar');
 	t.is(fn('http://sindresorhus.com/?'), 'http://sindresorhus.com');
 	t.is(fn('http://xn--xample-hva.com'), 'http://êxample.com');
 	t.is(fn('http://sindresorhus.com/?b=bar&a=foo'), 'http://sindresorhus.com/?a=foo&b=bar');
