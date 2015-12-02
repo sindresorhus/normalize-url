@@ -13,6 +13,7 @@ test('main', t => {
 	t.is(fn('www.sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(fn('http://sindresorhus.com/foo/'), 'http://sindresorhus.com/foo');
 	t.is(fn('sindresorhus.com/?foo=bar%20baz'), 'http://sindresorhus.com/?foo=bar baz');
+	t.is(fn('sindresorhus.com/?foo=bar&amp;baz=baz'), 'http://sindresorhus.com/?baz=baz&foo=bar');
 	t.is(fn('http://sindresorhus.com/?'), 'http://sindresorhus.com');
 	t.is(fn('http://xn--xample-hva.com'), 'http://êxample.com');
 	t.is(fn('http://sindresorhus.com/?b=bar&a=foo'), 'http://sindresorhus.com/?a=foo&b=bar');
@@ -25,7 +26,6 @@ test('main', t => {
 	t.is(fn('http://sindresorhus.com/foo#bar', {stripFragment: false}), 'http://sindresorhus.com/foo#bar');
 	t.is(fn('http://sindresorhus.com/foo/bar/../baz'), 'http://sindresorhus.com/foo/baz');
 	t.is(fn('http://sindresorhus.com/foo/bar/./baz'), 'http://sindresorhus.com/foo/bar/baz');
-	t.end();
 });
 
 test('stripWWW option', t => {
@@ -33,5 +33,4 @@ test('stripWWW option', t => {
 	t.is(fn('http://www.sindresorhus.com', opts), 'http://www.sindresorhus.com');
 	t.is(fn('www.sindresorhus.com', opts), 'http://www.sindresorhus.com');
 	t.is(fn('http://www.xn--xample-hva.com', opts), 'http://www.êxample.com');
-	t.end();
 });

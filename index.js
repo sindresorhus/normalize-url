@@ -28,6 +28,9 @@ module.exports = function (str, opts) {
 	// prepend protocol
 	str = prependHttp(str.trim()).replace(/^\/\//, 'http://');
 
+	// decode query param separator
+	str = str.replace(/&amp;/g, '&');
+
 	var urlObj = url.parse(str);
 
 	// prevent these from being used by `url.format`
