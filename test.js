@@ -27,6 +27,9 @@ test('main', t => {
 	t.is(fn('http://sindresorhus.com/foo/bar/./baz'), 'http://sindresorhus.com/foo/bar/baz');
 	t.is(fn('/relative/path/'), '/relative/path');
 	t.is(fn('/'), '');
+	t.is(fn('sindre://www.sorhus.com'), 'sindre://sorhus.com');
+	t.is(fn('sindre://www.sorhus.com/'), 'sindre://sorhus.com');
+	t.is(fn('sindre://www.sorhus.com/foo/bar'), 'sindre://sorhus.com/foo/bar');
 });
 
 test('stripWWW option', t => {
@@ -34,4 +37,5 @@ test('stripWWW option', t => {
 	t.is(fn('http://www.sindresorhus.com', opts), 'http://www.sindresorhus.com');
 	t.is(fn('www.sindresorhus.com', opts), 'http://www.sindresorhus.com');
 	t.is(fn('http://www.xn--xample-hva.com', opts), 'http://www.êxample.com');
+	t.is(fn('sindre://www.sorhus.com', opts), 'sindre://www.sorhus.com');
 });
