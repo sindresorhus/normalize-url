@@ -25,6 +25,8 @@ test('main', t => {
 	t.is(fn('http://sindresorhus.com/foo#bar', {stripFragment: false}), 'http://sindresorhus.com/foo#bar');
 	t.is(fn('http://sindresorhus.com/foo/bar/../baz'), 'http://sindresorhus.com/foo/baz');
 	t.is(fn('http://sindresorhus.com/foo/bar/./baz'), 'http://sindresorhus.com/foo/bar/baz');
+	t.is(fn('/relative/path/'), '/relative/path');
+	t.is(fn('/'), '');
 });
 
 test('stripWWW option', t => {

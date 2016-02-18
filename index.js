@@ -53,12 +53,14 @@ module.exports = function (str, opts) {
 	var relative = url.resolve(domain, urlObj.pathname);
 	urlObj.pathname = relative.replace(domain, '');
 
-	// IDN to Unicode
-	urlObj.hostname = punycode.toUnicode(urlObj.hostname).toLowerCase();
+	if (urlObj.hostname) {
+		// IDN to Unicode
+		urlObj.hostname = punycode.toUnicode(urlObj.hostname).toLowerCase();
 
-	// remove `www.`
-	if (opts.stripWWW) {
-		urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
+		// remove `www.`
+		if (opts.stripWWW) {
+			urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
+		}
 	}
 
 	// remove URL with empty query string
