@@ -82,6 +82,21 @@ normalizeUrl('http://www.sindresorhus.com/about.html#contact', {stripWWW: false}
 //=> 'http://www.sindresorhus.com/about.html#contact'
 ```
 
+##### ignoredQueryParameters
+
+Type: `Array[RegExp|String]`  
+Default: `[]`
+
+Remove query parameters which are either equal to one of the given strings or match one of the regular expressions.
+
+```js
+normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
+	stripWWW: false,
+	ignoredQueryParameters: [/^utm.+/i, 'ref']
+});
+//=> 'http://www.sindresorhus.com/?foo=bar'
+```
+
 
 ## Related
 

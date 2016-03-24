@@ -86,8 +86,23 @@ module.exports = function (str, opts) {
 		delete urlObj.search;
 	}
 
+	var queryParameters = queryString.parse(urlObj.search);
+
+	// remove query unwanted parameters
+	if (Array.isArray(opts.ignoredQueryParameters)) {
+		for (var key in queryParameters) {
+			if (!queryParameters.hasOwnProperty(key)) {
+				continue;
+			}
+
+			if (testQueryParameter(key, opts.ignoredQueryParameters)) {
+				delete queryParameters[key];
+			}
+		}
+	}
+
 	// sort query parameters
-	urlObj.search = queryString.stringify(sortKeys(queryString.parse(urlObj.search)));
+	urlObj.search = queryString.stringify(sortKeys(queryParameters));
 
 	// decode query parameters
 	urlObj.search = decodeURIComponent(urlObj.search);
@@ -105,3 +120,9 @@ module.exports = function (str, opts) {
 
 	return str;
 };
+
+function testQueryParameter(name, filters) {
+	return filters.filter(function (filter) {
+		return (filter instanceof RegExp && filter.test(name)) || filter === name;
+	}).length > 0;
+}
