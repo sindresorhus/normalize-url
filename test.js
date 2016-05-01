@@ -39,3 +39,11 @@ test('stripWWW option', t => {
 	t.is(fn('http://www.xn--xample-hva.com', opts), 'http://www.êxample.com');
 	t.is(fn('sindre://www.sorhus.com', opts), 'sindre://www.sorhus.com');
 });
+
+test('ignoredQueryParameters option', t => {
+	const opts = {stripWWW: false, ignoredQueryParameters: [/^utm.+/i, 'ref']};
+	t.is(fn('http://www.sindresorhus.com', opts), 'http://www.sindresorhus.com');
+	t.is(fn('www.sindresorhus.com?foo=bar', opts), 'http://www.sindresorhus.com/?foo=bar');
+	t.is(fn('www.sindresorhus.com?foo=bar&utm_medium=test', opts), 'http://www.sindresorhus.com/?foo=bar');
+	t.is(fn('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', opts), 'http://www.sindresorhus.com/?foo=bar');
+});
