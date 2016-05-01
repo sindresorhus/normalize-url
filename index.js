@@ -26,11 +26,18 @@ var slashedProtocol = {
 	'file:': true
 };
 
+function testQueryParameter(name, filters) {
+	return filters.some(function (filter) {
+		return filter instanceof RegExp ? filter.test(name) : filter === name;
+	});
+}
+
 module.exports = function (str, opts) {
 	opts = objectAssign({
 		normalizeProtocol: true,
 		stripFragment: true,
-		stripWWW: true
+		stripWWW: true,
+		removeQueryParameters: [/^utm_\w+/i]
 	}, opts);
 
 	if (typeof str !== 'string') {
@@ -89,13 +96,9 @@ module.exports = function (str, opts) {
 	var queryParameters = queryString.parse(urlObj.search);
 
 	// remove query unwanted parameters
-	if (Array.isArray(opts.ignoredQueryParameters)) {
+	if (Array.isArray(opts.removeQueryParameters)) {
 		for (var key in queryParameters) {
-			if (!queryParameters.hasOwnProperty(key)) {
-				continue;
-			}
-
-			if (testQueryParameter(key, opts.ignoredQueryParameters)) {
+			if (testQueryParameter(key, opts.removeQueryParameters)) {
 				delete queryParameters[key];
 			}
 		}
@@ -120,9 +123,3 @@ module.exports = function (str, opts) {
 
 	return str;
 };
-
-function testQueryParameter(name, filters) {
-	return filters.filter(function (filter) {
-		return (filter instanceof RegExp && filter.test(name)) || filter === name;
-	}).length > 0;
-}

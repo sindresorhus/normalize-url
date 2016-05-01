@@ -31,7 +31,7 @@ normalizeUrl('HTTP://xn--xample-hva.com:80/?b=bar&a=foo');
 
 #### url
 
-Type: `string`
+Type: `String`
 
 URL to normalize.
 
@@ -39,7 +39,7 @@ URL to normalize.
 
 ##### normalizeProtocol
 
-Type: `boolean`  
+Type: `Boolean`<br>
 Default: `true`
 
 Prepend `http:` to the URL if it's protocol-relative.
@@ -54,7 +54,7 @@ normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false});
 
 ##### stripFragment
 
-Type: `boolean`  
+Type: `Boolean`<br>
 Default: `true`
 
 Remove the fragment at the end of the URL.
@@ -69,7 +69,7 @@ normalizeUrl('sindresorhus.com/about.html#contact', {stripFragment: false});
 
 ##### stripWWW
 
-Type: `boolean`  
+Type: `Boolean`<br>
 Default: `true`
 
 Remove `www.` from the URL.
@@ -82,19 +82,18 @@ normalizeUrl('http://www.sindresorhus.com/about.html#contact', {stripWWW: false}
 //=> 'http://www.sindresorhus.com/about.html#contact'
 ```
 
-##### ignoredQueryParameters
+##### removeQueryParameters
 
-Type: `Array[RegExp|String]`  
-Default: `[]`
+Type: `Array<RegExp|String>`<br>
+Default: `[/^utm_\w+/i]`
 
-Remove query parameters which are either equal to one of the given strings or match one of the regular expressions.
+Remove query parameters that matches any of the provided strings or regexes.
 
 ```js
-normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
-	stripWWW: false,
-	ignoredQueryParameters: [/^utm.+/i, 'ref']
+normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
+	ignoredQueryParameters: ['ref']
 });
-//=> 'http://www.sindresorhus.com/?foo=bar'
+//=> 'http://sindresorhus.com/?foo=bar'
 ```
 
 
@@ -105,4 +104,4 @@ normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
 
 ## License
 
-MIT © [Sindre Sorhus](http://sindresorhus.com)
+MIT © [Sindre Sorhus](https://sindresorhus.com)
