@@ -3,6 +3,7 @@ import m from './';
 
 test('main', t => {
 	t.is(m('sindresorhus.com'), 'http://sindresorhus.com');
+	t.is(m('sindresorhus.com.'), 'http://sindresorhus.com');
 	t.is(m('HTTP://sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('//sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com'), 'http://sindresorhus.com');
