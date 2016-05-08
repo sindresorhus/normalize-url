@@ -82,6 +82,9 @@ module.exports = function (str, opts) {
 		// IDN to Unicode
 		urlObj.hostname = punycode.toUnicode(urlObj.hostname).toLowerCase();
 
+		// remove trailing dot
+		urlObj.hostname = urlObj.hostname.replace(/\.$/, '');
+
 		// remove `www.`
 		if (opts.stripWWW) {
 			urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
