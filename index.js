@@ -74,7 +74,8 @@ module.exports = function (str, opts) {
 	// resolve relative paths, but only for slashed protocols
 	if (slashedProtocol[urlObj.protocol]) {
 		var domain = urlObj.protocol + '//' + urlObj.hostname;
-		var relative = url.resolve(domain, urlObj.pathname);
+		var pathname = urlObj.pathname ? urlObj.pathname : '/';
+		var relative = url.resolve(domain, pathname);
 		urlObj.pathname = relative.replace(domain, '');
 	}
 

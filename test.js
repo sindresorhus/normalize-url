@@ -5,6 +5,7 @@ test('main', t => {
 	t.is(m('sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('sindresorhus.com.'), 'http://sindresorhus.com');
 	t.is(m('HTTP://sindresorhus.com'), 'http://sindresorhus.com');
+	t.is(m('http://'), 'http://');
 	t.is(m('//sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com:80'), 'http://sindresorhus.com');
