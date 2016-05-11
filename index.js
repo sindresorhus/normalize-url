@@ -51,6 +51,10 @@ module.exports = function (str, opts) {
 
 	var urlObj = url.parse(str);
 
+	if (!urlObj.hostname && !urlObj.pathname) {
+		return '';
+	}
+
 	// prevent these from being used by `url.format`
 	delete urlObj.host;
 	delete urlObj.query;
@@ -74,8 +78,7 @@ module.exports = function (str, opts) {
 	// resolve relative paths, but only for slashed protocols
 	if (slashedProtocol[urlObj.protocol]) {
 		var domain = urlObj.protocol + '//' + urlObj.hostname;
-		var pathname = urlObj.pathname ? urlObj.pathname : '/';
-		var relative = url.resolve(domain, pathname);
+		var relative = url.resolve(domain, urlObj.pathname);
 		urlObj.pathname = relative.replace(domain, '');
 	}
 

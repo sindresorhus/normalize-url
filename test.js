@@ -5,7 +5,6 @@ test('main', t => {
 	t.is(m('sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('sindresorhus.com.'), 'http://sindresorhus.com');
 	t.is(m('HTTP://sindresorhus.com'), 'http://sindresorhus.com');
-	t.is(m('http://'), 'http://');
 	t.is(m('//sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com:80'), 'http://sindresorhus.com');
@@ -29,6 +28,7 @@ test('main', t => {
 	t.is(m('http://sindresorhus.com/foo/bar/./baz'), 'http://sindresorhus.com/foo/bar/baz');
 	t.is(m('/relative/path/'), '/relative/path');
 	t.is(m('/'), '');
+	t.is(m('http://'), '');
 	t.is(m('sindre://www.sorhus.com'), 'sindre://sorhus.com');
 	t.is(m('sindre://www.sorhus.com/'), 'sindre://sorhus.com');
 	t.is(m('sindre://www.sorhus.com/foo/bar'), 'sindre://sorhus.com/foo/bar');
