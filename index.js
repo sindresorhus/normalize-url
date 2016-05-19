@@ -52,7 +52,7 @@ module.exports = function (str, opts) {
 	var urlObj = url.parse(str);
 
 	if (!urlObj.hostname && !urlObj.pathname) {
-		return '';
+		throw new Error('Invalid URL');
 	}
 
 	// prevent these from being used by `url.format`
