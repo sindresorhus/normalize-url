@@ -28,6 +28,9 @@ test('main', t => {
 	t.is(m('http://sindresorhus.com/foo/bar/./baz'), 'http://sindresorhus.com/foo/bar/baz');
 	t.is(m('/relative/path/'), '/relative/path');
 	t.is(m('/'), '');
+	t.throws(() => {
+		m('http://');
+	}, 'Invalid URL');
 	t.is(m('sindre://www.sorhus.com'), 'sindre://sorhus.com');
 	t.is(m('sindre://www.sorhus.com/'), 'sindre://sorhus.com');
 	t.is(m('sindre://www.sorhus.com/foo/bar'), 'sindre://sorhus.com/foo/bar');

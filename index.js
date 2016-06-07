@@ -51,6 +51,10 @@ module.exports = function (str, opts) {
 
 	var urlObj = url.parse(str);
 
+	if (!urlObj.hostname && !urlObj.pathname) {
+		throw new Error('Invalid URL');
+	}
+
 	// prevent these from being used by `url.format`
 	delete urlObj.host;
 	delete urlObj.query;
