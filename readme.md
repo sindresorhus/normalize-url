@@ -96,6 +96,20 @@ normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
 //=> 'http://sindresorhus.com/?foo=bar'
 ```
 
+##### removeTrailingSlash
+
+Type: `Boolean`<br>
+Default: `true`
+
+Remove trailing slash.
+
+```js
+normalizeUrl('http://sindresorhus.com/');
+//=> 'http://sindresorhus.com'
+
+normalizeUrl('http://sindresorhus.com/', {removeTrailingSlash: false});
+//=> 'http://sindresorhus.com/'
+```
 
 ## Related
 
