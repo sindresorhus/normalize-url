@@ -92,6 +92,9 @@ module.exports = function (str, opts) {
 		// remove `www.`
 		if (opts.stripWWW) {
 			urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
+		} else if (urlObj.hostname.indexOf('.') === urlObj.hostname.lastIndexOf('.')) {
+			// add `www.` if missing and no subdomain
+			urlObj.hostname = 'www.' + urlObj.hostname;
 		}
 	}
 
