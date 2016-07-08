@@ -101,14 +101,18 @@ normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
 Type: `Boolean`<br>
 Default: `true`
 
-Remove trailing slash.
+Remove trailing slash.<br>
+**Note**: trailing slash is always removed if the url doesn't have a pathname.
 
 ```js
-normalizeUrl('http://sindresorhus.com/');
-//=> 'http://sindresorhus.com'
+normalizeUrl('http://sindresorhus.com/redirect/');
+//=> 'http://sindresorhus.com/redirect'
+
+normalizeUrl('http://sindresorhus.com/redirect/', {removeTrailingSlash: false});
+//=> 'http://sindresorhus.com/redirect/'
 
 normalizeUrl('http://sindresorhus.com/', {removeTrailingSlash: false});
-//=> 'http://sindresorhus.com/'
+//=> 'http://sindresorhus.com'
 ```
 
 ## Related

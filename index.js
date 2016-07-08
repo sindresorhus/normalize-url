@@ -122,7 +122,7 @@ module.exports = function (str, opts) {
 	str = url.format(urlObj);
 
 	// remove ending `/`
-	if (opts.removeTrailingSlash) {
+	if (opts.removeTrailingSlash || !urlObj.pathname || urlObj.pathname === '/') {
 		str = str.replace(/\/$/, '');
 	}
 

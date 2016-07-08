@@ -58,5 +58,8 @@ test('removeQueryParameters option', t => {
 test('removeTrailingSlash option', t => {
 	const opts = {removeTrailingSlash: false};
 	t.is(m('http://sindresorhus.com/'), 'http://sindresorhus.com');
-	t.is(m('http://sindresorhus.com/', opts), 'http://sindresorhus.com/');
+	t.is(m('http://sindresorhus.com/', opts), 'http://sindresorhus.com');
+
+	t.is(m('http://sindresorhus.com/redirect/'), 'http://sindresorhus.com/redirect');
+	t.is(m('http://sindresorhus.com/redirect/', opts), 'http://sindresorhus.com/redirect/');
 });
