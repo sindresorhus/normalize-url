@@ -102,7 +102,7 @@ Type: `Boolean`<br>
 Default: `true`
 
 Remove trailing slash.<br>
-**Note**: trailing slash is always removed if the url doesn't have a pathname.
+**Note:** trailing slash is always removed if the url doesn't have a pathname.
 
 ```js
 normalizeUrl('http://sindresorhus.com/redirect/');
