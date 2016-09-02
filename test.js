@@ -20,6 +20,7 @@ test('main', t => {
 	t.is(m('http://sindresorhus.com/?foo=bar*|<>:"'), 'http://sindresorhus.com/?foo=bar*|<>:"');
 	t.is(m('http://sindresorhus.com:5000'), 'http://sindresorhus.com:5000');
 	t.is(m('http://sindresorhus.com////foo/bar'), 'http://sindresorhus.com/foo/bar');
+	t.is(m('http://sindresorhus.com////foo////bar'), 'http://sindresorhus.com/foo/bar');
 	t.is(m('//sindresorhus.com/', {normalizeProtocol: false}), '//sindresorhus.com');
 	t.is(m('//sindresorhus.com:80/', {normalizeProtocol: false}), '//sindresorhus.com');
 	t.is(m('http://sindresorhus.com/foo#bar'), 'http://sindresorhus.com/foo');
