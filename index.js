@@ -26,7 +26,7 @@ var slashedProtocol = {
 	'file:': true
 };
 
-function testQueryParameter(name, filters) {
+function testParameter(name, filters) {
 	return filters.some(function (filter) {
 		return filter instanceof RegExp ? filter.test(name) : filter === name;
 	});
@@ -38,7 +38,8 @@ module.exports = function (str, opts) {
 		stripFragment: true,
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
-		removeTrailingSlash: true
+		removeTrailingSlash: true,
+		removeDirectoryIndex: false
 	}, opts);
 
 	if (typeof str !== 'string') {
@@ -76,6 +77,19 @@ module.exports = function (str, opts) {
 		urlObj.pathname = urlObj.pathname.replace(/\/{2,}/g, '/');
 	}
 
+	// remove directory index
+	if (opts.removeDirectoryIndex === true) {
+		opts.removeDirectoryIndex = [/^index/];
+	}
+
+	if (Array.isArray(opts.removeDirectoryIndex) && opts.removeDirectoryIndex.length) {
+		var pathComponents = urlObj.pathname.split('/');
+		var lastComponent = pathComponents[pathComponents.length - 1];
+		lastComponent = testParameter(lastComponent, opts.removeDirectoryIndex) ? '' : lastComponent;
+		pathComponents[pathComponents.length - 1] = lastComponent;
+		urlObj.pathname = pathComponents.slice(1).join('/');
+	}
+
 	// resolve relative paths, but only for slashed protocols
 	if (slashedProtocol[urlObj.protocol]) {
 		var domain = urlObj.protocol + '//' + urlObj.hostname;
@@ -106,7 +120,7 @@ module.exports = function (str, opts) {
 	// remove query unwanted parameters
 	if (Array.isArray(opts.removeQueryParameters)) {
 		for (var key in queryParameters) {
-			if (testQueryParameter(key, opts.removeQueryParameters)) {
+			if (testParameter(key, opts.removeQueryParameters)) {
 				delete queryParameters[key];
 			}
 		}

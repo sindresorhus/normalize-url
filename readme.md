@@ -116,6 +116,20 @@ normalizeUrl('http://sindresorhus.com/', {removeTrailingSlash: false});
 //=> 'http://sindresorhus.com'
 ```
 
+##### removeDirectoryIndex
+
+Type: `boolean|Array<RegExp|String>`<br>
+Default: `false`
+
+Remove default directory index files from path that matches any of the provided strings or regexes. When
+the parameter is `true` the regex `/^index/` is used.
+
+```js
+normalizeUrl('www.sindresorhus.com/foo/index.html', {
+	removeDirectoryIndex: [/^index/]
+});
+//=> 'http://sindresorhus.com/foo'
+```
 
 ## Related
 

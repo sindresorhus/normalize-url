@@ -63,3 +63,30 @@ test('removeTrailingSlash option', t => {
 	t.is(m('http://sindresorhus.com/redirect/'), 'http://sindresorhus.com/redirect');
 	t.is(m('http://sindresorhus.com/redirect/', opts), 'http://sindresorhus.com/redirect/');
 });
+
+test('removeDirectoryIndex option', t => {
+	const opts1 = {removeDirectoryIndex: ['index.html', 'index.php']};
+	t.is(m('http://sindresorhus.com/index.html'), 'http://sindresorhus.com/index.html');
+	t.is(m('http://sindresorhus.com/index.html', opts1), 'http://sindresorhus.com');
+	t.is(m('http://sindresorhus.com/index.htm', opts1), 'http://sindresorhus.com/index.htm');
+	t.is(m('http://sindresorhus.com/index.php', opts1), 'http://sindresorhus.com');
+	t.is(m('http://sindresorhus.com/path/index.html'), 'http://sindresorhus.com/path/index.html');
+	t.is(m('http://sindresorhus.com/path/index.html', opts1), 'http://sindresorhus.com/path');
+	t.is(m('http://sindresorhus.com/path/index.htm', opts1), 'http://sindresorhus.com/path/index.htm');
+	t.is(m('http://sindresorhus.com/path/index.php', opts1), 'http://sindresorhus.com/path');
+	t.is(m('http://sindresorhus.com/foo/bar/index.html', opts1), 'http://sindresorhus.com/foo/bar');
+
+	const opts2 = {removeDirectoryIndex: [/^index/, 'remove.html']};
+	t.is(m('http://sindresorhus.com/index.html'), 'http://sindresorhus.com/index.html');
+	t.is(m('http://sindresorhus.com/index.html', opts2), 'http://sindresorhus.com');
+	t.is(m('http://sindresorhus.com/index/index.html', opts2), 'http://sindresorhus.com/index');
+	t.is(m('http://sindresorhus.com/remove.html', opts2), 'http://sindresorhus.com');
+	t.is(m('http://sindresorhus.com/default.htm', opts2), 'http://sindresorhus.com/default.htm');
+	t.is(m('http://sindresorhus.com/index.php', opts2), 'http://sindresorhus.com');
+
+	const opts3 = {removeDirectoryIndex: true};
+	t.is(m('http://sindresorhus.com/index.html'), 'http://sindresorhus.com/index.html');
+	t.is(m('http://sindresorhus.com/index.html', opts3), 'http://sindresorhus.com');
+	t.is(m('http://sindresorhus.com/index.htm', opts3), 'http://sindresorhus.com');
+	t.is(m('http://sindresorhus.com/index.php', opts3), 'http://sindresorhus.com');
+});
