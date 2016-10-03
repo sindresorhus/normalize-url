@@ -85,9 +85,10 @@ module.exports = function (str, opts) {
 	if (Array.isArray(opts.removeDirectoryIndex) && opts.removeDirectoryIndex.length) {
 		var pathComponents = urlObj.pathname.split('/');
 		var lastComponent = pathComponents[pathComponents.length - 1];
-		lastComponent = testParameter(lastComponent, opts.removeDirectoryIndex) ? '' : lastComponent;
-		pathComponents[pathComponents.length - 1] = lastComponent;
-		urlObj.pathname = pathComponents.slice(1).join('/');
+		if (testParameter(lastComponent, opts.removeDirectoryIndex)) {
+			pathComponents = pathComponents.slice(0, pathComponents.length - 1);
+		}
+		urlObj.pathname = pathComponents.slice(1).join('/') + '/';
 	}
 
 	// resolve relative paths, but only for slashed protocols
