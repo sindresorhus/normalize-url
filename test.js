@@ -76,7 +76,7 @@ test('removeDirectoryIndex option', t => {
 	t.is(m('http://sindresorhus.com/path/index.php', opts1), 'http://sindresorhus.com/path');
 	t.is(m('http://sindresorhus.com/foo/bar/index.html', opts1), 'http://sindresorhus.com/foo/bar');
 
-	const opts2 = {removeDirectoryIndex: [/^index/, 'remove.html']};
+	const opts2 = {removeDirectoryIndex: [/^index\.[a-z]+$/, 'remove.html']};
 	t.is(m('http://sindresorhus.com/index.html'), 'http://sindresorhus.com/index.html');
 	t.is(m('http://sindresorhus.com/index.html', opts2), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com/index/index.html', opts2), 'http://sindresorhus.com/index');

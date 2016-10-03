@@ -79,7 +79,7 @@ module.exports = function (str, opts) {
 
 	// remove directory index
 	if (opts.removeDirectoryIndex === true) {
-		opts.removeDirectoryIndex = [/^index/];
+		opts.removeDirectoryIndex = [/^index\.[a-z]+$/];
 	}
 
 	if (Array.isArray(opts.removeDirectoryIndex) && opts.removeDirectoryIndex.length) {
