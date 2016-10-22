@@ -14,6 +14,7 @@ test('main', t => {
 	t.is(m('www.sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com/foo/'), 'http://sindresorhus.com/foo');
 	t.is(m('sindresorhus.com/?foo=bar%20baz'), 'http://sindresorhus.com/?foo=bar baz');
+	t.is(m('sindresorhus.com/?foo=%23505050,%23505050'), 'http://sindresorhus.com/?foo=#505050,#505050');
 	t.is(m('http://sindresorhus.com/?'), 'http://sindresorhus.com');
 	t.is(m('http://xn--xample-hva.com'), 'http://êxample.com');
 	t.is(m('http://sindresorhus.com/?b=bar&a=foo'), 'http://sindresorhus.com/?a=foo&b=bar');
