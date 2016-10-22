@@ -31,7 +31,7 @@ normalizeUrl('HTTP://xn--xample-hva.com:80/?b=bar&a=foo');
 
 #### url
 
-Type: `String`
+Type: `string`
 
 URL to normalize.
 
@@ -39,7 +39,7 @@ URL to normalize.
 
 ##### normalizeProtocol
 
-Type: `Boolean`<br>
+Type: `boolean`<br>
 Default: `true`
 
 Prepend `http:` to the URL if it's protocol-relative.
@@ -54,7 +54,7 @@ normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false});
 
 ##### stripFragment
 
-Type: `Boolean`<br>
+Type: `boolean`<br>
 Default: `true`
 
 Remove the fragment at the end of the URL.
@@ -69,7 +69,7 @@ normalizeUrl('sindresorhus.com/about.html#contact', {stripFragment: false});
 
 ##### stripWWW
 
-Type: `Boolean`<br>
+Type: `boolean`<br>
 Default: `true`
 
 Remove `www.` from the URL.
@@ -84,7 +84,7 @@ normalizeUrl('http://www.sindresorhus.com/about.html#contact', {stripWWW: false}
 
 ##### removeQueryParameters
 
-Type: `Array<RegExp|String>`<br>
+Type: `Array<RegExp|string>`<br>
 Default: `[/^utm_\w+/i]`
 
 Remove query parameters that matches any of the provided strings or regexes.
@@ -118,11 +118,10 @@ normalizeUrl('http://sindresorhus.com/', {removeTrailingSlash: false});
 
 ##### removeDirectoryIndex
 
-Type: `boolean|Array<RegExp|string>`<br>
+Type: `boolean` `Array<RegExp|string>`<br>
 Default: `false`
 
-Remove default directory index files from path that matches any of the provided strings or regexes. When
-the parameter is `true` the regex `/^index\.[a-z]+$/` is used.
+Remove the default directory index file from path that matches any of the provided strings or regexes. When `true`, the regex `/^index\.[a-z]+$/` is used.
 
 ```js
 normalizeUrl('www.sindresorhus.com/foo/default.php', {
@@ -130,6 +129,7 @@ normalizeUrl('www.sindresorhus.com/foo/default.php', {
 });
 //=> 'http://sindresorhus.com/foo'
 ```
+
 
 ## Related
 
