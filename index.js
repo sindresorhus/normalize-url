@@ -77,6 +77,11 @@ module.exports = function (str, opts) {
 		urlObj.pathname = urlObj.pathname.replace(/\/{2,}/g, '/');
 	}
 
+	// decode URI octets
+	if (urlObj.pathname) {
+		urlObj.pathname = decodeURI(urlObj.pathname);
+	}
+
 	// remove directory index
 	if (opts.removeDirectoryIndex === true) {
 		opts.removeDirectoryIndex = [/^index\.[a-z]+$/];
