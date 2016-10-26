@@ -26,6 +26,11 @@ var slashedProtocol = {
 	'file:': true
 };
 
+var urlEncodingRegex = /%[0-9a-fA-F]{2}/g;
+function toUpperCase(value) {
+	return value.toUpperCase();
+}
+
 function testParameter(name, filters) {
 	return filters.some(function (filter) {
 		return filter instanceof RegExp ? filter.test(name) : filter === name;
@@ -45,6 +50,8 @@ module.exports = function (str, opts) {
 	if (typeof str !== 'string') {
 		throw new TypeError('Expected a string');
 	}
+
+	str = str.replace(urlEncodingRegex, toUpperCase);
 
 	var hasRelativeProtocol = str.indexOf('//') === 0;
 

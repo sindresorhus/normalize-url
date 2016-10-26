@@ -35,6 +35,8 @@ test('main', t => {
 	t.is(m('sindre://www.sorhus.com'), 'sindre://sorhus.com');
 	t.is(m('sindre://www.sorhus.com/'), 'sindre://sorhus.com');
 	t.is(m('sindre://www.sorhus.com/foo/bar'), 'sindre://sorhus.com/foo/bar');
+	t.is(m('http://sindresorhus.com/a%c2%b1b'), 'http://sindresorhus.com/a%C2%B1b');
+	t.is(m('http://sindresorhus.com/a%c2/%b1/b'), 'http://sindresorhus.com/a%C2/%B1/b');
 });
 
 test('stripWWW option', t => {
