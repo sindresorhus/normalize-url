@@ -57,7 +57,7 @@ normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false});
 Type: `boolean`<br>
 Default: `false`
 
-Normalize `https:` URLs to `http`.
+Normalize `https:` URLs to `http:`.
 
 ```js
 normalizeUrl('https://sindresorhus.com:80/');
