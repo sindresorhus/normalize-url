@@ -60,7 +60,8 @@ test('removeQueryParameters option', t => {
 test('normalizeHttps option', t => {
 	const opts = {normalizeHttps: true};
 
-	t.is(m('http://sindresorhus.com'), 'http://sindresorhus.com');
+	t.is(m('https://sindresorhus.com'), 'https://sindresorhus.com');
+	t.is(m('http://sindresorhus.com', opts), 'http://sindresorhus.com');
 	t.is(m('https://www.sindresorhus.com', opts), 'http://sindresorhus.com');
 	t.is(m('//sindresorhus.com', opts), 'http://sindresorhus.com');
 });
