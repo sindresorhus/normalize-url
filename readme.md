@@ -52,6 +52,21 @@ normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false});
 //=> '//sindresorhus.com'
 ```
 
+##### normalizeHttps
+
+Type: `boolean`<br>
+Default: `false`
+
+Normalize `https:` URLs to `http:`.
+
+```js
+normalizeUrl('https://sindresorhus.com:80/');
+//=> 'https://sindresorhus.com'
+
+normalizeUrl('https://sindresorhus.com:80/', {normalizeHttps: true});
+//=> 'http://sindresorhus.com'
+```
+
 ##### stripFragment
 
 Type: `boolean`<br>

@@ -35,6 +35,7 @@ function testParameter(name, filters) {
 module.exports = function (str, opts) {
 	opts = objectAssign({
 		normalizeProtocol: true,
+		normalizeHttps: false,
 		stripFragment: true,
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
@@ -52,6 +53,10 @@ module.exports = function (str, opts) {
 	str = prependHttp(str.trim()).replace(/^\/\//, 'http://');
 
 	var urlObj = url.parse(str);
+
+	if (opts.normalizeHttps && urlObj.protocol === 'https:') {
+		urlObj.protocol = 'http:';
+	}
 
 	if (!urlObj.hostname && !urlObj.pathname) {
 		throw new Error('Invalid URL');

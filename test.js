@@ -57,6 +57,15 @@ test('removeQueryParameters option', t => {
 	t.is(m('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', opts), 'http://www.sindresorhus.com/?foo=bar');
 });
 
+test('normalizeHttps option', t => {
+	const opts = {normalizeHttps: true};
+
+	t.is(m('https://sindresorhus.com'), 'https://sindresorhus.com');
+	t.is(m('http://sindresorhus.com', opts), 'http://sindresorhus.com');
+	t.is(m('https://www.sindresorhus.com', opts), 'http://sindresorhus.com');
+	t.is(m('//sindresorhus.com', opts), 'http://sindresorhus.com');
+});
+
 test('removeTrailingSlash option', t => {
 	const opts = {removeTrailingSlash: false};
 	t.is(m('http://sindresorhus.com/'), 'http://sindresorhus.com');
