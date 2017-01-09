@@ -54,9 +54,7 @@ module.exports = function (str, opts) {
 
 	var urlObj = url.parse(str);
 
-	var hasHttps = urlObj.protocol === 'https:';
-
-	if (opts.normalizeHttps && hasHttps) {
+	if (opts.normalizeHttps && urlObj.protocol === 'https:') {
 		urlObj.protocol = 'http:';
 	}
 
