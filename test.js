@@ -100,3 +100,19 @@ test('removeDirectoryIndex option', t => {
 	t.is(m('http://sindresorhus.com/index.htm', opts3), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com/index.php', opts3), 'http://sindresorhus.com');
 });
+
+test('removeTrailingSlash and removeDirectoryIndex options)', t => {
+	const opts1 = {
+		removeTrailingSlash: true,
+		removeDirectoryIndex: true
+	};
+	t.is(m('http://sindresorhus.com/path/', opts1), 'http://sindresorhus.com/path');
+	t.is(m('http://sindresorhus.com/path/index.html', opts1), 'http://sindresorhus.com/path');
+
+	const opts2 = {
+		removeTrailingSlash: false,
+		removeDirectoryIndex: true
+	};
+	t.is(m('http://sindresorhus.com/path/', opts2), 'http://sindresorhus.com/path/');
+	t.is(m('http://sindresorhus.com/path/index.html', opts2), 'http://sindresorhus.com/path/');
+});
