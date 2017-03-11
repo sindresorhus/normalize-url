@@ -29,7 +29,6 @@
     "normalization",
     "normalisation",
     "query",
-    "string",
     "querystring",
     "unicode",
     "simplify",
@@ -38,13 +37,12 @@
     "canonical"
   ],
   "dependencies": {
-    "object-assign": "^4.0.1",
     "prepend-http": "^1.0.0",
     "query-string": "^4.1.0",
     "sort-keys": "^1.0.0"
   },
   "devDependencies": {
     "ava": "*",
-    "xo": "^0.16.0"
+    "xo": "*"
   }
 }

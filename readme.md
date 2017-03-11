@@ -37,6 +37,8 @@ URL to normalize.
 
 #### options
 
+Type: `Object`
+
 ##### normalizeProtocol
 
 Type: `boolean`<br>

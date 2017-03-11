@@ -1,5 +1,5 @@
 import test from 'ava';
-import m from './';
+import m from '.';
 
 test('main', t => {
 	t.is(m('sindresorhus.com'), 'http://sindresorhus.com');

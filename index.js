@@ -1,24 +1,23 @@
 'use strict';
-var url = require('url');
-var punycode = require('punycode');
-var queryString = require('query-string');
-var prependHttp = require('prepend-http');
-var sortKeys = require('sort-keys');
-var objectAssign = require('object-assign');
+const url = require('url');
+const punycode = require('punycode');
+const queryString = require('query-string');
+const prependHttp = require('prepend-http');
+const sortKeys = require('sort-keys');
 
-var DEFAULT_PORTS = {
+const DEFAULT_PORTS = {
 	'http:': 80,
 	'https:': 443,
 	'ftp:': 21
 };
 
-// protocols that always contain a `//`` bit
-var slashedProtocol = {
-	'http': true,
-	'https': true,
-	'ftp': true,
-	'gopher': true,
-	'file': true,
+// Protocols that always contain a `//`` bit
+const slashedProtocol = {
+	http: true,
+	https: true,
+	ftp: true,
+	gopher: true,
+	file: true,
 	'http:': true,
 	'https:': true,
 	'ftp:': true,
@@ -27,13 +26,11 @@ var slashedProtocol = {
 };
 
 function testParameter(name, filters) {
-	return filters.some(function (filter) {
-		return filter instanceof RegExp ? filter.test(name) : filter === name;
-	});
+	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 }
 
-module.exports = function (str, opts) {
-	opts = objectAssign({
+module.exports = (str, opts) => {
+	opts = Object.assign({
 		normalizeProtocol: true,
 		normalizeHttps: false,
 		stripFragment: true,
@@ -47,12 +44,12 @@ module.exports = function (str, opts) {
 		throw new TypeError('Expected a string');
 	}
 
-	var hasRelativeProtocol = str.indexOf('//') === 0;
+	const hasRelativeProtocol = str.startsWith('//');
 
-	// prepend protocol
+	// Prepend protocol
 	str = prependHttp(str.trim()).replace(/^\/\//, 'http://');
 
-	var urlObj = url.parse(str);
+	const urlObj = url.parse(str);
 
 	if (opts.normalizeHttps && urlObj.protocol === 'https:') {
 		urlObj.protocol = 'http:';
@@ -62,39 +59,39 @@ module.exports = function (str, opts) {
 		throw new Error('Invalid URL');
 	}
 
-	// prevent these from being used by `url.format`
+	// Prevent these from being used by `url.format`
 	delete urlObj.host;
 	delete urlObj.query;
 
-	// remove fragment
+	// Remove fragment
 	if (opts.stripFragment) {
 		delete urlObj.hash;
 	}
 
-	// remove default port
-	var port = DEFAULT_PORTS[urlObj.protocol];
+	// Remove default port
+	const port = DEFAULT_PORTS[urlObj.protocol];
 	if (Number(urlObj.port) === port) {
 		delete urlObj.port;
 	}
 
-	// remove duplicate slashes
+	// Remove duplicate slashes
 	if (urlObj.pathname) {
 		urlObj.pathname = urlObj.pathname.replace(/\/{2,}/g, '/');
 	}
 
-	// decode URI octets
+	// Decode URI octets
 	if (urlObj.pathname) {
 		urlObj.pathname = decodeURI(urlObj.pathname);
 	}
 
-	// remove directory index
+	// Remove directory index
 	if (opts.removeDirectoryIndex === true) {
 		opts.removeDirectoryIndex = [/^index\.[a-z]+$/];
 	}
 
-	if (Array.isArray(opts.removeDirectoryIndex) && opts.removeDirectoryIndex.length) {
-		var pathComponents = urlObj.pathname.split('/');
-		var lastComponent = pathComponents[pathComponents.length - 1];
+	if (Array.isArray(opts.removeDirectoryIndex) && opts.removeDirectoryIndex.length > 0) {
+		let pathComponents = urlObj.pathname.split('/');
+		const lastComponent = pathComponents[pathComponents.length - 1];
 
 		if (testParameter(lastComponent, opts.removeDirectoryIndex)) {
 			pathComponents = pathComponents.slice(0, pathComponents.length - 1);
@@ -102,10 +99,10 @@ module.exports = function (str, opts) {
 		}
 	}
 
-	// resolve relative paths, but only for slashed protocols
+	// Resolve relative paths, but only for slashed protocols
 	if (slashedProtocol[urlObj.protocol]) {
-		var domain = urlObj.protocol + '//' + urlObj.hostname;
-		var relative = url.resolve(domain, urlObj.pathname);
+		const domain = urlObj.protocol + '//' + urlObj.hostname;
+		const relative = url.resolve(domain, urlObj.pathname);
 		urlObj.pathname = relative.replace(domain, '');
 	}
 
@@ -113,46 +110,46 @@ module.exports = function (str, opts) {
 		// IDN to Unicode
 		urlObj.hostname = punycode.toUnicode(urlObj.hostname).toLowerCase();
 
-		// remove trailing dot
+		// Remove trailing dot
 		urlObj.hostname = urlObj.hostname.replace(/\.$/, '');
 
-		// remove `www.`
+		// Remove `www.`
 		if (opts.stripWWW) {
 			urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
 		}
 	}
 
-	// remove URL with empty query string
+	// Remove URL with empty query string
 	if (urlObj.search === '?') {
 		delete urlObj.search;
 	}
 
-	var queryParameters = queryString.parse(urlObj.search);
+	const queryParameters = queryString.parse(urlObj.search);
 
-	// remove query unwanted parameters
+	// Remove query unwanted parameters
 	if (Array.isArray(opts.removeQueryParameters)) {
-		for (var key in queryParameters) {
+		for (const key in queryParameters) {
 			if (testParameter(key, opts.removeQueryParameters)) {
 				delete queryParameters[key];
 			}
 		}
 	}
 
-	// sort query parameters
+	// Sort query parameters
 	urlObj.search = queryString.stringify(sortKeys(queryParameters));
 
-	// decode query parameters
+	// Decode query parameters
 	urlObj.search = decodeURIComponent(urlObj.search);
 
-	// take advantage of many of the Node `url` normalizations
+	// Take advantage of many of the Node `url` normalizations
 	str = url.format(urlObj);
 
-	// remove ending `/`
+	// Remove ending `/`
 	if (opts.removeTrailingSlash || urlObj.pathname === '/') {
 		str = str.replace(/\/$/, '');
 	}
 
-	// restore relative protocol, if applicable
+	// Restore relative protocol, if applicable
 	if (hasRelativeProtocol && !opts.normalizeProtocol) {
 		str = str.replace(/^http:\/\//, '//');
 	}
