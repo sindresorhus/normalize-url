@@ -44,6 +44,8 @@ test('stripWWW option', t => {
 	t.is(m('www.sindresorhus.com', opts), 'http://www.sindresorhus.com');
 	t.is(m('http://www.xn--xample-hva.com', opts), 'http://www.êxample.com');
 	t.is(m('sindre://www.sorhus.com', opts), 'sindre://www.sorhus.com');
+	t.is(m('http://sorhus.com', opts), 'http://www.sorhus.com');
+	t.is(m('http://subdomain.sorhus.com', opts), 'http://subdomain.sorhus.com');
 });
 
 test('removeQueryParameters option', t => {
