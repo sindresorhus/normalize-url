@@ -142,7 +142,7 @@ module.exports = (str, opts) => {
 	urlObj.search = decodeURIComponent(urlObj.search);
 
 	// Take advantage of many of the Node `url` normalizations
-	str = url.format(urlObj);
+	str = decodeURIComponent(url.format(urlObj));
 
 	// Remove ending `/`
 	if (opts.removeTrailingSlash || urlObj.pathname === '/') {
