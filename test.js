@@ -24,6 +24,8 @@ test('main', t => {
 	t.is(m('http://sindresorhus.com////foo////bar'), 'http://sindresorhus.com/foo/bar');
 	t.is(m('//sindresorhus.com/', {normalizeProtocol: false}), '//sindresorhus.com');
 	t.is(m('//sindresorhus.com:80/', {normalizeProtocol: false}), '//sindresorhus.com');
+	t.is(m('file:///foo/node_modules/%40angular/http'), 'file:///foo/node_modules/@angular/http');
+	t.is(m('http://example.com/%40dave'), 'http://example.com/@dave');
 	t.is(m('http://sindresorhus.com/foo#bar'), 'http://sindresorhus.com/foo');
 	t.is(m('http://sindresorhus.com/foo#bar', {stripFragment: false}), 'http://sindresorhus.com/foo#bar');
 	t.is(m('http://sindresorhus.com/foo/bar/../baz'), 'http://sindresorhus.com/foo/baz');
