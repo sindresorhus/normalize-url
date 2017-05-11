@@ -81,7 +81,7 @@ module.exports = (str, opts) => {
 
 	// Decode URI octets
 	if (urlObj.pathname) {
-		urlObj.pathname = decodeURI(urlObj.pathname);
+		urlObj.pathname = decodeURIComponent(urlObj.pathname);
 	}
 
 	// Remove directory index
@@ -141,8 +141,23 @@ module.exports = (str, opts) => {
 	// Decode query parameters
 	urlObj.search = decodeURIComponent(urlObj.search);
 
+	// Find possible '&' characters inside parameter
+	const splitSearch = urlObj.search.split('&');
+
+	urlObj.search = splitSearch[0];
+
+	for (const param in splitSearch) {
+		if (param > 0) {
+			if (splitSearch[param].includes('=')) {
+				urlObj.search = urlObj.search + '&' + splitSearch[param];
+			} else {
+				urlObj.search = urlObj.search + '%26' + splitSearch[param];
+			}
+		}
+	}
+
 	// Take advantage of many of the Node `url` normalizations
-	str = decodeURIComponent(url.format(urlObj));
+	str = url.format(urlObj);
 
 	// Remove ending `/`
 	if (opts.removeTrailingSlash || urlObj.pathname === '/') {
