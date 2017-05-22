@@ -139,20 +139,16 @@ module.exports = (str, opts) => {
 	urlObj.search = queryString.stringify(sortKeys(queryParameters));
 
 	// Decode query parameters
-	urlObj.search = decodeURIComponent(urlObj.search);
+	const splitSearch = decodeURIComponent(urlObj.search).split('&');
 
 	// Find possible '&' characters inside parameter
-	const splitSearch = urlObj.search.split('&');
-
 	urlObj.search = splitSearch[0];
 
-	for (const param in splitSearch) {
-		if (param > 0) {
-			if (splitSearch[param].includes('=')) {
-				urlObj.search = urlObj.search + '&' + splitSearch[param];
-			} else {
-				urlObj.search = urlObj.search + '%26' + splitSearch[param];
-			}
+	for (let i = 1; i < splitSearch.length; i++) {
+		if (splitSearch[i].includes('=')) {
+			urlObj.search = urlObj.search + '&' + splitSearch[i];
+		} else {
+			urlObj.search = urlObj.search + '%26' + splitSearch[i];
 		}
 	}
 
