@@ -37,7 +37,8 @@ module.exports = (str, opts) => {
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
 		removeTrailingSlash: true,
-		removeDirectoryIndex: false
+		removeDirectoryIndex: false,
+		sortQueryParameters: true
 	}, opts);
 
 	if (typeof str !== 'string') {
@@ -136,7 +137,9 @@ module.exports = (str, opts) => {
 	}
 
 	// Sort query parameters
-	urlObj.search = queryString.stringify(sortKeys(queryParameters));
+	if (opts.sortQueryParameters) {
+		urlObj.search = queryString.stringify(sortKeys(queryParameters));
+	}
 
 	// Decode query parameters
 	urlObj.search = decodeURIComponent(urlObj.search);
