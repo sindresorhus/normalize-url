@@ -113,6 +113,22 @@ normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
 //=> 'http://sindresorhus.com/?foo=bar'
 ```
 
+##### sortQueryParameters
+Type: `boolean`<br>
+Default: `true`
+
+Sort query parameters by parameter name in alphabetical order.
+
+```js
+normalizedUrl('www.sindresorhus.com?b=bar&a=foo');
+//=> 'http://www.sindresorhus.com?a=foo&b=bar'
+
+normalizedUrl('www.sindresorhus.com?b=bar&a=foo', {
+	sortQueryParameters: false
+});
+//=> 'http://www.sindresorhus.com?b=bar&a=foo'
+```
+
 ##### removeTrailingSlash
 
 Type: `boolean`<br>
