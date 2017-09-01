@@ -116,3 +116,10 @@ test('removeTrailingSlash and removeDirectoryIndex options)', t => {
 	t.is(m('http://sindresorhus.com/path/', opts2), 'http://sindresorhus.com/path/');
 	t.is(m('http://sindresorhus.com/path/index.html', opts2), 'http://sindresorhus.com/path/');
 });
+
+test('sortQueryParameters option', t => {
+	const opts = {
+		sortQueryParameters: false
+	};
+	t.is(m('http://sindresorhus.com/?b=bar&a=foo', opts), 'http://sindresorhus.com/?b=bar&a=foo');
+});
