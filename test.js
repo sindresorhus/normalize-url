@@ -116,3 +116,20 @@ test('removeTrailingSlash and removeDirectoryIndex options)', t => {
 	t.is(m('http://sindresorhus.com/path/', opts2), 'http://sindresorhus.com/path/');
 	t.is(m('http://sindresorhus.com/path/index.html', opts2), 'http://sindresorhus.com/path/');
 });
+
+test('sortQueryParameters option', t => {
+	let opts = {
+		sortQueryParameters: true
+	};
+	t.is(m('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W', opts), 'http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
+	t.is(m('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W', opts), 'http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
+	t.is(m('http://sindresorhus.com/?a=Z&d=W&b=Y&c=X', opts), 'http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
+
+	opts = {
+		sortQueryParameters: false
+	};
+
+	t.is(m('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W', opts), 'http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
+	t.is(m('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W', opts), 'http://sindresorhus.com/?b=Y&c=X&a=Z&d=W');
+	t.is(m('http://sindresorhus.com/?a=Z&d=W&b=Y&c=X', opts), 'http://sindresorhus.com/?a=Z&d=W&b=Y&c=X');
+});

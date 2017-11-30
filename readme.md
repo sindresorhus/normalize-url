@@ -147,6 +147,19 @@ normalizeUrl('www.sindresorhus.com/foo/default.php', {
 //=> 'http://sindresorhus.com/foo'
 ```
 
+##### sortQueryParameters
+
+Type: `boolean`<br>
+Default: `true`
+
+Sort the query parameters alphabetically by key.
+
+```js
+normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {
+	sortQueryParameters: true
+});
+//=> 'www.sindresorhus.com?a=one&b=two&c=three'
+```
 
 ## Related
 
