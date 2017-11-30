@@ -1,6 +1,6 @@
 # normalize-url [![Build Status](https://travis-ci.org/sindresorhus/normalize-url.svg?branch=master)](https://travis-ci.org/sindresorhus/normalize-url)
 
-> [Normalize](http://en.wikipedia.org/wiki/URL_normalization) a URL
+> [Normalize](https://en.wikipedia.org/wiki/URL_normalization) a URL
 
 Useful when you need to display, store, deduplicate, sort, compare, etc, URLs.
 
@@ -8,7 +8,7 @@ Useful when you need to display, store, deduplicate, sort, compare, etc, URLs.
 ## Install
 
 ```
-$ npm install --save normalize-url
+$ npm install normalize-url
 ```
 
 
@@ -156,10 +156,11 @@ Sort the query parameters alphabetically by key.
 
 ```js
 normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {
-	sortQueryParameters: true
+	sortQueryParameters: false
 });
-//=> 'www.sindresorhus.com?a=one&b=two&c=three'
+//=> 'http://sindresorhus.com/?b=two&a=one&c=three'
 ```
+
 
 ## Related
 
