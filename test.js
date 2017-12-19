@@ -132,4 +132,5 @@ test('sortQueryParameters option', t => {
 	t.is(m('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W', opts), 'http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
 	t.is(m('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W', opts), 'http://sindresorhus.com/?b=Y&c=X&a=Z&d=W');
 	t.is(m('http://sindresorhus.com/?a=Z&d=W&b=Y&c=X', opts), 'http://sindresorhus.com/?a=Z&d=W&b=Y&c=X');
+	t.is(m('http://sindresorhus.com/', opts), 'http://sindresorhus.com');
 });
