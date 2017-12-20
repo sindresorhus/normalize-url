@@ -142,7 +142,9 @@ module.exports = (str, opts) => {
 	}
 
 	// Decode query parameters
-	urlObj.search = decodeURIComponent(urlObj.search);
+	if (urlObj.search !== null) {
+		urlObj.search = decodeURIComponent(urlObj.search);
+	}
 
 	// Take advantage of many of the Node `url` normalizations
 	str = url.format(urlObj);
