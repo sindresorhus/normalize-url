@@ -1,4 +1,4 @@
-# normalize-url [![Build Status](https://travis-ci.org/sindresorhus/normalize-url.svg?branch=master)](https://travis-ci.org/sindresorhus/normalize-url)
+# normalize-url [![Build Status](https://travis-ci.org/sindresorhus/normalize-url.svg?branch=master)](https://travis-ci.org/sindresorhus/normalize-url) [![Open Source Helpers](https://www.codetriage.com/sindresorhus/normalize-url/badges/users.svg)](https://www.codetriage.com/sindresorhus/normalize-url)
 
 > [Normalize](https://en.wikipedia.org/wiki/URL_normalization) a URL
 
