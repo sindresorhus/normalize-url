@@ -18,11 +18,19 @@ const slashedProtocol = {
 	ftp: true,
 	gopher: true,
 	file: true,
+	telnet: true,
+	nntp: true,
+	irc: true,
+	ircs: true,
 	'http:': true,
 	'https:': true,
 	'ftp:': true,
 	'gopher:': true,
-	'file:': true
+	'file:': true,
+	'telnet': true,
+	'nntp': true,
+	'irc': true,
+	'ircs': true,
 };
 
 function testParameter(name, filters) {
