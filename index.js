@@ -71,14 +71,11 @@ module.exports = (str, opts) => {
 
 	// Remove query unwanted parameters
 	if (Array.isArray(opts.removeQueryParameters)) {
-		[...urlObj.searchParams.keys()]
-			.reduce((acc, key) => {
-				if (testParameter(key, opts.removeQueryParameters)) {
-					acc.push(key);
-				}
-				return acc;
-			}, [])
-			.forEach(key => urlObj.searchParams.delete(key));
+		for (const key of [...urlObj.searchParams.keys()]) {
+			if (testParameter(key, opts.removeQueryParameters)) {
+				urlObj.searchParams.delete(key);
+			}
+		}
 	}
 
 	// Sort query parameters
