@@ -35,9 +35,7 @@
     "canonical"
   ],
   "dependencies": {
-    "prepend-http": "^2.0.0",
-    "query-string": "^5.0.1",
-    "sort-keys": "^2.0.0"
+    "prepend-http": "^2.0.0"
   },
   "devDependencies": {
     "ava": "*",

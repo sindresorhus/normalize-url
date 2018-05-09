@@ -14,12 +14,12 @@ test('main', t => {
 	t.is(m('http://www.sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('www.sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com/foo/'), 'http://sindresorhus.com/foo');
-	t.is(m('sindresorhus.com/?foo=bar%20baz'), 'http://sindresorhus.com/?foo=bar%20baz');
+	t.is(m('sindresorhus.com/?foo=bar baz'), 'http://sindresorhus.com/?foo=bar+baz');
 	t.is(m('http://sindresorhus.com/%7Efoo/'), 'http://sindresorhus.com/~foo', 'decode URI octets');
 	t.is(m('http://sindresorhus.com/?'), 'http://sindresorhus.com');
 	t.is(m('êxample.com'), 'http://xn--xample-hva.com');
 	t.is(m('http://sindresorhus.com/?b=bar&a=foo'), 'http://sindresorhus.com/?a=foo&b=bar');
-	t.is(m('http://sindresorhus.com/?foo=bar*|<>:"'), 'http://sindresorhus.com/?foo=bar%2A%7C%3C%3E%3A%22');
+	t.is(m('http://sindresorhus.com/?foo=bar*|<>:"'), 'http://sindresorhus.com/?foo=bar*%7C%3C%3E%3A%22');
 	t.is(m('http://sindresorhus.com:5000'), 'http://sindresorhus.com:5000');
 	t.is(m('http://sindresorhus.com////foo/bar'), 'http://sindresorhus.com/foo/bar');
 	t.is(m('http://sindresorhus.com////foo////bar'), 'http://sindresorhus.com/foo/bar');

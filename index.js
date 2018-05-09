@@ -1,8 +1,6 @@
 'use strict';
 const {URL} = require('url');
-const queryString = require('query-string');
 const prependHttp = require('prepend-http');
-const sortKeys = require('sort-keys');
 
 function testParameter(name, filters) {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
@@ -71,20 +69,21 @@ module.exports = (str, opts) => {
 		}
 	}
 
-	const queryParameters = queryString.parse(urlObj.search);
-
 	// Remove query unwanted parameters
 	if (Array.isArray(opts.removeQueryParameters)) {
-		for (const key in queryParameters) {
-			if (testParameter(key, opts.removeQueryParameters)) {
-				delete queryParameters[key];
-			}
-		}
+		[...urlObj.searchParams.keys()]
+			.reduce((acc, key) => {
+				if (testParameter(key, opts.removeQueryParameters)) {
+					acc.push(key);
+				}
+				return acc;
+			}, [])
+			.forEach(key => urlObj.searchParams.delete(key));
 	}
 
 	// Sort query parameters
 	if (opts.sortQueryParameters) {
-		urlObj.search = queryString.stringify(sortKeys(queryParameters));
+		urlObj.searchParams.sort();
 	}
 
 	// Take advantage of many of the Node `url` normalizations
