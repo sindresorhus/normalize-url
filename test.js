@@ -3,6 +3,7 @@ import m from '.';
 
 test('main', t => {
 	t.is(m('sindresorhus.com'), 'http://sindresorhus.com');
+	t.is(m('sindresorhus.com '), 'http://sindresorhus.com');
 	t.is(m('sindresorhus.com.'), 'http://sindresorhus.com');
 	t.is(m('HTTP://sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('//sindresorhus.com'), 'http://sindresorhus.com');
@@ -13,12 +14,12 @@ test('main', t => {
 	t.is(m('http://www.sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('www.sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com/foo/'), 'http://sindresorhus.com/foo');
-	t.is(m('sindresorhus.com/?foo=bar%20baz'), 'http://sindresorhus.com/?foo=bar baz');
+	t.is(m('sindresorhus.com/?foo=bar baz'), 'http://sindresorhus.com/?foo=bar+baz');
 	t.is(m('http://sindresorhus.com/%7Efoo/'), 'http://sindresorhus.com/~foo', 'decode URI octets');
 	t.is(m('http://sindresorhus.com/?'), 'http://sindresorhus.com');
-	t.is(m('http://xn--xample-hva.com'), 'http://êxample.com');
+	t.is(m('êxample.com'), 'http://xn--xample-hva.com');
 	t.is(m('http://sindresorhus.com/?b=bar&a=foo'), 'http://sindresorhus.com/?a=foo&b=bar');
-	t.is(m('http://sindresorhus.com/?foo=bar*|<>:"'), 'http://sindresorhus.com/?foo=bar*|<>:"');
+	t.is(m('http://sindresorhus.com/?foo=bar*|<>:"'), 'http://sindresorhus.com/?foo=bar*%7C%3C%3E%3A%22');
 	t.is(m('http://sindresorhus.com:5000'), 'http://sindresorhus.com:5000');
 	t.is(m('http://sindresorhus.com////foo/bar'), 'http://sindresorhus.com/foo/bar');
 	t.is(m('http://sindresorhus.com////foo////bar'), 'http://sindresorhus.com/foo/bar');
@@ -28,21 +29,17 @@ test('main', t => {
 	t.is(m('http://sindresorhus.com/foo#bar', {stripFragment: false}), 'http://sindresorhus.com/foo#bar');
 	t.is(m('http://sindresorhus.com/foo/bar/../baz'), 'http://sindresorhus.com/foo/baz');
 	t.is(m('http://sindresorhus.com/foo/bar/./baz'), 'http://sindresorhus.com/foo/bar/baz');
-	t.is(m('/relative/path/'), '/relative/path');
-	t.is(m('/'), '');
-	t.throws(() => {
-		m('http://');
-	}, 'Invalid URL');
 	t.is(m('sindre://www.sorhus.com'), 'sindre://sorhus.com');
 	t.is(m('sindre://www.sorhus.com/'), 'sindre://sorhus.com');
 	t.is(m('sindre://www.sorhus.com/foo/bar'), 'sindre://sorhus.com/foo/bar');
+	t.is(m('https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png'), 'https://i.vimeocdn.com/filter/overlay?src0=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F598160082_1280x720.jpg&src1=https%3A%2F%2Ff.vimeocdn.com%2Fimages_v6%2Fshare%2Fplay_icon_overlay.png');
 });
 
 test('stripWWW option', t => {
 	const opts = {stripWWW: false};
 	t.is(m('http://www.sindresorhus.com', opts), 'http://www.sindresorhus.com');
 	t.is(m('www.sindresorhus.com', opts), 'http://www.sindresorhus.com');
-	t.is(m('http://www.xn--xample-hva.com', opts), 'http://www.êxample.com');
+	t.is(m('http://www.êxample.com', opts), 'http://www.xn--xample-hva.com');
 	t.is(m('sindre://www.sorhus.com', opts), 'sindre://www.sorhus.com');
 });
 
@@ -134,4 +131,18 @@ test('sortQueryParameters option', t => {
 	t.is(m('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W', opts), 'http://sindresorhus.com/?b=Y&c=X&a=Z&d=W');
 	t.is(m('http://sindresorhus.com/?a=Z&d=W&b=Y&c=X', opts), 'http://sindresorhus.com/?a=Z&d=W&b=Y&c=X');
 	t.is(m('http://sindresorhus.com/', opts), 'http://sindresorhus.com');
+});
+
+test('invalid urls', t => {
+	t.throws(() => {
+		m('http://');
+	}, 'Invalid URL: http://');
+
+	t.throws(() => {
+		m('/');
+	}, 'Invalid URL: /');
+
+	t.throws(() => {
+		m('/relative/path/');
+	}, 'Invalid URL: /relative/path/');
 });
