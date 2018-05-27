@@ -1,12 +1,11 @@
 'use strict';
 const {URL} = require('url');
-const prependHttp = require('prepend-http');
 
 function testParameter(name, filters) {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 }
 
-module.exports = (str, opts) => {
+module.exports = (urlString, opts) => {
 	opts = Object.assign({
 		normalizeProtocol: true,
 		normalizeHttps: false,
@@ -18,12 +17,17 @@ module.exports = (str, opts) => {
 		sortQueryParameters: true
 	}, opts);
 
-	const hasRelativeProtocol = str.startsWith('//');
+	urlString = urlString.trim();
+
+	const hasRelativeProtocol = urlString.startsWith('//');
+	const isRelativeUrl = !hasRelativeProtocol && /^\.*\//.test(urlString);
 
 	// Prepend protocol
-	str = prependHttp(str.trim()).replace(/^\/\//, 'http://');
+	if (!isRelativeUrl) {
+		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, 'http://');
+	}
 
-	const urlObj = new URL(str);
+	const urlObj = new URL(urlString);
 
 	if (opts.normalizeHttps && urlObj.protocol === 'https:') {
 		urlObj.protocol = 'http:';
@@ -84,17 +88,17 @@ module.exports = (str, opts) => {
 	}
 
 	// Take advantage of many of the Node `url` normalizations
-	str = urlObj.toString();
+	urlString = urlObj.toString();
 
 	// Remove ending `/`
 	if (opts.removeTrailingSlash || urlObj.pathname === '/') {
-		str = str.replace(/\/$/, '');
+		urlString = urlString.replace(/\/$/, '');
 	}
 
 	// Restore relative protocol, if applicable
 	if (hasRelativeProtocol && !opts.normalizeProtocol) {
-		str = str.replace(/^http:\/\//, '//');
+		urlString = urlString.replace(/^http:\/\//, '//');
 	}
 
-	return str;
+	return urlString;
 };
