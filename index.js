@@ -1,5 +1,6 @@
 'use strict';
-const {URL} = require('url');
+// TODO: Use the `URL` global when targeting Node.js 10
+const URLParser = typeof URL === 'undefined' ? require('url').URL : URL;
 
 function testParameter(name, filters) {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
@@ -27,7 +28,7 @@ module.exports = (urlString, opts) => {
 		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, 'http://');
 	}
 
-	const urlObj = new URL(urlString);
+	const urlObj = new URLParser(urlString);
 
 	if (opts.normalizeHttps && urlObj.protocol === 'https:') {
 		urlObj.protocol = 'http:';
