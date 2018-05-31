@@ -1,4 +1,5 @@
 'use strict';
+// TODO: Use the `URL` global when targeting Node.js 10
 const URLParser = typeof URL === 'undefined' ? require('url').URL : URL;
 
 function testParameter(name, filters) {
