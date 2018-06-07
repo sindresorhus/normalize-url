@@ -10,6 +10,7 @@ module.exports = (urlString, opts) => {
 	opts = Object.assign({
 		normalizeProtocol: true,
 		normalizeHttps: false,
+		normalizeHttp: false,
 		stripFragment: true,
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
@@ -30,7 +31,11 @@ module.exports = (urlString, opts) => {
 
 	const urlObj = new URLParser(urlString);
 
-	if (opts.normalizeHttps && urlObj.protocol === 'https:') {
+	if (opts.normalizeHttp && urlObj.protocol === 'http:') {
+		urlObj.protocol = 'https:';
+	}
+
+	if (opts.normalizeHttps && !opts.normalizeHttp && urlObj.protocol === 'https:') {
 		urlObj.protocol = 'http:';
 	}
 
