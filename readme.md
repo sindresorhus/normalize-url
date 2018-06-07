@@ -69,6 +69,22 @@ normalizeUrl('https://sindresorhus.com:80/', {normalizeHttps: true});
 //=> 'http://sindresorhus.com'
 ```
 
+##### normalizeHttp
+
+Type: `boolean`<br>
+Default: `false`
+
+Method which mutually exclusive to `normalizeHttps`. If you have both `true`, `normalizeHttp` will work.
+Normalize `http:` URLs to `https:`.
+
+```js
+normalizeUrl('https://sindresorhus.com:80/');
+//=> 'https://sindresorhus.com'
+
+normalizeUrl('http://sindresorhus.com:80/', {normalizeHttp: true});
+//=> 'https://sindresorhus.com'
+```
+
 ##### stripFragment
 
 Type: `boolean`<br>
