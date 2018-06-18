@@ -15,6 +15,7 @@ test('main', t => {
 	t.is(m('www.sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com/foo/'), 'http://sindresorhus.com/foo');
 	t.is(m('sindresorhus.com/?foo=bar baz'), 'http://sindresorhus.com/?foo=bar+baz');
+	t.is(m('https://foo.com/https://bar.com'), 'https://foo.com/https://bar.com');
 	t.is(m('http://sindresorhus.com/%7Efoo/'), 'http://sindresorhus.com/~foo', 'decode URI octets');
 	t.is(m('http://sindresorhus.com/?'), 'http://sindresorhus.com');
 	t.is(m('êxample.com'), 'http://xn--xample-hva.com');
