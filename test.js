@@ -64,17 +64,8 @@ test('normalizeHttps option', t => {
 });
 
 test('normalizeHttps option with normalizeHttp', t => {
-	const opts = {normalizeHttps: true, normalizeHttp: true};
-
-	t.is(m('https://sindresorhus.com'), 'https://sindresorhus.com');
 	t.throws(() => {
-		m('http://sindresorhus.com', opts);
-	}, 'You should use one of normalizeHttp and normalizeHttps option.');
-	t.throws(() => {
-		m('https://www.sindresorhus.com', opts);
-	}, 'You should use one of normalizeHttp and normalizeHttps option.');
-	t.throws(() => {
-		m('//sindresorhus.com', opts);
+		m('https://www.sindresorhus.com', {normalizeHttps: true, normalizeHttp: true});
 	}, 'You should use one of normalizeHttp and normalizeHttps option.');
 });
 
