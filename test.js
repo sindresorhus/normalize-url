@@ -63,6 +63,21 @@ test('normalizeHttps option', t => {
 	t.is(m('//sindresorhus.com', opts), 'http://sindresorhus.com');
 });
 
+test('normalizeHttps option with normalizeHttp', t => {
+	t.throws(() => {
+		m('https://www.sindresorhus.com', {normalizeHttps: true, normalizeHttp: true});
+	}, 'The `normalizeHttp` and `normalizeHttps` options cannot be used together');
+});
+
+test('normalizeHttp option', t => {
+	const opts = {normalizeHttp: true};
+
+	t.is(m('https://sindresorhus.com'), 'https://sindresorhus.com');
+	t.is(m('http://sindresorhus.com', opts), 'https://sindresorhus.com');
+	t.is(m('https://www.sindresorhus.com', opts), 'https://sindresorhus.com');
+	t.is(m('//sindresorhus.com', opts), 'https://sindresorhus.com');
+});
+
 test('removeTrailingSlash option', t => {
 	const opts = {removeTrailingSlash: false};
 	t.is(m('http://sindresorhus.com/'), 'http://sindresorhus.com');
