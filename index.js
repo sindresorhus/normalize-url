@@ -32,7 +32,7 @@ module.exports = (urlString, opts) => {
 	const urlObj = new URLParser(urlString);
 	
 	if (opts.normalizeHttps && opts.normalizeHttp) {
-		throw new Error('You should use one of normalizeHttp and normalizeHttps option.');
+		throw new Error('The `normalizeHttp` and `normalizeHttps` options cannot be used together');
 	}
 
 	if (opts.normalizeHttp && urlObj.protocol === 'http:') {
