@@ -66,7 +66,7 @@ test('normalizeHttps option', t => {
 test('normalizeHttps option with normalizeHttp', t => {
 	t.throws(() => {
 		m('https://www.sindresorhus.com', {normalizeHttps: true, normalizeHttp: true});
-	}, 'You should use one of normalizeHttp and normalizeHttps option.');
+	}, 'The `normalizeHttp` and `normalizeHttps` options cannot be used together');
 });
 
 test('normalizeHttp option', t => {
