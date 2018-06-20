@@ -30,6 +30,10 @@ module.exports = (urlString, opts) => {
 	}
 
 	const urlObj = new URLParser(urlString);
+	
+	if (opts.normalizeHttps && opts.normalizeHttp) {
+		throw new Error('You should use one of normalizeHttp and normalizeHttps option.');
+	}
 
 	if (opts.normalizeHttp && urlObj.protocol === 'http:') {
 		urlObj.protocol = 'https:';
@@ -37,10 +41,6 @@ module.exports = (urlString, opts) => {
 
 	if (opts.normalizeHttps && urlObj.protocol === 'https:') {
 		urlObj.protocol = 'http:';
-	}
-
-	if (opts.normalizeHttps && opts.normalizeHttp) {
-		throw new Error('You should use one of normalizeHttp and normalizeHttps option.');
 	}
 
 	// Remove fragment
