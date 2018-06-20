@@ -41,7 +41,7 @@ module.exports = (urlString, opts) => {
 
 	// Remove duplicate slashes
 	if (urlObj.pathname) {
-		if (/(http:)?(https:)/.test(urlObj.pathname)) {
+		if (/https?:/.test(urlObj.pathname)) {
 			urlObj.pathname = urlObj.pathname.replace(/\/{3,}/g, '/');
 		} else {
 			urlObj.pathname = urlObj.pathname.replace(/\/{2,}/g, '/');
