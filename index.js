@@ -35,8 +35,12 @@ module.exports = (urlString, opts) => {
 		urlObj.protocol = 'https:';
 	}
 
-	if (opts.normalizeHttps && !opts.normalizeHttp && urlObj.protocol === 'https:') {
+	if (opts.normalizeHttps && urlObj.protocol === 'https:') {
 		urlObj.protocol = 'http:';
+	}
+
+	if (opts.normalizeHttps && opts.normalizeHttp) {
+		throw new Error('You should use one of normalizeHttp and normalizeHttps option.');
 	}
 
 	// Remove fragment
