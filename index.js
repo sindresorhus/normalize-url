@@ -39,10 +39,9 @@ module.exports = (urlString, opts) => {
 		urlObj.hash = '';
 	}
 
-	// Remove duplicate slashes
+	// Remove duplicate slashes only if protocol (http:|https:) isnt preceded
 	if (urlObj.pathname) {
-		urlObj.pathname = urlObj.pathname.replace(/\/{2,}/g, '/');
-		urlObj.pathname = urlObj.pathname.replace(/(http|https):\//, '$1://');
+		urlObj.pathname = urlObj.pathname.replace(/(?<!https?:)\/{2,}/g, '/');
 	}
 
 	// Decode URI octets
