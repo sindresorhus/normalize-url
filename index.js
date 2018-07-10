@@ -48,9 +48,16 @@ module.exports = (urlString, opts) => {
 		urlObj.hash = '';
 	}
 
-	// Remove duplicate slashes
+	// Remove duplicate slashes if not preceded by a protocol
 	if (urlObj.pathname) {
-		urlObj.pathname = urlObj.pathname.replace(/\/{2,}/g, '/');
+		// TODO: Use the following instead when targeting Node.js 10
+		// `urlObj.pathname = urlObj.pathname.replace(/(?<!https?:)\/{2,}/g, '/');`
+		urlObj.pathname = urlObj.pathname.replace(/((?![https?:]).)\/{2,}/g, (_, p1) => {
+			if (/^(?!\/)/g.test(p1)) {
+				return `${p1}/`;
+			}
+			return '/';
+		});
 	}
 
 	// Decode URI octets
