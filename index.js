@@ -2,9 +2,9 @@
 // TODO: Use the `URL` global when targeting Node.js 10
 const URLParser = typeof URL === 'undefined' ? require('url').URL : URL;
 
-function testParameter(name, filters) {
+const testParameter = (name, filters) => {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
-}
+};
 
 module.exports = (urlString, opts) => {
 	opts = Object.assign({
@@ -85,7 +85,8 @@ module.exports = (urlString, opts) => {
 		urlObj.hostname = urlObj.hostname.replace(/\.$/, '');
 
 		// Remove `www.`
-		if (opts.stripWWW && /^www\..*\./.test(urlObj.hostname)) {
+		// eslint-disable-next-line no-useless-escape
+		if (opts.stripWWW && /^www\.([a-z\-0-9]{2,63})\.([a-z\.]{2,5})$/.test(urlObj.hostname)) {
 			urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
 		}
 	}
