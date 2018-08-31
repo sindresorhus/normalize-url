@@ -85,7 +85,7 @@ module.exports = (urlString, opts) => {
 		urlObj.hostname = urlObj.hostname.replace(/\.$/, '');
 
 		// Remove `www.`
-		if (opts.stripWWW) {
+		if (opts.stripWWW && /^www\..*\./.test(urlObj.hostname)) {
 			urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
 		}
 	}
