@@ -1,6 +1,6 @@
 'use strict';
 // TODO: Use the `URL` global when targeting Node.js 10
-const URL = require('url').URL; // eslint-disable-line prefer-destructuring
+const URLParser = typeof URL === 'undefined' ? require('url').URL : URL;
 
 function testParameter(name, filters) {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
@@ -20,6 +20,15 @@ module.exports = (urlString, opts) => {
 		sortQueryParameters: true
 	}, opts);
 
+	// Backwards compatibility
+	if (opts.normalizeHttps) {
+		opts.forceHttp = true;
+	}
+
+	if (opts.normalizeHttp) {
+		opts.forceHttps = true;
+	}
+
 	urlString = urlString.trim();
 
 	const hasRelativeProtocol = urlString.startsWith('//');
@@ -30,7 +39,7 @@ module.exports = (urlString, opts) => {
 		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, opts.defaultProtocol);
 	}
 
-	const urlObj = new URL(urlString);
+	const urlObj = new URLParser(urlString);
 
 	if (opts.forceHttp && opts.forceHttps) {
 		throw new Error('The `forceHttp` and `forceHttps` options cannot be used together');
