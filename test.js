@@ -5,6 +5,7 @@ test('main', t => {
 	t.is(m('sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('sindresorhus.com '), 'http://sindresorhus.com');
 	t.is(m('sindresorhus.com.'), 'http://sindresorhus.com');
+	t.is(m('sindresorhus.com', {defaultProtocol: 'https:'}), 'https://sindresorhus.com');
 	t.is(m('HTTP://sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('//sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com'), 'http://sindresorhus.com');
@@ -30,7 +31,7 @@ test('main', t => {
 	t.is(m('//sindresorhus.com/', {normalizeProtocol: false}), '//sindresorhus.com');
 	t.is(m('//sindresorhus.com:80/', {normalizeProtocol: false}), '//sindresorhus.com');
 	t.is(m('http://sindresorhus.com/foo#bar'), 'http://sindresorhus.com/foo');
-	t.is(m('http://sindresorhus.com/foo#bar', {stripFragment: false}), 'http://sindresorhus.com/foo#bar');
+	t.is(m('http://sindresorhus.com/foo#bar', {stripHash: false}), 'http://sindresorhus.com/foo#bar');
 	t.is(m('http://sindresorhus.com/foo/bar/../baz'), 'http://sindresorhus.com/foo/baz');
 	t.is(m('http://sindresorhus.com/foo/bar/./baz'), 'http://sindresorhus.com/foo/bar/baz');
 	t.is(m('sindre://www.sorhus.com'), 'sindre://sorhus.com');
@@ -58,8 +59,8 @@ test('removeQueryParameters option', t => {
 	t.is(m('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', opts), 'http://www.sindresorhus.com/?foo=bar');
 });
 
-test('normalizeHttps option', t => {
-	const opts = {normalizeHttps: true};
+test('forceHttp option', t => {
+	const opts = {forceHttp: true};
 
 	t.is(m('https://sindresorhus.com'), 'https://sindresorhus.com');
 	t.is(m('http://sindresorhus.com', opts), 'http://sindresorhus.com');
@@ -67,14 +68,14 @@ test('normalizeHttps option', t => {
 	t.is(m('//sindresorhus.com', opts), 'http://sindresorhus.com');
 });
 
-test('normalizeHttps option with normalizeHttp', t => {
+test('forceHttp option with forceHttps', t => {
 	t.throws(() => {
-		m('https://www.sindresorhus.com', {normalizeHttps: true, normalizeHttp: true});
-	}, 'The `normalizeHttp` and `normalizeHttps` options cannot be used together');
+		m('https://www.sindresorhus.com', {forceHttp: true, forceHttps: true});
+	}, 'The `forceHttp` and `forceHttps` options cannot be used together');
 });
 
-test('normalizeHttp option', t => {
-	const opts = {normalizeHttp: true};
+test('forceHttps option', t => {
+	const opts = {forceHttps: true};
 
 	t.is(m('https://sindresorhus.com'), 'https://sindresorhus.com');
 	t.is(m('http://sindresorhus.com', opts), 'https://sindresorhus.com');

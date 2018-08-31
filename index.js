@@ -1,6 +1,6 @@
 'use strict';
 // TODO: Use the `URL` global when targeting Node.js 10
-const URLParser = typeof URL === 'undefined' ? require('url').URL : URL;
+const URL = require('url').URL; // eslint-disable-line prefer-destructuring
 
 function testParameter(name, filters) {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
@@ -8,10 +8,11 @@ function testParameter(name, filters) {
 
 module.exports = (urlString, opts) => {
 	opts = Object.assign({
+		defaultProtocol: 'http:',
 		normalizeProtocol: true,
-		normalizeHttps: false,
-		normalizeHttp: false,
-		stripFragment: true,
+		forceHttp: false,
+		forceHttps: false,
+		stripHash: true,
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
 		removeTrailingSlash: true,
@@ -26,25 +27,25 @@ module.exports = (urlString, opts) => {
 
 	// Prepend protocol
 	if (!isRelativeUrl) {
-		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, 'http://');
+		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, opts.defaultProtocol);
 	}
 
-	const urlObj = new URLParser(urlString);
+	const urlObj = new URL(urlString);
 
-	if (opts.normalizeHttps && opts.normalizeHttp) {
-		throw new Error('The `normalizeHttp` and `normalizeHttps` options cannot be used together');
+	if (opts.forceHttp && opts.forceHttps) {
+		throw new Error('The `forceHttp` and `forceHttps` options cannot be used together');
 	}
 
-	if (opts.normalizeHttp && urlObj.protocol === 'http:') {
-		urlObj.protocol = 'https:';
-	}
-
-	if (opts.normalizeHttps && urlObj.protocol === 'https:') {
+	if (opts.forceHttp && urlObj.protocol === 'https:') {
 		urlObj.protocol = 'http:';
 	}
 
-	// Remove fragment
-	if (opts.stripFragment) {
+	if (opts.forceHttps && urlObj.protocol === 'http:') {
+		urlObj.protocol = 'https:';
+	}
+
+	// Remove hash
+	if (opts.stripHash) {
 		urlObj.hash = '';
 	}
 
