@@ -29,8 +29,8 @@ module.exports = (urlString, opts) => {
 		opts.forceHttps = true;
 	}
 
-	if (opts.skipFragment) {
-		opts.skipHash = true;
+	if (opts.stripFragment) {
+		opts.stripHash = true;
 	}
 
 	urlString = urlString.trim();
