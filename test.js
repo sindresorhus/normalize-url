@@ -5,6 +5,7 @@ test('main', t => {
 	t.is(m('sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('sindresorhus.com '), 'http://sindresorhus.com');
 	t.is(m('sindresorhus.com.'), 'http://sindresorhus.com');
+	t.is(m('sindresorhus.com', {defaultProtocol: 'https:'}), 'https://sindresorhus.com');
 	t.is(m('HTTP://sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('//sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com'), 'http://sindresorhus.com');
@@ -30,13 +31,19 @@ test('main', t => {
 	t.is(m('//sindresorhus.com/', {normalizeProtocol: false}), '//sindresorhus.com');
 	t.is(m('//sindresorhus.com:80/', {normalizeProtocol: false}), '//sindresorhus.com');
 	t.is(m('http://sindresorhus.com/foo#bar'), 'http://sindresorhus.com/foo');
-	t.is(m('http://sindresorhus.com/foo#bar', {stripFragment: false}), 'http://sindresorhus.com/foo#bar');
+	t.is(m('http://sindresorhus.com/foo#bar', {stripHash: false}), 'http://sindresorhus.com/foo#bar');
 	t.is(m('http://sindresorhus.com/foo/bar/../baz'), 'http://sindresorhus.com/foo/baz');
 	t.is(m('http://sindresorhus.com/foo/bar/./baz'), 'http://sindresorhus.com/foo/bar/baz');
 	t.is(m('sindre://www.sorhus.com'), 'sindre://sorhus.com');
 	t.is(m('sindre://www.sorhus.com/'), 'sindre://sorhus.com');
 	t.is(m('sindre://www.sorhus.com/foo/bar'), 'sindre://sorhus.com/foo/bar');
 	t.is(m('https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png'), 'https://i.vimeocdn.com/filter/overlay?src0=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F598160082_1280x720.jpg&src1=https%3A%2F%2Ff.vimeocdn.com%2Fimages_v6%2Fshare%2Fplay_icon_overlay.png');
+});
+
+test('backwards compatibility', t => {
+	t.is(m('http://sindresorhus.com/foo#bar', {stripFragment: false}), 'http://sindresorhus.com/foo#bar');
+	t.is(m('https://sindresorhus.com', {normalizeHttps: true}), 'http://sindresorhus.com');
+	t.is(m('http://sindresorhus.com', {normalizeHttp: true}), 'https://sindresorhus.com');
 });
 
 test('stripWWW option', t => {
@@ -58,8 +65,8 @@ test('removeQueryParameters option', t => {
 	t.is(m('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', opts), 'http://www.sindresorhus.com/?foo=bar');
 });
 
-test('normalizeHttps option', t => {
-	const opts = {normalizeHttps: true};
+test('forceHttp option', t => {
+	const opts = {forceHttp: true};
 
 	t.is(m('https://sindresorhus.com'), 'https://sindresorhus.com');
 	t.is(m('http://sindresorhus.com', opts), 'http://sindresorhus.com');
@@ -67,14 +74,14 @@ test('normalizeHttps option', t => {
 	t.is(m('//sindresorhus.com', opts), 'http://sindresorhus.com');
 });
 
-test('normalizeHttps option with normalizeHttp', t => {
+test('forceHttp option with forceHttps', t => {
 	t.throws(() => {
-		m('https://www.sindresorhus.com', {normalizeHttps: true, normalizeHttp: true});
-	}, 'The `normalizeHttp` and `normalizeHttps` options cannot be used together');
+		m('https://www.sindresorhus.com', {forceHttp: true, forceHttps: true});
+	}, 'The `forceHttp` and `forceHttps` options cannot be used together');
 });
 
-test('normalizeHttp option', t => {
-	const opts = {normalizeHttp: true};
+test('forceHttps option', t => {
+	const opts = {forceHttps: true};
 
 	t.is(m('https://sindresorhus.com'), 'https://sindresorhus.com');
 	t.is(m('http://sindresorhus.com', opts), 'https://sindresorhus.com');

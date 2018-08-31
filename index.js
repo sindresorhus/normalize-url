@@ -8,16 +8,30 @@ function testParameter(name, filters) {
 
 module.exports = (urlString, opts) => {
 	opts = Object.assign({
+		defaultProtocol: 'http:',
 		normalizeProtocol: true,
-		normalizeHttps: false,
-		normalizeHttp: false,
-		stripFragment: true,
+		forceHttp: false,
+		forceHttps: false,
+		stripHash: true,
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
 		removeTrailingSlash: true,
 		removeDirectoryIndex: false,
 		sortQueryParameters: true
 	}, opts);
+
+	// Backwards compatibility
+	if (Reflect.has(opts, 'normalizeHttps')) {
+		opts.forceHttp = opts.normalizeHttps;
+	}
+
+	if (Reflect.has(opts, 'normalizeHttp')) {
+		opts.forceHttps = opts.normalizeHttp;
+	}
+
+	if (Reflect.has(opts, 'stripFragment')) {
+		opts.stripHash = opts.stripFragment;
+	}
 
 	urlString = urlString.trim();
 
@@ -26,25 +40,25 @@ module.exports = (urlString, opts) => {
 
 	// Prepend protocol
 	if (!isRelativeUrl) {
-		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, 'http://');
+		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, opts.defaultProtocol);
 	}
 
 	const urlObj = new URLParser(urlString);
 
-	if (opts.normalizeHttps && opts.normalizeHttp) {
-		throw new Error('The `normalizeHttp` and `normalizeHttps` options cannot be used together');
+	if (opts.forceHttp && opts.forceHttps) {
+		throw new Error('The `forceHttp` and `forceHttps` options cannot be used together');
 	}
 
-	if (opts.normalizeHttp && urlObj.protocol === 'http:') {
-		urlObj.protocol = 'https:';
-	}
-
-	if (opts.normalizeHttps && urlObj.protocol === 'https:') {
+	if (opts.forceHttp && urlObj.protocol === 'https:') {
 		urlObj.protocol = 'http:';
 	}
 
-	// Remove fragment
-	if (opts.stripFragment) {
+	if (opts.forceHttps && urlObj.protocol === 'http:') {
+		urlObj.protocol = 'https:';
+	}
+
+	// Remove hash
+	if (opts.stripHash) {
 		urlObj.hash = '';
 	}
 
