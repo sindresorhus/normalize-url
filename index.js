@@ -21,16 +21,16 @@ module.exports = (urlString, opts) => {
 	}, opts);
 
 	// Backwards compatibility
-	if (opts.normalizeHttps) {
-		opts.forceHttp = true;
+	if (Reflect.has(opts, 'normalizeHttps')) {
+		opts.forceHttp = opts.normalizeHttps;
 	}
 
-	if (opts.normalizeHttp) {
-		opts.forceHttps = true;
+	if (Reflect.has(opts, 'normalizeHttp')) {
+		opts.forceHttps = opts.normalizeHttp;
 	}
 
-	if (opts.stripFragment) {
-		opts.stripHash = true;
+	if (Reflect.has(opts, 'stripFragment')) {
+		opts.stripHash = opts.stripFragment;
 	}
 
 	urlString = urlString.trim();

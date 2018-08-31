@@ -40,6 +40,12 @@ test('main', t => {
 	t.is(m('https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png'), 'https://i.vimeocdn.com/filter/overlay?src0=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F598160082_1280x720.jpg&src1=https%3A%2F%2Ff.vimeocdn.com%2Fimages_v6%2Fshare%2Fplay_icon_overlay.png');
 });
 
+test('backwards compatibility', t => {
+	t.is(m('http://sindresorhus.com/foo#bar', {stripFragment: false}), 'http://sindresorhus.com/foo#bar');
+	t.is(m('https://sindresorhus.com', {normalizeHttps: true}), 'http://sindresorhus.com');
+	t.is(m('http://sindresorhus.com', {normalizeHttp: true}), 'https://sindresorhus.com');
+});
+
 test('stripWWW option', t => {
 	const opts = {stripWWW: false};
 	t.is(m('http://www.sindresorhus.com', opts), 'http://www.sindresorhus.com');
