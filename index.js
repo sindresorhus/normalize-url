@@ -29,6 +29,10 @@ module.exports = (urlString, opts) => {
 		opts.forceHttps = true;
 	}
 
+	if (opts.skipFragment) {
+		opts.skipHash = true;
+	}
+
 	urlString = urlString.trim();
 
 	const hasRelativeProtocol = urlString.startsWith('//');
