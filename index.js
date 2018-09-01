@@ -87,7 +87,8 @@ module.exports = (urlString, opts) => {
 		// Remove `www.`
 		// eslint-disable-next-line no-useless-escape
 		if (opts.stripWWW && /^www\.([a-z\-\d]{2,63})\.([a-z\.]{2,5})$/.test(urlObj.hostname)) {
-			// Each label should be max 63 at length.
+			// Each label should be max 63 at length (min: 2).
+			// The extension should be max 5 at length (min: 2).
 			// Source: https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names
 			urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
 		}
