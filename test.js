@@ -13,6 +13,8 @@ test('main', t => {
 	t.is(m('https://sindresorhus.com:443'), 'https://sindresorhus.com');
 	t.is(m('ftp://sindresorhus.com:21'), 'ftp://sindresorhus.com');
 	t.is(m('http://www.sindresorhus.com'), 'http://sindresorhus.com');
+	t.is(m('www.com'), 'http://www.com');
+	t.is(m('http://www.www.sindresorhus.com'), 'http://www.www.sindresorhus.com');
 	t.is(m('www.sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com/foo/'), 'http://sindresorhus.com/foo');
 	t.is(m('sindresorhus.com/?foo=bar baz'), 'http://sindresorhus.com/?foo=bar+baz');
