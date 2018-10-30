@@ -70,7 +70,7 @@ Normalizes `https:` URLs to `http:`.
 normalizeUrl('https://sindresorhus.com:80/');
 //=> 'https://sindresorhus.com'
 
-normalizeUrl('https://sindresorhus.com:80/', {normalizeHttps: true});
+normalizeUrl('https://sindresorhus.com:80/', {forceHttp: true});
 //=> 'http://sindresorhus.com'
 ```
 
@@ -85,7 +85,7 @@ Normalizes `http:` URLs to `https:`.
 normalizeUrl('https://sindresorhus.com:80/');
 //=> 'https://sindresorhus.com'
 
-normalizeUrl('http://sindresorhus.com:80/', {normalizeHttp: true});
+normalizeUrl('http://sindresorhus.com:80/', {forceHttps: true});
 //=> 'https://sindresorhus.com'
 ```
 
