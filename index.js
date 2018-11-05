@@ -141,5 +141,10 @@ module.exports = (urlString, opts) => {
 		urlString = urlString.replace(/^http:\/\//, '//');
 	}
 
+	// Remove http/https
+	if (opts.stripProtocol) {
+		urlString = urlString.replace(/^(?:https?:)?\/\//, '');
+	}
+
 	return urlString;
 };

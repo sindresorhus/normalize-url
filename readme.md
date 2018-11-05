@@ -121,6 +121,21 @@ normalizeUrl('sindresorhus.com/about.html#contact', {stripHash: true});
 //=> 'http://sindresorhus.com/about.html'
 ```
 
+##### stripProtocol
+
+Type: `boolean`<br>
+Default: `false`
+
+Removes HTTP(S) protocol from an URL `http://sindresorhus.com` → `sindresorhus.com`.
+
+```js
+normalizeUrl('https://sindresorhus.com/about.html');
+//=> 'https://sindresorhus.com/about.html'
+
+normalizeUrl('sindresorhus.com/about.html', {stripProtocol: true});
+//=> 'sindresorhus.com/about.html'
+```
+
 ##### stripWWW
 
 Type: `boolean`<br>

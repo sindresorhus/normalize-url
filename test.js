@@ -64,6 +64,16 @@ test('stripAuth option', t => {
 	t.is(m('sindre://user:password@www.sorhus.com', opts), 'sindre://user:password@sorhus.com');
 });
 
+test('stripProtocol option', t => {
+	const opts = {stripProtocol: true};
+	t.is(m('http://www.sindresorhus.com', opts), 'sindresorhus.com');
+	t.is(m('http://sindresorhus.com', opts), 'sindresorhus.com');
+	t.is(m('https://www.sindresorhus.com', opts), 'sindresorhus.com');
+	t.is(m('//www.sindresorhus.com', opts), 'sindresorhus.com');
+	t.is(m('sindre://user:password@www.sorhus.com', opts), 'sindre://sorhus.com');
+	t.is(m('sindre://www.sorhus.com', opts), 'sindre://sorhus.com');
+});
+
 test('stripWWW option', t => {
 	const opts = {stripWWW: false};
 	t.is(m('http://www.sindresorhus.com', opts), 'http://www.sindresorhus.com');
