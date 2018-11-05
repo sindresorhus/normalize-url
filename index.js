@@ -12,6 +12,7 @@ module.exports = (urlString, opts) => {
 		normalizeProtocol: true,
 		forceHttp: false,
 		forceHttps: false,
+		stripAuth: true,
 		stripHash: false,
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
@@ -55,6 +56,12 @@ module.exports = (urlString, opts) => {
 
 	if (opts.forceHttps && urlObj.protocol === 'http:') {
 		urlObj.protocol = 'https:';
+	}
+
+	// Remove auth
+	if (opts.stripAuth) {
+		urlObj.username = '';
+		urlObj.password = '';
 	}
 
 	// Remove hash

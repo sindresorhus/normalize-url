@@ -40,12 +40,28 @@ test('main', t => {
 	t.is(m('sindre://www.sorhus.com/'), 'sindre://sorhus.com');
 	t.is(m('sindre://www.sorhus.com/foo/bar'), 'sindre://sorhus.com/foo/bar');
 	t.is(m('https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png'), 'https://i.vimeocdn.com/filter/overlay?src0=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F598160082_1280x720.jpg&src1=https%3A%2F%2Ff.vimeocdn.com%2Fimages_v6%2Fshare%2Fplay_icon_overlay.png');
+	t.is(m('http://user:password@www.sindresorhus.com'), 'http://sindresorhus.com');
+	t.is(m('https://user:password@www.sindresorhus.com'), 'https://sindresorhus.com');
+	t.is(m('https://user:password@www.sindresorhus.com/@user'), 'https://sindresorhus.com/@user');
+	t.is(m('user:password@sindresorhus.com'), 'http://sindresorhus.com');
+	t.is(m('http://user:password@www.êxample.com'), 'http://xn--xample-hva.com');
+	t.is(m('sindre://user:password@www.sorhus.com'), 'sindre://sorhus.com');
 });
 
 test('backwards compatibility', t => {
 	t.is(m('http://sindresorhus.com/foo#bar', {stripFragment: false}), 'http://sindresorhus.com/foo#bar');
 	t.is(m('https://sindresorhus.com', {normalizeHttps: true}), 'http://sindresorhus.com');
 	t.is(m('http://sindresorhus.com', {normalizeHttp: true}), 'https://sindresorhus.com');
+});
+
+test('stripAuth option', t => {
+	const opts = {stripAuth: false};
+	t.is(m('http://user:password@www.sindresorhus.com', opts), 'http://user:password@sindresorhus.com');
+	t.is(m('https://user:password@www.sindresorhus.com', opts), 'https://user:password@sindresorhus.com');
+	t.is(m('https://user:password@www.sindresorhus.com/@user', opts), 'https://user:password@sindresorhus.com/@user');
+	t.is(m('user:password@sindresorhus.com', opts), 'http://user:password@sindresorhus.com');
+	t.is(m('http://user:password@www.êxample.com', opts), 'http://user:password@xn--xample-hva.com');
+	t.is(m('sindre://user:password@www.sorhus.com', opts), 'sindre://user:password@sorhus.com');
 });
 
 test('stripWWW option', t => {
