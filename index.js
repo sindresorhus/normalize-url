@@ -12,7 +12,7 @@ module.exports = (urlString, opts) => {
 		normalizeProtocol: true,
 		forceHttp: false,
 		forceHttps: false,
-		stripHash: true,
+		stripHash: false,
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
 		removeTrailingSlash: true,

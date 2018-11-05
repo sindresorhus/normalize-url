@@ -94,16 +94,16 @@ This option can't be used with the `forceHttp` option at the same time.
 ##### stripHash
 
 Type: `boolean`<br>
-Default: `true`
+Default: `false`
 
 Removes hash from the URL.
 
 ```js
 normalizeUrl('sindresorhus.com/about.html#contact');
-//=> 'http://sindresorhus.com/about.html'
-
-normalizeUrl('sindresorhus.com/about.html#contact', {stripHash: false});
 //=> 'http://sindresorhus.com/about.html#contact'
+
+normalizeUrl('sindresorhus.com/about.html#contact', {stripHash: true});
+//=> 'http://sindresorhus.com/about.html'
 ```
 
 ##### stripWWW

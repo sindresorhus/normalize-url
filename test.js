@@ -32,8 +32,8 @@ test('main', t => {
 	t.is(m('http://sindresorhus.com////foo////bar'), 'http://sindresorhus.com/foo/bar');
 	t.is(m('//sindresorhus.com/', {normalizeProtocol: false}), '//sindresorhus.com');
 	t.is(m('//sindresorhus.com:80/', {normalizeProtocol: false}), '//sindresorhus.com');
-	t.is(m('http://sindresorhus.com/foo#bar'), 'http://sindresorhus.com/foo');
-	t.is(m('http://sindresorhus.com/foo#bar', {stripHash: false}), 'http://sindresorhus.com/foo#bar');
+	t.is(m('http://sindresorhus.com/foo#bar'), 'http://sindresorhus.com/foo#bar');
+	t.is(m('http://sindresorhus.com/foo#bar', {stripHash: true}), 'http://sindresorhus.com/foo');
 	t.is(m('http://sindresorhus.com/foo/bar/../baz'), 'http://sindresorhus.com/foo/baz');
 	t.is(m('http://sindresorhus.com/foo/bar/./baz'), 'http://sindresorhus.com/foo/bar/baz');
 	t.is(m('sindre://www.sorhus.com'), 'sindre://sorhus.com');
