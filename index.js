@@ -12,7 +12,7 @@ module.exports = (urlString, opts) => {
 		normalizeProtocol: true,
 		forceHttp: false,
 		forceHttps: false,
-		stripAuth: true,
+		stripAuthentication: true,
 		stripHash: false,
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
@@ -59,7 +59,7 @@ module.exports = (urlString, opts) => {
 	}
 
 	// Remove auth
-	if (opts.stripAuth) {
+	if (opts.stripAuthentication) {
 		urlObj.username = '';
 		urlObj.password = '';
 	}

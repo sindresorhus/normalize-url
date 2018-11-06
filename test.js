@@ -54,8 +54,8 @@ test('backwards compatibility', t => {
 	t.is(m('http://sindresorhus.com', {normalizeHttp: true}), 'https://sindresorhus.com');
 });
 
-test('stripAuth option', t => {
-	const opts = {stripAuth: false};
+test('stripAuthentication option', t => {
+	const opts = {stripAuthentication: false};
 	t.is(m('http://user:password@www.sindresorhus.com', opts), 'http://user:password@sindresorhus.com');
 	t.is(m('https://user:password@www.sindresorhus.com', opts), 'https://user:password@sindresorhus.com');
 	t.is(m('https://user:password@www.sindresorhus.com/@user', opts), 'https://user:password@sindresorhus.com/@user');

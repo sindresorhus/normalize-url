@@ -91,7 +91,7 @@ normalizeUrl('http://sindresorhus.com:80/', {forceHttps: true});
 
 This option can't be used with the `forceHttp` option at the same time.
 
-##### stripAuth
+##### stripAuthentication
 
 Type: `boolean`<br>
 Default: `true`
@@ -99,11 +99,11 @@ Default: `true`
 Strip the [authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) part of a URL.
 
 ```js
-normalizeUrl('user:password@sindresorhus.com/about.html');
-//=> 'http://sindresorhus.com/about.html'
+normalizeUrl('user:password@sindresorhus.com');
+//=> 'https://sindresorhus.com'
 
-normalizeUrl('user:password@sindresorhus.com/about.html', {stripAuth: false});
-//=> 'http://user:password@sindresorhus.com/about.html'
+normalizeUrl('user:password@sindresorhus.com', {stripAuthentication: false});
+//=> 'https://user:password@sindresorhus.com'
 ```
 
 ##### stripHash
