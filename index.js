@@ -12,7 +12,8 @@ module.exports = (urlString, opts) => {
 		normalizeProtocol: true,
 		forceHttp: false,
 		forceHttps: false,
-		stripHash: true,
+		stripAuth: true,
+		stripHash: false,
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
 		removeTrailingSlash: true,
@@ -55,6 +56,12 @@ module.exports = (urlString, opts) => {
 
 	if (opts.forceHttps && urlObj.protocol === 'http:') {
 		urlObj.protocol = 'https:';
+	}
+
+	// Remove auth
+	if (opts.stripAuth) {
+		urlObj.username = '';
+		urlObj.password = '';
 	}
 
 	// Remove hash
@@ -132,6 +139,11 @@ module.exports = (urlString, opts) => {
 	// Restore relative protocol, if applicable
 	if (hasRelativeProtocol && !opts.normalizeProtocol) {
 		urlString = urlString.replace(/^http:\/\//, '//');
+	}
+
+	// Remove http/https
+	if (opts.stripProtocol) {
+		urlString = urlString.replace(/^(?:https?:)?\/\//, '');
 	}
 
 	return urlString;

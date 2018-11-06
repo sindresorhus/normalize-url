@@ -91,19 +91,49 @@ normalizeUrl('http://sindresorhus.com:80/', {forceHttps: true});
 
 This option can't be used with the `forceHttp` option at the same time.
 
-##### stripHash
+##### stripAuth
 
 Type: `boolean`<br>
 Default: `true`
+
+Strip the [authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) part of a URL.
+
+```js
+normalizeUrl('user:password@sindresorhus.com/about.html');
+//=> 'http://sindresorhus.com/about.html'
+
+normalizeUrl('user:password@sindresorhus.com/about.html', {stripAuth: false});
+//=> 'http://user:password@sindresorhus.com/about.html'
+```
+
+##### stripHash
+
+Type: `boolean`<br>
+Default: `false`
 
 Removes hash from the URL.
 
 ```js
 normalizeUrl('sindresorhus.com/about.html#contact');
-//=> 'http://sindresorhus.com/about.html'
-
-normalizeUrl('sindresorhus.com/about.html#contact', {stripHash: false});
 //=> 'http://sindresorhus.com/about.html#contact'
+
+normalizeUrl('sindresorhus.com/about.html#contact', {stripHash: true});
+//=> 'http://sindresorhus.com/about.html'
+```
+
+##### stripProtocol
+
+Type: `boolean`<br>
+Default: `false`
+
+Removes HTTP(S) protocol from an URL `http://sindresorhus.com` → `sindresorhus.com`.
+
+```js
+normalizeUrl('https://sindresorhus.com/about.html');
+//=> 'https://sindresorhus.com/about.html'
+
+normalizeUrl('sindresorhus.com/about.html', {stripProtocol: true});
+//=> 'sindresorhus.com/about.html'
 ```
 
 ##### stripWWW
