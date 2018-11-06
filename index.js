@@ -6,8 +6,8 @@ const testParameter = (name, filters) => {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 };
 
-module.exports = (urlString, opts) => {
-	opts = Object.assign({
+module.exports = (urlString, options) => {
+	options = Object.assign({
 		defaultProtocol: 'http:',
 		normalizeProtocol: true,
 		forceHttp: false,
@@ -19,19 +19,19 @@ module.exports = (urlString, opts) => {
 		removeTrailingSlash: true,
 		removeDirectoryIndex: false,
 		sortQueryParameters: true
-	}, opts);
+	}, options);
 
 	// Backwards compatibility
-	if (Reflect.has(opts, 'normalizeHttps')) {
-		opts.forceHttp = opts.normalizeHttps;
+	if (Reflect.has(options, 'normalizeHttps')) {
+		options.forceHttp = options.normalizeHttps;
 	}
 
-	if (Reflect.has(opts, 'normalizeHttp')) {
-		opts.forceHttps = opts.normalizeHttp;
+	if (Reflect.has(options, 'normalizeHttp')) {
+		options.forceHttps = options.normalizeHttp;
 	}
 
-	if (Reflect.has(opts, 'stripFragment')) {
-		opts.stripHash = opts.stripFragment;
+	if (Reflect.has(options, 'stripFragment')) {
+		options.stripHash = options.stripFragment;
 	}
 
 	urlString = urlString.trim();
@@ -41,31 +41,31 @@ module.exports = (urlString, opts) => {
 
 	// Prepend protocol
 	if (!isRelativeUrl) {
-		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, opts.defaultProtocol);
+		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, options.defaultProtocol);
 	}
 
 	const urlObj = new URLParser(urlString);
 
-	if (opts.forceHttp && opts.forceHttps) {
+	if (options.forceHttp && options.forceHttps) {
 		throw new Error('The `forceHttp` and `forceHttps` options cannot be used together');
 	}
 
-	if (opts.forceHttp && urlObj.protocol === 'https:') {
+	if (options.forceHttp && urlObj.protocol === 'https:') {
 		urlObj.protocol = 'http:';
 	}
 
-	if (opts.forceHttps && urlObj.protocol === 'http:') {
+	if (options.forceHttps && urlObj.protocol === 'http:') {
 		urlObj.protocol = 'https:';
 	}
 
 	// Remove auth
-	if (opts.stripAuthentication) {
+	if (options.stripAuthentication) {
 		urlObj.username = '';
 		urlObj.password = '';
 	}
 
 	// Remove hash
-	if (opts.stripHash) {
+	if (options.stripHash) {
 		urlObj.hash = '';
 	}
 
@@ -87,15 +87,15 @@ module.exports = (urlString, opts) => {
 	}
 
 	// Remove directory index
-	if (opts.removeDirectoryIndex === true) {
-		opts.removeDirectoryIndex = [/^index\.[a-z]+$/];
+	if (options.removeDirectoryIndex === true) {
+		options.removeDirectoryIndex = [/^index\.[a-z]+$/];
 	}
 
-	if (Array.isArray(opts.removeDirectoryIndex) && opts.removeDirectoryIndex.length > 0) {
+	if (Array.isArray(options.removeDirectoryIndex) && options.removeDirectoryIndex.length > 0) {
 		let pathComponents = urlObj.pathname.split('/');
 		const lastComponent = pathComponents[pathComponents.length - 1];
 
-		if (testParameter(lastComponent, opts.removeDirectoryIndex)) {
+		if (testParameter(lastComponent, options.removeDirectoryIndex)) {
 			pathComponents = pathComponents.slice(0, pathComponents.length - 1);
 			urlObj.pathname = pathComponents.slice(1).join('/') + '/';
 		}
@@ -106,7 +106,7 @@ module.exports = (urlString, opts) => {
 		urlObj.hostname = urlObj.hostname.replace(/\.$/, '');
 
 		// Remove `www.`
-		if (opts.stripWWW && /^www\.([a-z\-\d]{2,63})\.([a-z.]{2,5})$/.test(urlObj.hostname)) {
+		if (options.stripWWW && /^www\.([a-z\-\d]{2,63})\.([a-z.]{2,5})$/.test(urlObj.hostname)) {
 			// Each label should be max 63 at length (min: 2).
 			// The extension should be max 5 at length (min: 2).
 			// Source: https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names
@@ -115,16 +115,16 @@ module.exports = (urlString, opts) => {
 	}
 
 	// Remove query unwanted parameters
-	if (Array.isArray(opts.removeQueryParameters)) {
+	if (Array.isArray(options.removeQueryParameters)) {
 		for (const key of [...urlObj.searchParams.keys()]) {
-			if (testParameter(key, opts.removeQueryParameters)) {
+			if (testParameter(key, options.removeQueryParameters)) {
 				urlObj.searchParams.delete(key);
 			}
 		}
 	}
 
 	// Sort query parameters
-	if (opts.sortQueryParameters) {
+	if (options.sortQueryParameters) {
 		urlObj.searchParams.sort();
 	}
 
@@ -132,17 +132,17 @@ module.exports = (urlString, opts) => {
 	urlString = urlObj.toString();
 
 	// Remove ending `/`
-	if (opts.removeTrailingSlash || urlObj.pathname === '/') {
+	if (options.removeTrailingSlash || urlObj.pathname === '/') {
 		urlString = urlString.replace(/\/$/, '');
 	}
 
 	// Restore relative protocol, if applicable
-	if (hasRelativeProtocol && !opts.normalizeProtocol) {
+	if (hasRelativeProtocol && !options.normalizeProtocol) {
 		urlString = urlString.replace(/^http:\/\//, '//');
 	}
 
 	// Remove http/https
-	if (opts.stripProtocol) {
+	if (options.stripProtocol) {
 		urlString = urlString.replace(/^(?:https?:)?\/\//, '');
 	}
 

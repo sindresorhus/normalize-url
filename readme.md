@@ -129,11 +129,11 @@ Default: `false`
 Removes HTTP(S) protocol from an URL `http://sindresorhus.com` → `sindresorhus.com`.
 
 ```js
-normalizeUrl('https://sindresorhus.com/about.html');
-//=> 'https://sindresorhus.com/about.html'
+normalizeUrl('https://sindresorhus.com');
+//=> 'https://sindresorhus.com'
 
-normalizeUrl('sindresorhus.com/about.html', {stripProtocol: true});
-//=> 'sindresorhus.com/about.html'
+normalizeUrl('sindresorhus.com', {stripProtocol: true});
+//=> 'sindresorhus.com'
 ```
 
 ##### stripWWW
@@ -144,11 +144,11 @@ Default: `true`
 Removes `www.` from the URL.
 
 ```js
-normalizeUrl('http://www.sindresorhus.com/about.html#contact');
-//=> 'http://sindresorhus.com/about.html#contact'
+normalizeUrl('http://www.sindresorhus.com');
+//=> 'http://sindresorhus.com'
 
-normalizeUrl('http://www.sindresorhus.com/about.html#contact', {stripWWW: false});
-//=> 'http://www.sindresorhus.com/about.html#contact'
+normalizeUrl('http://www.sindresorhus.com', {stripWWW: false});
+//=> 'http://www.sindresorhus.com'
 ```
 
 ##### removeQueryParameters
