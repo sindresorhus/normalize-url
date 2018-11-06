@@ -48,12 +48,6 @@ test('main', t => {
 	t.is(normalizeUrl('sindre://user:password@www.sorhus.com'), 'sindre://sorhus.com');
 });
 
-test('backwards compatibility', t => {
-	t.is(normalizeUrl('http://sindresorhus.com/foo#bar', {stripFragment: false}), 'http://sindresorhus.com/foo#bar');
-	t.is(normalizeUrl('https://sindresorhus.com', {normalizeHttps: true}), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com', {normalizeHttp: true}), 'https://sindresorhus.com');
-});
-
 test('stripAuthentication option', t => {
 	const options = {stripAuthentication: false};
 	t.is(normalizeUrl('http://user:password@www.sindresorhus.com', options), 'http://user:password@sindresorhus.com');

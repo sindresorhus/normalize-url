@@ -21,17 +21,17 @@ module.exports = (urlString, options) => {
 		sortQueryParameters: true
 	}, options);
 
-	// Backwards compatibility
+	// TODO: Remove this at some point in the future
 	if (Reflect.has(options, 'normalizeHttps')) {
-		options.forceHttp = options.normalizeHttps;
+		throw new Error('options.normalizeHttps is renamed to options.forceHttp');
 	}
 
 	if (Reflect.has(options, 'normalizeHttp')) {
-		options.forceHttps = options.normalizeHttp;
+		throw new Error('options.normalizeHttp is renamed to options.forceHttps');
 	}
 
 	if (Reflect.has(options, 'stripFragment')) {
-		options.stripHash = options.stripFragment;
+		throw new Error('options.stripFragment is renamed to options.stripHash');
 	}
 
 	urlString = urlString.trim();
