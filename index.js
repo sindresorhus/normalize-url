@@ -7,7 +7,7 @@ const testParameter = (name, filters) => {
 };
 
 module.exports = (urlString, options) => {
-	let paramOptions = options;
+	const paramOptions = options;
 	options = {
 		defaultProtocol: 'http:',
 		normalizeProtocol: true,
