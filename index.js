@@ -7,6 +7,7 @@ const testParameter = (name, filters) => {
 };
 
 module.exports = (urlString, options) => {
+	let paramOptions = options;
 	options = {
 		defaultProtocol: 'http:',
 		normalizeProtocol: true,
@@ -18,9 +19,9 @@ module.exports = (urlString, options) => {
 		removeQueryParameters: [/^utm_\w+/i],
 		removeTrailingSlash: true,
 		removeDirectoryIndex: false,
-		sortQueryParameters: true,
-		...options
+		sortQueryParameters: true
 	};
+	options = Object.assign({}, options, paramOptions);
 
 	// TODO: Remove this at some point in the future
 	if (Reflect.has(options, 'normalizeHttps')) {
