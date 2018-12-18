@@ -133,7 +133,7 @@ module.exports = (urlString, options) => {
 	urlString = urlObj.toString();
 
 	// Remove ending `/`
-	if (options.removeTrailingSlash || urlObj.pathname === '/') {
+	if (options.removeTrailingSlash || (urlObj.pathname === '/' && urlObj.hash === '')) {
 		urlString = urlString.replace(/\/$/, '');
 	}
 
