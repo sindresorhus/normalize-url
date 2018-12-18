@@ -115,6 +115,7 @@ test('removeTrailingSlash option', t => {
 	t.is(normalizeUrl('http://sindresorhus.com/', options), 'http://sindresorhus.com');
 	t.is(normalizeUrl('http://sindresorhus.com/redirect/'), 'http://sindresorhus.com/redirect');
 	t.is(normalizeUrl('http://sindresorhus.com/redirect/', options), 'http://sindresorhus.com/redirect/');
+	t.is(normalizeUrl('http://sindresorhus.com/#/', options), 'http://sindresorhus.com/#/');
 });
 
 test('removeDirectoryIndex option', t => {
@@ -151,6 +152,8 @@ test('removeTrailingSlash and removeDirectoryIndex options)', t => {
 	};
 	t.is(normalizeUrl('http://sindresorhus.com/path/', options1), 'http://sindresorhus.com/path');
 	t.is(normalizeUrl('http://sindresorhus.com/path/index.html', options1), 'http://sindresorhus.com/path');
+	t.is(normalizeUrl('http://sindresorhus.com/#/path/', options1), 'http://sindresorhus.com/#/path/');
+	t.is(normalizeUrl('http://sindresorhus.com/foo/#/bar/', options1), 'http://sindresorhus.com/foo#/bar/');
 
 	const options2 = {
 		removeTrailingSlash: false,
@@ -158,6 +161,7 @@ test('removeTrailingSlash and removeDirectoryIndex options)', t => {
 	};
 	t.is(normalizeUrl('http://sindresorhus.com/path/', options2), 'http://sindresorhus.com/path/');
 	t.is(normalizeUrl('http://sindresorhus.com/path/index.html', options2), 'http://sindresorhus.com/path/');
+	t.is(normalizeUrl('http://sindresorhus.com/#/path/', options2), 'http://sindresorhus.com/#/path/');
 });
 
 test('sortQueryParameters option', t => {

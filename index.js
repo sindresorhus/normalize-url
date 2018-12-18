@@ -129,11 +129,15 @@ module.exports = (urlString, options) => {
 		urlObj.searchParams.sort();
 	}
 
+	if (options.removeTrailingSlash) {
+		urlObj.pathname = urlObj.pathname.replace(/\/$/, '');
+	}
+
 	// Take advantage of many of the Node `url` normalizations
 	urlString = urlObj.toString();
 
 	// Remove ending `/`
-	if (options.removeTrailingSlash || urlObj.pathname === '/') {
+	if ((options.removeTrailingSlash || urlObj.pathname === '/') && urlObj.hash === '') {
 		urlString = urlString.replace(/\/$/, '');
 	}
 
