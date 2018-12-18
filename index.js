@@ -74,7 +74,7 @@ module.exports = (urlString, options) => {
 	if (urlObj.pathname) {
 		// TODO: Use the following instead when targeting Node.js 10
 		// `urlObj.pathname = urlObj.pathname.replace(/(?<!https?:)\/{2,}/g, '/');`
-		urlObj.pathname = urlObj.pathname.replace(/((?![https?:]).)\/{2,}/g, (_, p1) => {
+		urlObj.pathname = urlObj.pathname.replace(/((?!:).|^)\/{2,}/g, (_, p1) => {
 			if (/^(?!\/)/g.test(p1)) {
 				return `${p1}/`;
 			}
