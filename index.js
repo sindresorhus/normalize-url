@@ -46,6 +46,8 @@ module.exports = (urlString, options) => {
 	}
 
 	const urlObj = new URLParser(urlString);
+	
+	if (urlObj.protocol === 'data:') return urlString
 
 	if (options.forceHttp && options.forceHttps) {
 		throw new Error('The `forceHttp` and `forceHttps` options cannot be used together');
