@@ -23,15 +23,15 @@ module.exports = (urlString, options) => {
 	};
 
 	// TODO: Remove this at some point in the future
-	if (Reflect.has(options, 'normalizeHttps')) {
+	if ('normalizeHttps' in options) {
 		throw new Error('options.normalizeHttps is renamed to options.forceHttp');
 	}
 
-	if (Reflect.has(options, 'normalizeHttp')) {
+	if ('normalizeHttp' in options) {
 		throw new Error('options.normalizeHttp is renamed to options.forceHttps');
 	}
 
-	if (Reflect.has(options, 'stripFragment')) {
+	if ('stripFragment' in options) {
 		throw new Error('options.stripFragment is renamed to options.stripHash');
 	}
 
