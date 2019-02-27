@@ -6,7 +6,7 @@ const testParameter = (name, filters) => {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 };
 
-module.exports = (urlString, options) => {
+const normalizeUrl = (urlString, options) => {
 	options = {
 		defaultProtocol: 'http:',
 		normalizeProtocol: true,
@@ -78,6 +78,7 @@ module.exports = (urlString, options) => {
 			if (/^(?!\/)/g.test(p1)) {
 				return `${p1}/`;
 			}
+
 			return '/';
 		});
 	}
@@ -153,3 +154,6 @@ module.exports = (urlString, options) => {
 
 	return urlString;
 };
+
+module.exports = normalizeUrl;
+module.exports.default = normalizeUrl;
