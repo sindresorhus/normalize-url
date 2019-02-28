@@ -13,10 +13,11 @@
 		"node": ">=8"
 	},
 	"scripts": {
-		"test": "xo && nyc ava"
+		"test": "xo && nyc ava && tsd-check"
 	},
 	"files": [
-		"index.js"
+		"index.js",
+		"index.d.ts"
 	],
 	"keywords": [
 		"normalize",
@@ -34,9 +35,10 @@
 		"canonical"
 	],
 	"devDependencies": {
-		"ava": "^0.25.0",
+		"ava": "^1.2.1",
 		"coveralls": "^3.0.0",
 		"nyc": "^13.1.0",
-		"xo": "^0.23.0"
+		"tsd-check": "^0.3.0",
+		"xo": "^0.24.0"
 	}
 }
