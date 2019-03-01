@@ -12,6 +12,7 @@ normalizeUrl('user:password@sindresorhus.com', {stripAuthentication: false});
 normalizeUrl('sindresorhus.com/about.html#contact', {stripHash: true});
 normalizeUrl('https://sindresorhus.com', {stripProtocol: true});
 normalizeUrl('http://www.sindresorhus.com', {stripWWW: false});
+normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {removeAllQueryParameters: true});
 normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
 	removeQueryParameters: ['ref', /test/]
 });

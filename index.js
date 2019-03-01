@@ -16,6 +16,7 @@ const normalizeUrl = (urlString, options) => {
 		stripHash: false,
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
+		removeAllQueryParameters: false,
 		removeTrailingSlash: true,
 		removeDirectoryIndex: false,
 		sortQueryParameters: true,
@@ -113,6 +114,13 @@ const normalizeUrl = (urlString, options) => {
 			// The extension should be max 5 at length (min: 2).
 			// Source: https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names
 			urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
+		}
+	}
+
+	// Remove all query parameters
+	if (options.removeAllQueryParameters) {
+		for (const key of urlObj.searchParams.keys()) {
+			urlObj.searchParams.delete(key);
 		}
 	}
 

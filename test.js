@@ -75,6 +75,17 @@ test('stripWWW option', t => {
 	t.is(normalizeUrl('sindre://www.sorhus.com', options), 'sindre://www.sorhus.com');
 });
 
+test('removeAllQueryParameters option', t => {
+	const options = {
+		stripWWW: false,
+		removeAllQueryParameters: true
+	};
+	t.is(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test', options), 'http://www.sindresorhus.com');
+	t.is(normalizeUrl('http://www.sindresorhus.com', options), 'http://www.sindresorhus.com');
+	t.is(normalizeUrl('www.sindresorhus.com?foo=bar', options), 'http://www.sindresorhus.com');
+	t.is(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options), 'http://www.sindresorhus.com');
+});
+
 test('removeQueryParameters option', t => {
 	const options = {
 		stripWWW: false,

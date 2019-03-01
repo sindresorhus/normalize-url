@@ -112,6 +112,20 @@ export interface Options {
 	readonly stripWWW?: boolean;
 
 	/**
+	 * Removes All query parameters.
+	 *
+	 * @default false
+	 *
+	 * @example
+	 *
+	 * normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
+	 * 	removeAllQueryParameters: true
+	 * });
+	 * //=> 'http://sindresorhus.com'
+	 */
+	readonly removeAllQueryParameters?: boolean;
+
+	/**
 	 * Removes query parameters that matches any of the provided strings or regexes.
 	 *
 	 * @default [/^utm_\w+/i]
