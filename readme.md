@@ -165,6 +165,20 @@ normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
 //=> 'http://sindresorhus.com/?foo=bar'
 ```
 
+##### removeAllQueryParameters
+
+Type: `boolean`<br>
+Default: `false`
+
+Removes all query parameters.
+
+```js
+normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
+	removeAllQueryParameters: true
+});
+//=> 'http://sindresorhus.com'
+```
+
 ##### removeTrailingSlash
 
 Type: `boolean`<br>
