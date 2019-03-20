@@ -7,7 +7,7 @@ const testParameter = (name, filters) => {
 };
 
 const normalizeUrl = (urlString, options) => {
-	options = {
+	options = Object.assign({
 		defaultProtocol: 'http:',
 		normalizeProtocol: true,
 		forceHttp: false,
@@ -19,8 +19,7 @@ const normalizeUrl = (urlString, options) => {
 		removeTrailingSlash: true,
 		removeDirectoryIndex: false,
 		sortQueryParameters: true,
-		...options
-	};
+	}, options);
 
 	// TODO: Remove this at some point in the future
 	if (Reflect.has(options, 'normalizeHttps')) {
