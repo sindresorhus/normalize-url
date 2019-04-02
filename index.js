@@ -156,4 +156,5 @@ const normalizeUrl = (urlString, options) => {
 };
 
 module.exports = normalizeUrl;
+// TODO: Remove this for the next major release
 module.exports.default = normalizeUrl;
