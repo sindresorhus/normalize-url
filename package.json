@@ -13,7 +13,7 @@
 		"node": ">=8"
 	},
 	"scripts": {
-		"test": "xo && nyc ava && tsd-check"
+		"test": "xo && nyc ava && tsd"
 	},
 	"files": [
 		"index.js",
@@ -35,10 +35,10 @@
 		"canonical"
 	],
 	"devDependencies": {
-		"ava": "^1.2.1",
-		"coveralls": "^3.0.0",
-		"nyc": "^13.1.0",
-		"tsd-check": "^0.3.0",
+		"ava": "^1.4.1",
+		"coveralls": "^3.0.3",
+		"nyc": "^13.3.0",
+		"tsd": "^0.7.2",
 		"xo": "^0.24.0"
 	}
 }

@@ -1,5 +1,5 @@
-import {expectType} from 'tsd-check';
-import normalizeUrl from '.';
+import {expectType} from 'tsd';
+import normalizeUrl = require('.');
 
 expectType<string>(normalizeUrl('sindresorhus.com'));
 expectType<string>(normalizeUrl('HTTP://xn--xample-hva.com:80/?b=bar&a=foo'));
