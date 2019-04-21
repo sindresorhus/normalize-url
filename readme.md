@@ -49,7 +49,7 @@ Default: `http:`
 Type: `boolean`<br>
 Default: `true`
 
-Prepends `defaultProtocol` to the URL if it's protocol-relative.
+Prepend `defaultProtocol` to the URL if it's protocol-relative.
 
 ```js
 normalizeUrl('//sindresorhus.com:80/');
@@ -64,7 +64,7 @@ normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false});
 Type: `boolean`<br>
 Default: `false`
 
-Normalizes `https:` URLs to `http:`.
+Normalize `https:` to `http:`.
 
 ```js
 normalizeUrl('https://sindresorhus.com:80/');
@@ -79,7 +79,7 @@ normalizeUrl('https://sindresorhus.com:80/', {forceHttp: true});
 Type: `boolean`<br>
 Default: `false`
 
-Normalizes `http:` URLs to `https:`.
+Normalize `http:` to `https:`.
 
 ```js
 normalizeUrl('https://sindresorhus.com:80/');
@@ -96,7 +96,7 @@ This option can't be used with the `forceHttp` option at the same time.
 Type: `boolean`<br>
 Default: `true`
 
-Strip the [authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) part of a URL.
+Strip the [authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) part of the URL.
 
 ```js
 normalizeUrl('user:password@sindresorhus.com');
@@ -111,7 +111,7 @@ normalizeUrl('user:password@sindresorhus.com', {stripAuthentication: false});
 Type: `boolean`<br>
 Default: `false`
 
-Removes hash from the URL.
+Strip the hash part of the URL.
 
 ```js
 normalizeUrl('sindresorhus.com/about.html#contact');
@@ -126,7 +126,7 @@ normalizeUrl('sindresorhus.com/about.html#contact', {stripHash: true});
 Type: `boolean`<br>
 Default: `false`
 
-Removes HTTP(S) protocol from an URL `http://sindresorhus.com` → `sindresorhus.com`.
+Remove HTTP(S) protocol from the URL: `http://sindresorhus.com` → `sindresorhus.com`.
 
 ```js
 normalizeUrl('https://sindresorhus.com');
@@ -141,7 +141,7 @@ normalizeUrl('sindresorhus.com', {stripProtocol: true});
 Type: `boolean`<br>
 Default: `true`
 
-Removes `www.` from the URL.
+Remove `www.` from the URL.
 
 ```js
 normalizeUrl('http://www.sindresorhus.com');
@@ -153,10 +153,10 @@ normalizeUrl('http://www.sindresorhus.com', {stripWWW: false});
 
 ##### removeQueryParameters
 
-Type: `Array<RegExp|string>`<br>
+Type: `Array<RegExp | string>`<br>
 Default: `[/^utm_\w+/i]`
 
-Removes query parameters that matches any of the provided strings or regexes.
+Remove query parameters that matches any of the provided strings or regexes.
 
 ```js
 normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
@@ -170,7 +170,7 @@ normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
 Type: `boolean`<br>
 Default: `true`
 
-Removes trailing slash.
+Remove trailing slash.
 
 **Note:** Trailing slash is always removed if the URL doesn't have a pathname.
 
@@ -187,7 +187,7 @@ normalizeUrl('http://sindresorhus.com/', {removeTrailingSlash: false});
 
 ##### removeDirectoryIndex
 
-Type: `boolean` `Array<RegExp|string>`<br>
+Type: `boolean | Array<RegExp | string>`<br>
 Default: `false`
 
 Removes the default directory index file from path that matches any of the provided strings or regexes. When `true`, the regex `/^index\.[a-z]+$/` is used.

@@ -132,7 +132,7 @@ declare namespace normalizeUrl {
 		//=> 'http://sindresorhus.com/?foo=bar'
 		```
 		*/
-		readonly removeQueryParameters?: (RegExp | string)[];
+		readonly removeQueryParameters?: ReadonlyArray<RegExp | string>;
 
 		/**
 		Removes trailing slash.
@@ -169,7 +169,7 @@ declare namespace normalizeUrl {
 		//=> 'http://sindresorhus.com/foo'
 		```
 		*/
-		readonly removeDirectoryIndex?: (RegExp | string)[];
+		readonly removeDirectoryIndex?: ReadonlyArray<RegExp | string>;
 
 		/**
 		Sorts the query parameters alphabetically by key.
