@@ -27,7 +27,7 @@ normalizeUrl('HTTP://xn--xample-hva.com:80/?b=bar&a=foo');
 
 ## API
 
-### normalizeUrl(url, [options])
+### normalizeUrl(url, options?)
 
 #### url
 
@@ -37,7 +37,7 @@ URL to normalize.
 
 #### options
 
-Type: `Object`
+Type: `object`
 
 ##### defaultProtocol
 
@@ -219,6 +219,14 @@ normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {
 - [compare-urls](https://github.com/sindresorhus/compare-urls) - Compare URLs by first normalizing them
 
 
-## License
+---
 
-MIT © [Sindre Sorhus](https://sindresorhus.com)
+<div align="center">
+	<b>
+		<a href="https://tidelift.com/subscription/pkg/npm-normalize-url?utm_source=npm-normalize-url&utm_medium=referral&utm_campaign=readme">Get professional support for this package with a Tidelift subscription</a>
+	</b>
+	<br>
+	<sub>
+		Tidelift helps make open source sustainable for maintainers while giving companies<br>assurances about security, maintenance, and licensing for their dependencies.
+	</sub>
+</div>
