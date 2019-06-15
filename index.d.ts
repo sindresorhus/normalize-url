@@ -112,7 +112,7 @@ export interface Options {
 	readonly stripWWW?: boolean;
 
 	/**
-	 * Removes All query parameters.
+	 * Removes all query parameters.
 	 *
 	 * @default false
 	 *
