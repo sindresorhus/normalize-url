@@ -209,6 +209,8 @@ test('DataURLs', t => {
 	t.throws(() => {
 		normalizeUrl('data:text/plain;charset=UTF-8;,foo');
 	}, 'Invalid URL: data:text/plain;charset=UTF-8;,foo');
+	// Empty mimeType
+	t.is(normalizeUrl('data:,'), 'data:,');
 	// Lowercase the mimeType
 	t.is(normalizeUrl('data:TEXT/plain;charset=UTF-8,foo'), 'data:text/plain;charset=utf-8,foo');
 	// Remove spaces after the comma when it's base64
