@@ -47,7 +47,7 @@ const normalizeDataURL = urlString => {
 	const data = parseDataURL(urlString);
 
 	const body = data.base64 ? data.body.trim() : data.body;
-	const {mimeType = ''} = data
+	const {mimeType = ''} = data;
 
 	return `data:${mimeType}${data.base64 ? ';base64' : ''},${body}`;
 };
