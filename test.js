@@ -204,3 +204,22 @@ test('remove duplicate pathname slashes', t => {
 	t.is(normalizeUrl('http://sindresorhus.com:5000//foo'), 'http://sindresorhus.com:5000/foo');
 	t.is(normalizeUrl('http://sindresorhus.com//foo'), 'http://sindresorhus.com/foo');
 });
+
+test('DataURLs', t => {
+	t.throws(() => {
+		normalizeUrl('data:text/plain;charset=UTF-8;,foo');
+	}, 'Invalid URL: data:text/plain;charset=UTF-8;,foo');
+	// Lowercase the mimeType
+	t.is(normalizeUrl('data:TEXT/plain;charset=UTF-8,foo'), 'data:text/plain;charset=utf-8,foo');
+	// Remove spaces after the comma when it's base64
+	t.is(normalizeUrl('data:image/gif;base64, R0lGODlhAQABAAAAACw= ?foo=bar'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar');
+	// Keep spaces when it's not base64
+	t.is(normalizeUrl('data:text/plain;charset=utf-8, foo ?foo=bar'), 'data:text/plain;charset=utf-8, foo?foo=bar');
+	// with query and hash
+	t.is(normalizeUrl('data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar#baz'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar#baz');
+	// removeQueryParameters & stripHash
+	t.is(normalizeUrl('data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar&utm_medium=test#baz', {
+		removeQueryParameters: [/^utm_\w+/i, 'ref'],
+		stripHash: true
+	}), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar');
+})
