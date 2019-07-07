@@ -6,49 +6,50 @@ const testParameter = (name, filters) => {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 };
 
-// from https://github.com/killmenot/valid-data-url/blob/8d56cab866469a4608001f0e8c5d73f65789ba13/index.js#L24
+// From https://github.com/killmenot/valid-data-url/blob/8d56cab866469a4608001f0e8c5d73f65789ba13/index.js#L24
+// eslint-disable-next-line no-useless-escape
 const dataURLRegex = /^data:([a-z]+\/[a-z0-9-+.]+(;[a-z0-9-.!#$%*+.{}|~`]+=[a-z0-9-.!#$%*+.{}|~`]+)*)?(;base64)?,([a-z0-9!$&',()*+;=\-._~:@\/?%\s]*?)$/i;
 
 const isValidDataURL = urlString => {
-  return dataURLRegex.test(urlString)
-}
+	return dataURLRegex.test(urlString);
+};
 
 const parseDataURL = urlString => {
 	if (!isValidDataURL(urlString)) {
 		throw new Error(`Invalid URL: ${urlString}`);
 	}
 
-  const parts = urlString.trim().match(dataURLRegex);
-  const parsed = {};
+	const parts = urlString.trim().match(dataURLRegex);
+	const parsed = {};
 
-  if (parts[1]) {
+	if (parts[1]) {
 		const mimeType = parts[1].toLowerCase();
-    const [contentType, ...attributes] = mimeType.split(';');
+		const [contentType, ...attributes] = mimeType.split(';');
 		// TODO: use `Object.fromEntries`
 		// Object.assign(parsed, Object.fromEntries(attributes.map(attribute => attribute.split('='))))
 		attributes.reduce((parsed, attribute) => {
-			const [key, value] = attribute.split('=')
-			parsed[key] = value
+			const [key, value] = attribute.split('=');
+			parsed[key] = value;
 			return parsed;
 		}, parsed);
 
 		parsed.mimeType = mimeType;
-    parsed.contentType = contentType;
-  }
+		parsed.contentType = contentType;
+	}
 
-  parsed.base64 = !!parts[parts.length - 2];
-  parsed.body = parts[parts.length - 1] || '';
+	parsed.base64 = Boolean(parts[parts.length - 2]);
+	parsed.body = parts[parts.length - 1] || '';
 
-  return parsed;
+	return parsed;
 };
 
 const normalizeDataURL = urlString => {
 	const data = parseDataURL(urlString);
 
-	const body = data.base64 ? data.body.trim() : data.body
+	const body = data.base64 ? data.body.trim() : data.body;
 
-	return `data:${data.mimeType}${data.base64 ? ';base64' : ''},${body}`
-}
+	return `data:${data.mimeType}${data.base64 ? ';base64' : ''},${body}`;
+};
 
 const normalizeUrl = (urlString, options) => {
 	options = {
@@ -197,8 +198,8 @@ const normalizeUrl = (urlString, options) => {
 	}
 
 	if (urlObj.protocol === 'data:') {
-		const url = normalizeDataURL(`${urlObj.protocol}${urlObj.pathname}`)
-		return `${url}${urlObj.search}${urlObj.hash}`
+		const url = normalizeDataURL(`${urlObj.protocol}${urlObj.pathname}`);
+		return `${url}${urlObj.search}${urlObj.hash}`;
 	}
 
 	return urlString;

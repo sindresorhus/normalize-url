@@ -215,11 +215,11 @@ test('DataURLs', t => {
 	t.is(normalizeUrl('data:image/gif;base64, R0lGODlhAQABAAAAACw= ?foo=bar'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar');
 	// Keep spaces when it's not base64
 	t.is(normalizeUrl('data:text/plain;charset=utf-8, foo ?foo=bar'), 'data:text/plain;charset=utf-8, foo?foo=bar');
-	// with query and hash
+	// DataURL with query and hash
 	t.is(normalizeUrl('data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar#baz'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar#baz');
-	// removeQueryParameters & stripHash
+	// Options: removeQueryParameters & stripHash
 	t.is(normalizeUrl('data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar&utm_medium=test#baz', {
 		removeQueryParameters: [/^utm_\w+/i, 'ref'],
 		stripHash: true
 	}), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar');
-})
+});
