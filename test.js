@@ -217,9 +217,17 @@ test('DataURLs', t => {
 	t.is(normalizeUrl('data:text/plain;charset=utf-8, foo ?foo=bar'), 'data:text/plain;charset=utf-8, foo?foo=bar');
 	// DataURL with query and hash
 	t.is(normalizeUrl('data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar#baz'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar#baz');
-	// Options: removeQueryParameters & stripHash
-	t.is(normalizeUrl('data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar&utm_medium=test#baz', {
+	// Options
+	t.is(normalizeUrl('data:text/plain;charset=utf-8,www.foo/index.html?foo=bar&a=a&utm_medium=test#baz', {
+		defaultProtocol: 'http:',
+		normalizeProtocol: true,
+		forceHttp: true,
+		stripHash: true,
+		stripWWW: true,
+		stripProtocol: true,
 		removeQueryParameters: [/^utm_\w+/i, 'ref'],
-		stripHash: true
-	}), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar');
+		sortQueryParameters: true,
+		removeTrailingSlash: true,
+		removeDirectoryIndex: true
+	}), 'data:text/plain;charset=utf-8,www.foo/index.html?a=a&foo=bar');
 });

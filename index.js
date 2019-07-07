@@ -175,6 +175,12 @@ const normalizeUrl = (urlString, options) => {
 		urlObj.searchParams.sort();
 	}
 
+	// DataUrls
+	if (urlObj.protocol === 'data:') {
+		const url = normalizeDataURL(`${urlObj.protocol}${urlObj.pathname}`);
+		return `${url}${urlObj.search}${urlObj.hash}`;
+	}
+
 	if (options.removeTrailingSlash) {
 		urlObj.pathname = urlObj.pathname.replace(/\/$/, '');
 	}
@@ -195,11 +201,6 @@ const normalizeUrl = (urlString, options) => {
 	// Remove http/https
 	if (options.stripProtocol) {
 		urlString = urlString.replace(/^(?:https?:)?\/\//, '');
-	}
-
-	if (urlObj.protocol === 'data:') {
-		const url = normalizeDataURL(`${urlObj.protocol}${urlObj.pathname}`);
-		return `${url}${urlObj.search}${urlObj.hash}`;
 	}
 
 	return urlString;
