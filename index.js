@@ -172,7 +172,7 @@ const normalizeUrl = (urlString, options) => {
 		urlObj.searchParams.sort();
 	}
 
-	// DataUrls
+	// Data URL
 	if (urlObj.protocol === 'data:') {
 		const url = normalizeDataURL(`${urlObj.protocol}${urlObj.pathname}`);
 		return `${url}${urlObj.search}${urlObj.hash}`;
