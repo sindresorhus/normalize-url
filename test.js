@@ -205,21 +205,27 @@ test('remove duplicate pathname slashes', t => {
 	t.is(normalizeUrl('http://sindresorhus.com//foo'), 'http://sindresorhus.com/foo');
 });
 
-test('DataURLs', t => {
+test('data URL', t => {
 	t.throws(() => {
 		normalizeUrl('data:text/plain;charset=UTF-8;,foo');
 	}, 'Invalid URL: data:text/plain;charset=UTF-8;,foo');
-	// Empty mimeType
+
+	// Empty MIME type.
 	t.is(normalizeUrl('data:,'), 'data:,');
-	// Lowercase the mimeType
+
+	// Lowercase the MIME type.
 	t.is(normalizeUrl('data:TEXT/plain;charset=UTF-8,foo'), 'data:text/plain;charset=utf-8,foo');
-	// Remove spaces after the comma when it's base64
+
+	// Remove spaces after the comma when it's base64.
 	t.is(normalizeUrl('data:image/gif;base64, R0lGODlhAQABAAAAACw= ?foo=bar'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar');
-	// Keep spaces when it's not base64
+
+	// Keep spaces when it's not base64.
 	t.is(normalizeUrl('data:text/plain;charset=utf-8, foo ?foo=bar'), 'data:text/plain;charset=utf-8, foo?foo=bar');
-	// DataURL with query and hash
+
+	// Data URL with query and hash.
 	t.is(normalizeUrl('data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar#baz'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar#baz');
-	// Options
+
+	// Options.
 	t.is(normalizeUrl('data:text/plain;charset=utf-8,www.foo/index.html?foo=bar&a=a&utm_medium=test#baz', {
 		defaultProtocol: 'http:',
 		normalizeProtocol: true,
