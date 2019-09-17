@@ -10,9 +10,7 @@ const testParameter = (name, filters) => {
 // eslint-disable-next-line no-useless-escape
 const dataURLRegex = /^data:([a-z]+\/[a-z0-9-+.]+(;[a-z0-9-.!#$%*+.{}|~`]+=[a-z0-9-.!#$%*+.{}|~`]+)*)?(;base64)?,([a-z0-9!$&',()*+;=\-._~:@\/?%\s]*?)$/i;
 
-const isValidDataURL = urlString => {
-	return dataURLRegex.test(urlString);
-};
+const isValidDataURL = urlString => dataURLRegex.test(urlString);
 
 const parseDataURL = urlString => {
 	if (!isValidDataURL(urlString)) {
@@ -25,7 +23,7 @@ const parseDataURL = urlString => {
 	if (parts[1]) {
 		const mimeType = parts[1].toLowerCase();
 		const [contentType, ...attributes] = mimeType.split(';');
-		// TODO: use `Object.fromEntries`
+		// TODO: Use `Object.fromEntries` when targeting Node.js 10
 		// Object.assign(parsed, Object.fromEntries(attributes.map(attribute => attribute.split('='))))
 		attributes.reduce((parsed, attribute) => {
 			const [key, value] = attribute.split('=');
@@ -45,10 +43,8 @@ const parseDataURL = urlString => {
 
 const normalizeDataURL = urlString => {
 	const data = parseDataURL(urlString);
-
 	const body = data.base64 ? data.body.trim() : data.body;
 	const {mimeType = ''} = data;
-
 	return `data:${mimeType}${data.base64 ? ';base64' : ''},${body}`;
 };
 
