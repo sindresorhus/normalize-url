@@ -33,7 +33,7 @@ normalizeUrl('HTTP://xn--xample-hva.com:80/?b=bar&a=foo');
 
 Type: `string`
 
-URL to normalize.
+URL(including data URLs) to normalize.
 
 #### options
 
