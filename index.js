@@ -28,7 +28,7 @@ const normalizeDataURL = urlString => {
 	const attributes = mediaType
 		.filter(Boolean)
 		.map(attribute => {
-			let [key, value] = attribute.split('=').map(string => string.trim());
+			let [key, value = ''] = attribute.split('=').map(string => string.trim());
 
 			// Lowercase `charset`
 			if (key === 'charset') {
