@@ -6,9 +6,9 @@ const testParameter = (name, filters) => {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 };
 
-// From https://github.com/killmenot/valid-data-url/blob/8d56cab866469a4608001f0e8c5d73f65789ba13/index.js#L24
-// eslint-disable-next-line no-useless-escape
-const dataURLRegex = /^data:([a-z]+\/[a-z0-9-+.]+(;[a-z0-9-.!#$%*+.{}|~`]+=[a-z0-9-.!#$%*+.{}|~`]+)*)?(;base64)?,([a-z0-9!$&',()*+;=\-._~:@\/?%\s]*?)$/i;
+// Based on valid-data-url
+// https://github.com/killmenot/valid-data-url/blob/8d56cab866469a4608001f0e8c5d73f65789ba13/index.js#L24
+const dataURLRegex = /^data:([a-z]+\/[a-z0-9-+.]+(;[a-z0-9-.!#$%*+.{}|~`]+=[a-z0-9-.!#$%*+.{}|~`]+)*)?(;base64)?,([a-z0-9!$&',()*+;=\-._~:@/?%\s]*?)$/i;
 
 const isValidDataURL = urlString => dataURLRegex.test(urlString);
 
