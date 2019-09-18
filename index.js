@@ -25,11 +25,10 @@ const parseDataURL = urlString => {
 		const [contentType, ...attributes] = mimeType.split(';');
 		// TODO: Use `Object.fromEntries` when targeting Node.js 10
 		// Object.assign(parsed, Object.fromEntries(attributes.map(attribute => attribute.split('='))))
-		attributes.reduce((parsed, attribute) => {
+		for (const attribute of attributes) {
 			const [key, value] = attribute.split('=');
 			parsed[key] = value;
-			return parsed;
-		}, parsed);
+		}
 
 		parsed.mimeType = mimeType;
 		parsed.contentType = contentType;
