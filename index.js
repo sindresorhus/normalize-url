@@ -39,9 +39,12 @@ const normalizeDataURL = urlString => {
 		});
 
 	const normalizedMediaType = [
-		...attributes,
-		base64 ? 'base64' : ''
-	].filter(Boolean);
+		...attributes
+	];
+
+	if (base64) {
+		normalizedMediaType.push('base64');
+	}
 
 	if (normalizedMediaType.length !== 0 || mimeType) {
 		normalizedMediaType.unshift(mimeType);
