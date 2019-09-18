@@ -83,7 +83,7 @@ const normalizeUrl = (urlString, options) => {
 	const isRelativeUrl = !hasRelativeProtocol && /^\.*\//.test(urlString);
 
 	// Prepend protocol
-	if (!isRelativeUrl && !/^data?:/i.test(urlString)) {
+	if (!isRelativeUrl && !/^data:/i.test(urlString)) {
 		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, options.defaultProtocol);
 	}
 
