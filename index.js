@@ -6,45 +6,48 @@ const testParameter = (name, filters) => {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 };
 
-// Based on valid-data-url
-// https://github.com/killmenot/valid-data-url/blob/8d56cab866469a4608001f0e8c5d73f65789ba13/index.js#L24
-const dataURLRegex = /^data:([a-z]+\/[a-z0-9-+.]+(;[a-z0-9-.!#$%*+.{}|~`]+=[a-z0-9-.!#$%*+.{}|~`]+)*)?(;base64)?,([a-z0-9!$&',()*+;=\-._~:@/?%\s]*?)$/i;
+const normalizeDataURL = urlString => {
+	const parts = urlString.trim().match(/^data:(.*?),(.*)$/);
 
-const isValidDataURL = urlString => dataURLRegex.test(urlString);
-
-const parseDataURL = urlString => {
-	if (!isValidDataURL(urlString)) {
+	if (!parts) {
 		throw new Error(`Invalid URL: ${urlString}`);
 	}
 
-	const parts = urlString.trim().match(dataURLRegex);
-	const parsed = {};
+	const mediaType = parts[1].split(';');
+	const body = parts[2];
 
-	if (parts[1]) {
-		const mimeType = parts[1].toLowerCase();
-		const [contentType, ...attributes] = mimeType.split(';');
-		// TODO: Use `Object.fromEntries` when targeting Node.js 10
-		// Object.assign(parsed, Object.fromEntries(attributes.map(attribute => attribute.split('='))))
-		for (const attribute of attributes) {
-			const [key, value] = attribute.split('=');
-			parsed[key] = value;
-		}
+	let base64 = false;
 
-		parsed.mimeType = mimeType;
-		parsed.contentType = contentType;
+	if (mediaType[mediaType.length - 1] === 'base64') {
+		mediaType.pop();
+		base64 = true;
 	}
 
-	parsed.base64 = Boolean(parts[parts.length - 2]);
-	parsed.body = parts[parts.length - 1] || '';
+	// Lowercase MIME type
+	const mimeType = (mediaType.shift() || '').toLowerCase();
+	const attributes = mediaType
+		.filter(Boolean)
+		.map(attribute => {
+			let [key, value] = attribute.split('=').map(string => string.trim());
 
-	return parsed;
-};
+			// Lowercase `charset`
+			if (key === 'charset') {
+				value = value.toLowerCase();
+			}
 
-const normalizeDataURL = urlString => {
-	const data = parseDataURL(urlString);
-	const body = data.base64 ? data.body.trim() : data.body;
-	const {mimeType = ''} = data;
-	return `data:${mimeType}${data.base64 ? ';base64' : ''},${body}`;
+			return `${key}=${value}`;
+		});
+
+	const normalizedMediaType = [
+		...attributes,
+		base64 ? 'base64' : ''
+	].filter(Boolean);
+
+	if (normalizedMediaType.length !== 0 || mimeType) {
+		normalizedMediaType.unshift(mimeType);
+	}
+
+	return `data:${normalizedMediaType.join(';')},${base64 ? body.trim() : body}`;
 };
 
 const normalizeUrl = (urlString, options) => {

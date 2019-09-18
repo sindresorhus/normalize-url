@@ -206,15 +206,23 @@ test('remove duplicate pathname slashes', t => {
 });
 
 test('data URL', t => {
-	t.throws(() => {
-		normalizeUrl('data:text/plain;charset=UTF-8;,foo');
-	}, 'Invalid URL: data:text/plain;charset=UTF-8;,foo');
+	// Invalid URL.
+	t.throws(() => normalizeUrl('data:'), 'Invalid URL: data:');
+
+	// Normalize away trailing semicolon.
+	t.is(normalizeUrl('data:text/plain;charset=UTF-8;,foo'), 'data:text/plain;charset=utf-8,foo');
 
 	// Empty MIME type.
 	t.is(normalizeUrl('data:,'), 'data:,');
 
+	// Empty MIME type with charset.
+	t.is(normalizeUrl('data:;charset=utf-8,foo'), 'data:;charset=utf-8,foo');
+
 	// Lowercase the MIME type.
-	t.is(normalizeUrl('data:TEXT/plain;charset=UTF-8,foo'), 'data:text/plain;charset=utf-8,foo');
+	t.is(normalizeUrl('data:TEXT/plain,foo'), 'data:text/plain,foo');
+
+	// Lowercase the charset.
+	t.is(normalizeUrl('data:text/plain;charset=UTF-8,foo'), 'data:text/plain;charset=utf-8,foo');
 
 	// Remove spaces after the comma when it's base64.
 	t.is(normalizeUrl('data:image/gif;base64, R0lGODlhAQABAAAAACw= ?foo=bar'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar');
