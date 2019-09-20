@@ -6,8 +6,8 @@ const testParameter = (name, filters) => {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 };
 
-const normalizeDataURL = urlString => {
-	const parts = urlString.trim().match(/^data:(.*?),(.*)$/);
+const normalizeDataURL = (urlString, {stripHash}) => {
+	const parts = urlString.match(/^data:(.*?),(.*?)(?:#(.*))?$/);
 
 	if (!parts) {
 		throw new Error(`Invalid URL: ${urlString}`);
@@ -15,6 +15,7 @@ const normalizeDataURL = urlString => {
 
 	const mediaType = parts[1].split(';');
 	const body = parts[2];
+	const hash = stripHash ? '' : parts[3];
 
 	let base64 = false;
 
@@ -50,7 +51,7 @@ const normalizeDataURL = urlString => {
 		normalizedMediaType.unshift(mimeType);
 	}
 
-	return `data:${normalizedMediaType.join(';')},${base64 ? body.trim() : body}`;
+	return `data:${normalizedMediaType.join(';')},${base64 ? body.trim() : body}${hash ? `#${hash}` : ''}`;
 };
 
 const normalizeUrl = (urlString, options) => {
@@ -84,11 +85,16 @@ const normalizeUrl = (urlString, options) => {
 
 	urlString = urlString.trim();
 
+	// Data URL
+	if (/^data:/i.test(urlString)) {
+		return normalizeDataURL(urlString, options);
+	}
+
 	const hasRelativeProtocol = urlString.startsWith('//');
 	const isRelativeUrl = !hasRelativeProtocol && /^\.*\//.test(urlString);
 
 	// Prepend protocol
-	if (!isRelativeUrl && !/^data:/i.test(urlString)) {
+	if (!isRelativeUrl) {
 		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, options.defaultProtocol);
 	}
 
@@ -175,12 +181,6 @@ const normalizeUrl = (urlString, options) => {
 	// Sort query parameters
 	if (options.sortQueryParameters) {
 		urlObj.searchParams.sort();
-	}
-
-	// Data URL
-	if (urlObj.protocol === 'data:') {
-		const url = normalizeDataURL(`${urlObj.protocol}${urlObj.pathname}`);
-		return `${url}${urlObj.search}${urlObj.hash}`;
 	}
 
 	if (options.removeTrailingSlash) {

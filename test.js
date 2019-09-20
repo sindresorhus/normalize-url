@@ -225,25 +225,42 @@ test('data URL', t => {
 	t.is(normalizeUrl('data:text/plain;charset=UTF-8,foo'), 'data:text/plain;charset=utf-8,foo');
 
 	// Remove spaces after the comma when it's base64.
-	t.is(normalizeUrl('data:image/gif;base64, R0lGODlhAQABAAAAACw= ?foo=bar'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar');
+	t.is(normalizeUrl('data:image/gif;base64, R0lGODlhAQABAAAAACw= #foo #bar'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=#foo #bar');
 
 	// Keep spaces when it's not base64.
-	t.is(normalizeUrl('data:text/plain;charset=utf-8, foo ?foo=bar'), 'data:text/plain;charset=utf-8, foo?foo=bar');
+	t.is(normalizeUrl('data:text/plain;charset=utf-8, foo #bar'), 'data:text/plain;charset=utf-8, foo #bar');
 
-	// Data URL with query and hash.
-	t.is(normalizeUrl('data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar#baz'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar#baz');
-
-	// Options.
-	t.is(normalizeUrl('data:text/plain;charset=utf-8,www.foo/index.html?foo=bar&a=a&utm_medium=test#baz', {
+	// Protocol should not be changed.
+	t.is(normalizeUrl('data:,', {
 		defaultProtocol: 'http:',
 		normalizeProtocol: true,
 		forceHttp: true,
-		stripHash: true,
-		stripWWW: true,
-		stripProtocol: true,
+		stripProtocol: true
+	}), 'data:,');
+
+	// Option: removeTrailingSlash.
+	t.is(normalizeUrl('data:,foo/', {
+		removeTrailingSlash: true
+	}), 'data:,foo/');
+
+	// Option: removeDirectoryIndex.
+	t.is(normalizeUrl('data:,foo/index.html', {
+		removeTrailingSlash: true
+	}), 'data:,foo/index.html');
+
+	// Option: removeQueryParameters & sortQueryParameters.
+	t.is(normalizeUrl('data:,foo?foo=bar&a=a&utm_medium=test', {
 		removeQueryParameters: [/^utm_\w+/i, 'ref'],
-		sortQueryParameters: true,
-		removeTrailingSlash: true,
-		removeDirectoryIndex: true
-	}), 'data:text/plain;charset=utf-8,www.foo/index.html?a=a&foo=bar');
+		sortQueryParameters: true
+	}), 'data:,foo?foo=bar&a=a&utm_medium=test');
+
+	// Option: stripHash.
+	t.is(normalizeUrl('data:,foo#bar', {
+		stripHash: true
+	}), 'data:,foo');
+
+	// Option: stripWWW.
+	t.is(normalizeUrl('data:,www.foo.com', {
+		stripWWW: true
+	}), 'data:,www.foo.com');
 });
