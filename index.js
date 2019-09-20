@@ -6,6 +6,53 @@ const testParameter = (name, filters) => {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 };
 
+const normalizeDataURL = urlString => {
+	const parts = urlString.trim().match(/^data:(.*?),(.*)$/);
+
+	if (!parts) {
+		throw new Error(`Invalid URL: ${urlString}`);
+	}
+
+	const mediaType = parts[1].split(';');
+	const body = parts[2];
+
+	let base64 = false;
+
+	if (mediaType[mediaType.length - 1] === 'base64') {
+		mediaType.pop();
+		base64 = true;
+	}
+
+	// Lowercase MIME type
+	const mimeType = (mediaType.shift() || '').toLowerCase();
+	const attributes = mediaType
+		.filter(Boolean)
+		.map(attribute => {
+			let [key, value = ''] = attribute.split('=').map(string => string.trim());
+
+			// Lowercase `charset`
+			if (key === 'charset') {
+				value = value.toLowerCase();
+			}
+
+			return `${key}=${value}`;
+		});
+
+	const normalizedMediaType = [
+		...attributes
+	];
+
+	if (base64) {
+		normalizedMediaType.push('base64');
+	}
+
+	if (normalizedMediaType.length !== 0 || mimeType) {
+		normalizedMediaType.unshift(mimeType);
+	}
+
+	return `data:${normalizedMediaType.join(';')},${base64 ? body.trim() : body}`;
+};
+
 const normalizeUrl = (urlString, options) => {
 	options = {
 		defaultProtocol: 'http:',
@@ -41,7 +88,7 @@ const normalizeUrl = (urlString, options) => {
 	const isRelativeUrl = !hasRelativeProtocol && /^\.*\//.test(urlString);
 
 	// Prepend protocol
-	if (!isRelativeUrl) {
+	if (!isRelativeUrl && !/^data:/i.test(urlString)) {
 		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, options.defaultProtocol);
 	}
 
@@ -128,6 +175,12 @@ const normalizeUrl = (urlString, options) => {
 	// Sort query parameters
 	if (options.sortQueryParameters) {
 		urlObj.searchParams.sort();
+	}
+
+	// Data URL
+	if (urlObj.protocol === 'data:') {
+		const url = normalizeDataURL(`${urlObj.protocol}${urlObj.pathname}`);
+		return `${url}${urlObj.search}${urlObj.hash}`;
 	}
 
 	if (options.removeTrailingSlash) {

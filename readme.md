@@ -33,7 +33,7 @@ normalizeUrl('HTTP://xn--xample-hva.com:80/?b=bar&a=foo');
 
 Type: `string`
 
-URL to normalize.
+URL to normalize, including [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs).
 
 #### options
 
