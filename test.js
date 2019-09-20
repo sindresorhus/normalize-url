@@ -228,6 +228,7 @@ test('data URL', t => {
 	t.is(normalizeUrl('data:TEXT/plain,foo'), 'data:text/plain,foo');
 
 	// Strip empty hash.
+	t.is(normalizeUrl('data:,foo'), 'data:,foo');
 	t.is(normalizeUrl('data:,foo# '), 'data:,foo');
 
 	// Key only mediaType attribute.
