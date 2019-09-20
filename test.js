@@ -221,6 +221,9 @@ test('data URL', t => {
 	// Lowercase the MIME type.
 	t.is(normalizeUrl('data:TEXT/plain,foo'), 'data:text/plain,foo');
 
+	// Strip empty hash.
+	t.is(normalizeUrl('data:,foo# '), 'data:,foo');
+
 	// Lowercase the charset.
 	t.is(normalizeUrl('data:text/plain;charset=UTF-8,foo'), 'data:text/plain;charset=utf-8,foo');
 
