@@ -205,6 +205,12 @@ test('remove duplicate pathname slashes', t => {
 	t.is(normalizeUrl('http://sindresorhus.com//foo'), 'http://sindresorhus.com/foo');
 });
 
+test('deprecated options', t => {
+	t.throws(() => normalizeUrl('', {normalizeHttps: true}), 'options.normalizeHttps is renamed to options.forceHttp');
+	t.throws(() => normalizeUrl('', {normalizeHttp: true}), 'options.normalizeHttp is renamed to options.forceHttps');
+	t.throws(() => normalizeUrl('', {stripFragment: true}), 'options.stripFragment is renamed to options.stripHash');
+});
+
 test('data URL', t => {
 	// Invalid URL.
 	t.throws(() => normalizeUrl('data:'), 'Invalid URL: data:');
@@ -221,20 +227,24 @@ test('data URL', t => {
 	// Lowercase the MIME type.
 	t.is(normalizeUrl('data:TEXT/plain,foo'), 'data:text/plain,foo');
 
+	// Strip empty hash.
+	t.is(normalizeUrl('data:,foo# '), 'data:,foo');
+
+	// Key only mediaType attribute.
+	t.is(normalizeUrl('data:text/plain;foo=,'), 'data:text/plain;foo,');
+	t.is(normalizeUrl('data:text/plain; foo,'), 'data:text/plain;foo,');
+
 	// Lowercase the charset.
 	t.is(normalizeUrl('data:text/plain;charset=UTF-8,foo'), 'data:text/plain;charset=utf-8,foo');
 
 	// Remove spaces after the comma when it's base64.
-	t.is(normalizeUrl('data:image/gif;base64, R0lGODlhAQABAAAAACw= ?foo=bar'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar');
+	t.is(normalizeUrl('data:image/gif;base64, R0lGODlhAQABAAAAACw= #foo #bar'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=#foo #bar');
 
 	// Keep spaces when it's not base64.
-	t.is(normalizeUrl('data:text/plain;charset=utf-8, foo ?foo=bar'), 'data:text/plain;charset=utf-8, foo?foo=bar');
-
-	// Data URL with query and hash.
-	t.is(normalizeUrl('data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar#baz'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=?foo=bar#baz');
+	t.is(normalizeUrl('data:text/plain;charset=utf-8, foo #bar'), 'data:text/plain;charset=utf-8, foo #bar');
 
 	// Options.
-	t.is(normalizeUrl('data:text/plain;charset=utf-8,www.foo/index.html?foo=bar&a=a&utm_medium=test#baz', {
+	const options = {
 		defaultProtocol: 'http:',
 		normalizeProtocol: true,
 		forceHttp: true,
@@ -245,5 +255,10 @@ test('data URL', t => {
 		sortQueryParameters: true,
 		removeTrailingSlash: true,
 		removeDirectoryIndex: true
-	}), 'data:text/plain;charset=utf-8,www.foo/index.html?a=a&foo=bar');
+	};
+	t.is(normalizeUrl('data:,sindresorhus.com/', options), 'data:,sindresorhus.com/');
+	t.is(normalizeUrl('data:,sindresorhus.com/index.html', options), 'data:,sindresorhus.com/index.html');
+	t.is(normalizeUrl('data:,sindresorhus.com?foo=bar&a=a&utm_medium=test', options), 'data:,sindresorhus.com?foo=bar&a=a&utm_medium=test');
+	t.is(normalizeUrl('data:,foo#bar', options), 'data:,foo');
+	t.is(normalizeUrl('data:,www.sindresorhus.com', options), 'data:,www.sindresorhus.com');
 });
