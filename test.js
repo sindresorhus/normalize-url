@@ -243,37 +243,22 @@ test('data URL', t => {
 	// Keep spaces when it's not base64.
 	t.is(normalizeUrl('data:text/plain;charset=utf-8, foo #bar'), 'data:text/plain;charset=utf-8, foo #bar');
 
-	// Protocol should not be changed.
-	t.is(normalizeUrl('data:,', {
+	// Options.
+	const options = {
 		defaultProtocol: 'http:',
 		normalizeProtocol: true,
 		forceHttp: true,
-		stripProtocol: true
-	}), 'data:,');
-
-	// Option: removeTrailingSlash.
-	t.is(normalizeUrl('data:,foo/', {
-		removeTrailingSlash: true
-	}), 'data:,foo/');
-
-	// Option: removeDirectoryIndex.
-	t.is(normalizeUrl('data:,foo/index.html', {
-		removeTrailingSlash: true
-	}), 'data:,foo/index.html');
-
-	// Option: removeQueryParameters & sortQueryParameters.
-	t.is(normalizeUrl('data:,foo?foo=bar&a=a&utm_medium=test', {
+		stripHash: true,
+		stripWWW: true,
+		stripProtocol: true,
 		removeQueryParameters: [/^utm_\w+/i, 'ref'],
-		sortQueryParameters: true
-	}), 'data:,foo?foo=bar&a=a&utm_medium=test');
-
-	// Option: stripHash.
-	t.is(normalizeUrl('data:,foo#bar', {
-		stripHash: true
-	}), 'data:,foo');
-
-	// Option: stripWWW.
-	t.is(normalizeUrl('data:,www.foo.com', {
-		stripWWW: true
-	}), 'data:,www.foo.com');
+		sortQueryParameters: true,
+		removeTrailingSlash: true,
+		removeDirectoryIndex: true
+	};
+	t.is(normalizeUrl('data:,sindresorhus.com/', options), 'data:,sindresorhus.com/');
+	t.is(normalizeUrl('data:,sindresorhus.com/index.html', options), 'data:,sindresorhus.com/index.html');
+	t.is(normalizeUrl('data:,sindresorhus.com?foo=bar&a=a&utm_medium=test', options), 'data:,sindresorhus.com?foo=bar&a=a&utm_medium=test');
+	t.is(normalizeUrl('data:,foo#bar', options), 'data:,foo');
+	t.is(normalizeUrl('data:,www.sindresorhus.com', options), 'data:,www.sindresorhus.com');
 });
