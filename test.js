@@ -228,11 +228,11 @@ test('data URL', t => {
 	t.is(normalizeUrl('data:TEXT/plain,foo'), 'data:text/plain,foo');
 
 	// Strip empty hash.
-	t.is(normalizeUrl('data:,foo'), 'data:,foo');
 	t.is(normalizeUrl('data:,foo# '), 'data:,foo');
 
 	// Key only mediaType attribute.
 	t.is(normalizeUrl('data:text/plain;foo=,'), 'data:text/plain;foo,');
+	t.is(normalizeUrl('data:text/plain; foo,'), 'data:text/plain;foo,');
 
 	// Lowercase the charset.
 	t.is(normalizeUrl('data:text/plain;charset=UTF-8,foo'), 'data:text/plain;charset=utf-8,foo');
