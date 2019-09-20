@@ -205,6 +205,12 @@ test('remove duplicate pathname slashes', t => {
 	t.is(normalizeUrl('http://sindresorhus.com//foo'), 'http://sindresorhus.com/foo');
 });
 
+test('Deprecated options', t => {
+	t.throws(() => normalizeUrl('', {normalizeHttps: true}), 'options.normalizeHttps is renamed to options.forceHttp');
+	t.throws(() => normalizeUrl('', {normalizeHttp: true}), 'options.normalizeHttp is renamed to options.forceHttps');
+	t.throws(() => normalizeUrl('', {stripFragment: true}), 'options.stripFragment is renamed to options.stripHash');
+});
+
 test('data URL', t => {
 	// Invalid URL.
 	t.throws(() => normalizeUrl('data:'), 'Invalid URL: data:');
@@ -223,6 +229,9 @@ test('data URL', t => {
 
 	// Strip empty hash.
 	t.is(normalizeUrl('data:,foo# '), 'data:,foo');
+
+	// Key only mediaType attribute.
+	t.is(normalizeUrl('data:text/plain;foo=,'), 'data:text/plain;foo,');
 
 	// Lowercase the charset.
 	t.is(normalizeUrl('data:text/plain;charset=UTF-8,foo'), 'data:text/plain;charset=utf-8,foo');

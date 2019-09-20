@@ -36,7 +36,7 @@ const normalizeDataURL = (urlString, {stripHash}) => {
 				value = value.toLowerCase();
 			}
 
-			return `${key}=${value}`;
+			return `${key}${value ? `=${value}` : ''}`;
 		});
 
 	const normalizedMediaType = [
