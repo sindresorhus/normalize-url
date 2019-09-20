@@ -192,7 +192,7 @@ declare const normalizeUrl: {
 	/**
 	[Normalize](https://en.wikipedia.org/wiki/URL_normalization) a URL.
 
-	@param url - URL(including data URLs) to normalize.
+	@param url - URL to normalize, including [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs).
 
 	@example
 	```
