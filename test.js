@@ -5,6 +5,7 @@ test('main', t => {
 	t.is(normalizeUrl('sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(normalizeUrl('sindresorhus.com '), 'http://sindresorhus.com');
 	t.is(normalizeUrl('sindresorhus.com.'), 'http://sindresorhus.com');
+	t.is(normalizeUrl('SindreSorhus.com'), 'http://sindresorhus.com');
 	t.is(normalizeUrl('sindresorhus.com', {defaultProtocol: 'https:'}), 'https://sindresorhus.com');
 	t.is(normalizeUrl('HTTP://sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(normalizeUrl('//sindresorhus.com'), 'http://sindresorhus.com');
