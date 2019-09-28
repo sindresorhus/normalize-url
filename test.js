@@ -216,8 +216,14 @@ test('data URL', t => {
 	// Invalid URL.
 	t.throws(() => normalizeUrl('data:'), 'Invalid URL: data:');
 
+	// Strip default MIME type
+	t.is(normalizeUrl('data:text/plain,foo'), 'data:,foo');
+
+	// Strip default charset
+	t.is(normalizeUrl('data:;charset=us-ascii,foo'), 'data:,foo');
+
 	// Normalize away trailing semicolon.
-	t.is(normalizeUrl('data:text/plain;charset=UTF-8;,foo'), 'data:text/plain;charset=utf-8,foo');
+	t.is(normalizeUrl('data:;charset=UTF-8;,foo'), 'data:;charset=utf-8,foo');
 
 	// Empty MIME type.
 	t.is(normalizeUrl('data:,'), 'data:,');
@@ -226,23 +232,22 @@ test('data URL', t => {
 	t.is(normalizeUrl('data:;charset=utf-8,foo'), 'data:;charset=utf-8,foo');
 
 	// Lowercase the MIME type.
-	t.is(normalizeUrl('data:TEXT/plain,foo'), 'data:text/plain,foo');
+	t.is(normalizeUrl('data:TEXT/HTML,foo'), 'data:text/html,foo');
 
 	// Strip empty hash.
 	t.is(normalizeUrl('data:,foo# '), 'data:,foo');
 
 	// Key only mediaType attribute.
-	t.is(normalizeUrl('data:text/plain;foo=,'), 'data:text/plain;foo,');
-	t.is(normalizeUrl('data:text/plain; foo,'), 'data:text/plain;foo,');
+	t.is(normalizeUrl('data:;foo=;bar,'), 'data:;foo;bar,');
 
 	// Lowercase the charset.
-	t.is(normalizeUrl('data:text/plain;charset=UTF-8,foo'), 'data:text/plain;charset=utf-8,foo');
+	t.is(normalizeUrl('data:;charset=UTF-8,foo'), 'data:;charset=utf-8,foo');
 
 	// Remove spaces after the comma when it's base64.
-	t.is(normalizeUrl('data:image/gif;base64, R0lGODlhAQABAAAAACw= #foo #bar'), 'data:image/gif;base64,R0lGODlhAQABAAAAACw=#foo #bar');
+	t.is(normalizeUrl('data:;base64, Zm9v #foo #bar'), 'data:;base64,Zm9v#foo #bar');
 
 	// Keep spaces when it's not base64.
-	t.is(normalizeUrl('data:text/plain;charset=utf-8, foo #bar'), 'data:text/plain;charset=utf-8, foo #bar');
+	t.is(normalizeUrl('data:, foo #bar'), 'data:, foo #bar');
 
 	// Options.
 	const options = {
