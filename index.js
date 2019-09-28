@@ -31,7 +31,6 @@ const normalizeDataURL = (urlString, {stripHash}) => {
 	// Lowercase MIME type
 	const mimeType = (mediaType.shift() || '').toLowerCase();
 	const attributes = mediaType
-		.filter(Boolean)
 		.map(attribute => {
 			let [key, value = ''] = attribute.split('=').map(string => string.trim());
 
