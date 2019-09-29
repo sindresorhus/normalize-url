@@ -2,6 +2,10 @@
 // TODO: Use the `URL` global when targeting Node.js 10
 const URLParser = typeof URL === 'undefined' ? require('url').URL : URL;
 
+// https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
+const DATA_URL_DEFAULT_MIME_TYPE = 'text/plain';
+const DATA_URL_DEFAULT_CHARSET = 'us-ascii';
+
 const testParameter = (name, filters) => {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 };
@@ -27,17 +31,21 @@ const normalizeDataURL = (urlString, {stripHash}) => {
 	// Lowercase MIME type
 	const mimeType = (mediaType.shift() || '').toLowerCase();
 	const attributes = mediaType
-		.filter(Boolean)
 		.map(attribute => {
 			let [key, value = ''] = attribute.split('=').map(string => string.trim());
 
 			// Lowercase `charset`
 			if (key === 'charset') {
 				value = value.toLowerCase();
+
+				if (value === DATA_URL_DEFAULT_CHARSET) {
+					return '';
+				}
 			}
 
 			return `${key}${value ? `=${value}` : ''}`;
-		});
+		})
+		.filter(Boolean);
 
 	const normalizedMediaType = [
 		...attributes
@@ -47,7 +55,7 @@ const normalizeDataURL = (urlString, {stripHash}) => {
 		normalizedMediaType.push('base64');
 	}
 
-	if (normalizedMediaType.length !== 0 || mimeType) {
+	if (normalizedMediaType.length !== 0 || (mimeType && mimeType !== DATA_URL_DEFAULT_MIME_TYPE)) {
 		normalizedMediaType.unshift(mimeType);
 	}
 
