@@ -132,7 +132,7 @@ Remove HTTP(S) protocol from the URL: `http://sindresorhus.com` → `sindresorhu
 normalizeUrl('https://sindresorhus.com');
 //=> 'https://sindresorhus.com'
 
-normalizeUrl('sindresorhus.com', {stripProtocol: true});
+normalizeUrl('https://sindresorhus.com', {stripProtocol: true});
 //=> 'sindresorhus.com'
 ```
 
