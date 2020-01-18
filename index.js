@@ -146,7 +146,9 @@ const normalizeUrl = (urlString, options) => {
 
 	// Decode URI octets
 	if (urlObj.pathname) {
-		urlObj.pathname = decodeURI(urlObj.pathname);
+		try {
+			urlObj.pathname = decodeURI(urlObj.pathname);
+		} catch (_) {}
 	}
 
 	// Remove directory index
