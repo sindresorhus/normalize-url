@@ -9,21 +9,20 @@ const testParameter = (name, filters) => {
 };
 
 const normalizeDataURL = (urlString, {stripHash}) => {
-	const parts = urlString.match(/^data:(.*?),(.*?)(?:#(.*))?$/);
+	const match = /^data:(?<type>.*?),(?<data>.*?)(?:#(?<hash>.*))?$/.exec(urlString);
 
-	if (!parts) {
+	if (!match) {
 		throw new Error(`Invalid URL: ${urlString}`);
 	}
 
-	const mediaType = parts[1].split(';');
-	const body = parts[2];
-	const hash = stripHash ? '' : parts[3];
+	let {type, data, hash} = match.groups;
+	const mediaType = type.split(';');
+	hash = stripHash ? '' : hash;
 
-	let base64 = false;
-
+	let isBase64 = false;
 	if (mediaType[mediaType.length - 1] === 'base64') {
 		mediaType.pop();
-		base64 = true;
+		isBase64 = true;
 	}
 
 	// Lowercase MIME type
@@ -49,7 +48,7 @@ const normalizeDataURL = (urlString, {stripHash}) => {
 		...attributes
 	];
 
-	if (base64) {
+	if (isBase64) {
 		normalizedMediaType.push('base64');
 	}
 
@@ -57,7 +56,7 @@ const normalizeDataURL = (urlString, {stripHash}) => {
 		normalizedMediaType.unshift(mimeType);
 	}
 
-	return `data:${normalizedMediaType.join(';')},${base64 ? body.trim() : body}${hash ? `#${hash}` : ''}`;
+	return `data:${normalizedMediaType.join(';')},${isBase64 ? data.trim() : data}${hash ? `#${hash}` : ''}`;
 };
 
 const normalizeUrl = (urlString, options) => {
@@ -75,19 +74,6 @@ const normalizeUrl = (urlString, options) => {
 		sortQueryParameters: true,
 		...options
 	};
-
-	// TODO: Remove this at some point in the future
-	if (Reflect.has(options, 'normalizeHttps')) {
-		throw new Error('options.normalizeHttps is renamed to options.forceHttp');
-	}
-
-	if (Reflect.has(options, 'normalizeHttp')) {
-		throw new Error('options.normalizeHttp is renamed to options.forceHttps');
-	}
-
-	if (Reflect.has(options, 'stripFragment')) {
-		throw new Error('options.stripFragment is renamed to options.stripHash');
-	}
 
 	urlString = urlString.trim();
 
@@ -131,15 +117,7 @@ const normalizeUrl = (urlString, options) => {
 
 	// Remove duplicate slashes if not preceded by a protocol
 	if (urlObj.pathname) {
-		// TODO: Use the following instead when targeting Node.js 10
-		// `urlObj.pathname = urlObj.pathname.replace(/(?<!https?:)\/{2,}/g, '/');`
-		urlObj.pathname = urlObj.pathname.replace(/((?!:).|^)\/{2,}/g, (_, p1) => {
-			if (/^(?!\/)/g.test(p1)) {
-				return `${p1}/`;
-			}
-
-			return '/';
-		});
+		urlObj.pathname = urlObj.pathname.replace(/(?<!https?:)\/{2,}/g, '/');
 	}
 
 	// Decode URI octets
@@ -169,7 +147,7 @@ const normalizeUrl = (urlString, options) => {
 		urlObj.hostname = urlObj.hostname.replace(/\.$/, '');
 
 		// Remove `www.`
-		if (options.stripWWW && /^www\.([a-z\-\d]{2,63})\.([a-z.]{2,5})$/.test(urlObj.hostname)) {
+		if (options.stripWWW && /^www\.(?:[a-z\-\d]{2,63})\.(?:[a-z.]{2,5})$/.test(urlObj.hostname)) {
 			// Each label should be max 63 at length (min: 2).
 			// The extension should be max 5 at length (min: 2).
 			// Source: https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names
@@ -217,5 +195,3 @@ const normalizeUrl = (urlString, options) => {
 };
 
 module.exports = normalizeUrl;
-// TODO: Remove this for the next major release
-module.exports.default = normalizeUrl;

@@ -207,12 +207,6 @@ test('remove duplicate pathname slashes', t => {
 	t.is(normalizeUrl('http://sindresorhus.com//foo'), 'http://sindresorhus.com/foo');
 });
 
-test('deprecated options', t => {
-	t.throws(() => normalizeUrl('', {normalizeHttps: true}), 'options.normalizeHttps is renamed to options.forceHttp');
-	t.throws(() => normalizeUrl('', {normalizeHttp: true}), 'options.normalizeHttp is renamed to options.forceHttps');
-	t.throws(() => normalizeUrl('', {stripFragment: true}), 'options.stripFragment is renamed to options.stripHash');
-});
-
 test('data URL', t => {
 	// Invalid URL.
 	t.throws(() => normalizeUrl('data:'), 'Invalid URL: data:');
