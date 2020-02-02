@@ -10,6 +10,8 @@ Useful when you need to display, store, deduplicate, sort, compare, etc, URLs.
 $ npm install normalize-url
 ```
 
+*If you need to use this in the browser, use version 4: `npm i normalize-url@4`*
+
 ## Usage
 
 ```js
