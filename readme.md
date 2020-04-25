@@ -20,8 +20,8 @@ const normalizeUrl = require('normalize-url');
 normalizeUrl('sindresorhus.com');
 //=> 'http://sindresorhus.com'
 
-normalizeUrl('HTTP://xn--xample-hva.com:80/?b=bar&a=foo');
-//=> 'http://êxample.com/?a=foo&b=bar'
+normalizeUrl('//www.sindresorhus.com:80/../baz?b=bar&a=foo');
+//=> 'http://sindresorhus.com/baz?a=foo&b=bar'
 ```
 
 ## API
