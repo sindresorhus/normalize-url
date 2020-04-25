@@ -263,3 +263,8 @@ test('data URL', t => {
 	t.is(normalizeUrl('data:,foo#bar', options), 'data:,foo');
 	t.is(normalizeUrl('data:,www.sindresorhus.com', options), 'data:,www.sindresorhus.com');
 });
+
+test('prevents homograph attack', t => {
+	// The input string uses Unicode to make it look like a valid `ebay.com` URL.
+	t.is(normalizeUrl('https://ebаy.com'), 'https://xn--eby-7cd.com');
+});
