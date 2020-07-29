@@ -117,7 +117,7 @@ const normalizeUrl = (urlString, options) => {
 
 	// Remove duplicate slashes if not preceded by a protocol
 	if (urlObj.pathname) {
-		urlObj.pathname = urlObj.pathname.replace(/(?<![a-z0-9]{2,}:)\/{2,}/g, '/');
+		urlObj.pathname = urlObj.pathname.replace(/(?<![a-z\d]{2,}:)\/{2,}/g, '/');
 	}
 
 	// Decode URI octets
