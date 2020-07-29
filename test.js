@@ -212,6 +212,8 @@ test('remove duplicate pathname slashes', t => {
 	t.is(normalizeUrl('http://sindresorhus.com/git://sindresorhus.com//foo'), 'http://sindresorhus.com/git://sindresorhus.com/foo');
 	t.is(normalizeUrl('http://sindresorhus.com//foo/git://sindresorhus.com//foo'), 'http://sindresorhus.com/foo/git://sindresorhus.com/foo');
 	t.is(normalizeUrl('http://sindresorhus.com/a://sindresorhus.com//foo'), 'http://sindresorhus.com/a:/sindresorhus.com/foo');
+	t.is(normalizeUrl('http://sindresorhus.com/alongprotocolwithin30charlimit://sindresorhus.com//foo'), 'http://sindresorhus.com/alongprotocolwithin30charlimit://sindresorhus.com/foo');
+	t.is(normalizeUrl('http://sindresorhus.com/alongprotocolexceeds30charlimit://sindresorhus.com//foo'), 'http://sindresorhus.com/alongprotocolexceeds30charlimit:/sindresorhus.com/foo');
 });
 
 test('data URL', t => {
