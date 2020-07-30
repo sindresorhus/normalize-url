@@ -72,8 +72,6 @@ const normalizeUrl = (urlString, options) => {
 		removeTrailingSlash: true,
 		removeDirectoryIndex: false,
 		sortQueryParameters: true,
-		embeddedProtocolMinLength: 2,
-		embeddedProtocolMaxLength: 50,
 		...options
 	};
 
@@ -98,14 +96,6 @@ const normalizeUrl = (urlString, options) => {
 		throw new Error('The `forceHttp` and `forceHttps` options cannot be used together');
 	}
 
-	if (options.embeddedProtocolMinLength < 1) {
-		throw new Error('The `embeddedProtocolMinLength` option must be greater than 0');
-	}
-
-	if (options.embeddedProtocolMaxLength < options.embeddedProtocolMinLength) {
-		throw new Error('The `embeddedProtocolMaxLength` option cannot be less than the `embeddedProtocolMinLength`');
-	}
-
 	if (options.forceHttp && urlObj.protocol === 'https:') {
 		urlObj.protocol = 'http:';
 	}
@@ -127,8 +117,7 @@ const normalizeUrl = (urlString, options) => {
 
 	// Remove duplicate slashes if not preceded by a protocol
 	if (urlObj.pathname) {
-		const regex = new RegExp(`(?:(?<=[a-z\\d]{${options.embeddedProtocolMaxLength + 1},}:)|(?<![a-z\\d]{${options.embeddedProtocolMinLength},}:))\\/{2,}`, 'gi');
-		urlObj.pathname = urlObj.pathname.replace(regex, '/');
+		urlObj.pathname = urlObj.pathname.replace(/(?:(?<=[a-z\d]{31,}:)|(?<![a-z\d]{2,}:))\/{2,}/g, '/');
 	}
 
 	// Decode URI octets

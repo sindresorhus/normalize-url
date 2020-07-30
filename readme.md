@@ -212,37 +212,6 @@ normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {
 //=> 'http://sindresorhus.com/?b=two&a=one&c=three'
 ```
 
-##### embeddedProtocolMinLength
-
-Type: `number`\
-Default: `2`
-
-Duplicate slashes will be removed unless prefixed by a protocol with length greater than or equal to `embeddedProtocolMinLength` and less than or equal to `embeddedProtocolMaxLength`.
-
-**Note:** Must be at least 1.
-
-```js
-normalizeUrl('www.sindresorhus.com//foo/bar://sindresorhus.com/ab://b.com', {
-	embeddedProtocolMinLength: 3
-});
-//=> 'www.sindresorhus.com/foo/bar://sindresorhus.com/ab:/b.com'
-```
-
-##### embeddedProtocolMaxLength
-
-Type: `number`\
-Default: `50`
-
-**Note:** Cannot be less than `embeddedProtocolMinLength`.
-
-Duplicate slashes will be removed unless prefixed by a protocol with length greater than or equal to `embeddedProtocolMinLength` and less than or equal to `embeddedProtocolMaxLength`
-```js
-normalizeUrl('www.sindresorhus.com//foo/bar://sindresorhus.com/abcdef://b.com', {
-	embeddedProtocolMaxLength: 5
-});
-//=> 'www.sindresorhus.com/foo/bar://sindresorhus.com/abcdef:/b.com'
-```
-
 ## Related
 
 - [compare-urls](https://github.com/sindresorhus/compare-urls) - Compare URLs by first normalizing them
