@@ -197,6 +197,18 @@ test('invalid urls', t => {
 	}, 'Invalid URL: /relative/path/');
 });
 
+test('embeddedProtocolMinLength out of bounds', t => {
+	t.throws(() => {
+		normalizeUrl('https://www.sindresorhus.com', {embeddedProtocolMinLength: 0});
+	}, 'The `embeddedProtocolMinLength` option must be greater than 0');
+});
+
+test('embeddedProtocolMaxLength out of bounds', t => {
+	t.throws(() => {
+		normalizeUrl('https://www.sindresorhus.com', {embeddedProtocolMinLength: 5, embeddedProtocolMaxLength: 4});
+	}, 'The `embeddedProtocolMaxLength` option cannot be less than the `embeddedProtocolMinLength`');
+});
+
 test('remove duplicate pathname slashes', t => {
 	t.is(normalizeUrl('http://sindresorhus.com////foo/bar'), 'http://sindresorhus.com/foo/bar');
 	t.is(normalizeUrl('http://sindresorhus.com////foo////bar'), 'http://sindresorhus.com/foo/bar');
@@ -205,6 +217,8 @@ test('remove duplicate pathname slashes', t => {
 	t.is(normalizeUrl('http://sindresorhus.com///foo'), 'http://sindresorhus.com/foo');
 	t.is(normalizeUrl('http://sindresorhus.com:5000//foo'), 'http://sindresorhus.com:5000/foo');
 	t.is(normalizeUrl('http://sindresorhus.com//foo'), 'http://sindresorhus.com/foo');
+
+	// Using default embeddedProtocolMin/MaxLength (2/50) options
 	t.is(normalizeUrl('http://sindresorhus.com/s3://sindresorhus.com'), 'http://sindresorhus.com/s3://sindresorhus.com');
 	t.is(normalizeUrl('http://sindresorhus.com/s3://sindresorhus.com//foo'), 'http://sindresorhus.com/s3://sindresorhus.com/foo');
 	t.is(normalizeUrl('http://sindresorhus.com//foo/s3://sindresorhus.com'), 'http://sindresorhus.com/foo/s3://sindresorhus.com');
@@ -212,8 +226,15 @@ test('remove duplicate pathname slashes', t => {
 	t.is(normalizeUrl('http://sindresorhus.com/git://sindresorhus.com//foo'), 'http://sindresorhus.com/git://sindresorhus.com/foo');
 	t.is(normalizeUrl('http://sindresorhus.com//foo/git://sindresorhus.com//foo'), 'http://sindresorhus.com/foo/git://sindresorhus.com/foo');
 	t.is(normalizeUrl('http://sindresorhus.com/a://sindresorhus.com//foo'), 'http://sindresorhus.com/a:/sindresorhus.com/foo');
-	t.is(normalizeUrl('http://sindresorhus.com/alongprotocolwithin30charlimit://sindresorhus.com//foo'), 'http://sindresorhus.com/alongprotocolwithin30charlimit://sindresorhus.com/foo');
-	t.is(normalizeUrl('http://sindresorhus.com/alongprotocolexceeds30charlimit://sindresorhus.com//foo'), 'http://sindresorhus.com/alongprotocolexceeds30charlimit:/sindresorhus.com/foo');
+	t.is(normalizeUrl('http://sindresorhus.com/alongprotocolwithin50charlimitxxxxxxxxxxxxxxxxxxxx://sindresorhus.com//foo'), 'http://sindresorhus.com/alongprotocolwithin50charlimitxxxxxxxxxxxxxxxxxxxx://sindresorhus.com/foo');
+	t.is(normalizeUrl('http://sindresorhus.com/alongprotocolexceeds50charlimitxxxxxxxxxxxxxxxxxxxxx://sindresorhus.com//foo'), 'http://sindresorhus.com/alongprotocolexceeds50charlimitxxxxxxxxxxxxxxxxxxxxx:/sindresorhus.com/foo');
+
+	// Using custom embeddedProtocolMin/MaxLength (4/10) options
+	const options = {embeddedProtocolMinLength: 4, embeddedProtocolMaxLength: 10};
+	t.is(normalizeUrl('http://sindresorhus.com/abc://sindresorhus.com//foo', options), 'http://sindresorhus.com/abc:/sindresorhus.com/foo');
+	t.is(normalizeUrl('http://sindresorhus.com/abcd://sindresorhus.com//foo', options), 'http://sindresorhus.com/abcd://sindresorhus.com/foo');
+	t.is(normalizeUrl('http://sindresorhus.com/abcdefghij://sindresorhus.com//foo', options), 'http://sindresorhus.com/abcdefghij://sindresorhus.com/foo');
+	t.is(normalizeUrl('http://sindresorhus.com/abcdefghijk://sindresorhus.com//foo', options), 'http://sindresorhus.com/abcdefghijk:/sindresorhus.com/foo');
 });
 
 test('data URL', t => {
