@@ -81,7 +81,7 @@ test('stripWWW option', t => {
 	t.is(normalizeUrl('http://www.sorhus.xx--bck1b9a5dre4c', options2), 'http://sorhus.xx--bck1b9a5dre4c');
 
 	const tooLongTLDURL = 'http://www.sorhus.' + ''.padEnd(64, 'a');
-	t.is(normalizeUrl(tooLongTLDURL, options), tooLongTLDURL);
+	t.is(normalizeUrl(tooLongTLDURL, options2), tooLongTLDURL);
 });
 
 test('removeQueryParameters option', t => {
