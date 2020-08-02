@@ -76,9 +76,9 @@ test('stripWWW option', t => {
 	t.is(normalizeUrl('http://www.êxample.com', options), 'http://www.xn--xample-hva.com');
 	t.is(normalizeUrl('sindre://www.sorhus.com', options), 'sindre://www.sorhus.com');
 
-	options.stripWWW = true;
-	t.is(normalizeUrl('http://www.vue.amsterdam', options), 'http://vue.amsterdam');
-	t.is(normalizeUrl('http://www.sorhus.xx--bck1b9a5dre4c', options), 'http://sorhus.xx--bck1b9a5dre4c');
+	const options2 = {stripWWW: true};
+	t.is(normalizeUrl('http://www.vue.amsterdam', options2), 'http://vue.amsterdam');
+	t.is(normalizeUrl('http://www.sorhus.xx--bck1b9a5dre4c', options2), 'http://sorhus.xx--bck1b9a5dre4c');
 
 	const tooLongTLDURL = 'http://www.sorhus.' + ''.padEnd(64, 'a');
 	t.is(normalizeUrl(tooLongTLDURL, options), tooLongTLDURL);
