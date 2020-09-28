@@ -158,7 +158,7 @@ declare namespace normalizeUrl {
 		/**
 		Remove a sole `/` pathname in the output. This option is independant of `removeTrailingSlash`.
 
-		@default false
+		@default true
 
 		@example
 		```
