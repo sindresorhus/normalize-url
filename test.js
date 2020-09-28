@@ -137,9 +137,9 @@ test('removeSingleSlash option', t => {
 });
 
 test('removeSingleSlash option combined with removeTrailingSlash option', t => {
-	const options = {removeTrailingSlash: true, removeSingleSlash: false};
+	const options = {removeTrailingSlash: false, removeSingleSlash: false};
 	t.is(normalizeUrl('https://sindresorhus.com/', options), 'https://sindresorhus.com/');
-	t.is(normalizeUrl('https://sindresorhus.com/redirect/', options), 'https://sindresorhus.com/redirect');
+	t.is(normalizeUrl('https://sindresorhus.com/redirect/', options), 'https://sindresorhus.com/redirect/');
 	t.is(normalizeUrl('https://sindresorhus.com/#/', options), 'https://sindresorhus.com/#/');
 	t.is(normalizeUrl('https://sindresorhus.com/?unicorns=true', options), 'https://sindresorhus.com/?unicorns=true');
 });
