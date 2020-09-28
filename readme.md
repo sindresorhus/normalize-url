@@ -171,7 +171,7 @@ Default: `true`
 
 Remove trailing slash.
 
-**Note:** Trailing slash is always removed if the URL doesn't have a pathname.
+**Note:** Trailing slash is always removed if the URL doesn't have a pathname unless the `removeSingleSlash` option is set to `false`.
 
 ```js
 normalizeUrl('http://sindresorhus.com/redirect/');
@@ -183,6 +183,22 @@ normalizeUrl('http://sindresorhus.com/redirect/', {removeTrailingSlash: false});
 normalizeUrl('http://sindresorhus.com/', {removeTrailingSlash: false});
 //=> 'http://sindresorhus.com'
 ```
+
+##### removeSingleSlash
+
+Type: `boolean`\
+Default: `true`
+
+Remove a sole `/` pathname in the output. This option is independant of `removeTrailingSlash`.
+
+```js
+normalizeUrl('https://sindresorhus.com/');
+//=> 'https://sindresorhus.com'
+
+normalizeUrl('https://sindresorhus.com/', {removeSingleSlash: false});
+//=> 'https://sindresorhus.com/'
+```
+
 
 ##### removeDirectoryIndex
 

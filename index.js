@@ -70,6 +70,7 @@ const normalizeUrl = (urlString, options) => {
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
 		removeTrailingSlash: true,
+		removeSingleSlash: true,
 		removeDirectoryIndex: false,
 		sortQueryParameters: true,
 		...options
@@ -177,8 +178,8 @@ const normalizeUrl = (urlString, options) => {
 	// Take advantage of many of the Node `url` normalizations
 	urlString = urlObj.toString();
 
-	// Remove ending `/`
-	if ((options.removeTrailingSlash || urlObj.pathname === '/') && urlObj.hash === '') {
+	// Remove ending `/` unless removeSingleSlash is false
+	if ((options.removeTrailingSlash || urlObj.pathname === '/') && urlObj.hash === '' && options.removeSingleSlash) {
 		urlString = urlString.replace(/\/$/, '');
 	}
 
