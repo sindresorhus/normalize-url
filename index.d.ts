@@ -162,11 +162,11 @@ declare namespace normalizeUrl {
 
 		@example
 		```
-		normalizeUrl('http://sindresorhus.com/');
-		//=> 'http://sindresorhus.com'
+		normalizeUrl('https://sindresorhus.com/');
+		//=> 'https://sindresorhus.com'
 
-		normalizeUrl('http://sindresorhus.com/', {removeSingleSlash: false});
-		//=> 'http://sindresorhus.com/'
+		normalizeUrl('https://sindresorhus.com/', {removeSingleSlash: false});
+		//=> 'https://sindresorhus.com/'
 		```
 		*/
 		readonly removeSingleSlash?: boolean;

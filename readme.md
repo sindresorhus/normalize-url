@@ -192,11 +192,11 @@ Default: `true`
 Remove a sole `/` pathname in the output. This option is independant of `removeTrailingSlash`.
 
 ```js
-normalizeUrl('http://sindresorhus.com/');
-//=> 'http://sindresorhus.com'
+normalizeUrl('https://sindresorhus.com/');
+//=> 'https://sindresorhus.com'
 
-normalizeUrl('http://sindresorhus.com/', {removeSingleSlash: false});
-//=> 'http://sindresorhus.com/'
+normalizeUrl('https://sindresorhus.com/', {removeSingleSlash: false});
+//=> 'https://sindresorhus.com/'
 ```
 
 
