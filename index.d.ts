@@ -137,7 +137,7 @@ declare namespace normalizeUrl {
 		/**
 		Removes trailing slash.
 
-		__Note__: Trailing slash is always removed if the URL doesn't have a pathname.
+		__Note__: Trailing slash is always removed if the URL doesn't have a pathname unless the `removeSingleSlash` option is set to `false`.
 
 		@default true
 
@@ -154,6 +154,22 @@ declare namespace normalizeUrl {
 		```
 		*/
 		readonly removeTrailingSlash?: boolean;
+
+		/**
+		Remove a sole `/` pathname in the output. This option is independant of `removeTrailingSlash`.
+
+		@default false
+
+		@example
+		```
+		normalizeUrl('http://sindresorhus.com/');
+		//=> 'http://sindresorhus.com'
+
+		normalizeUrl('http://sindresorhus.com/', {removeSingleSlash: false});
+		//=> 'http://sindresorhus.com/'
+		```
+		*/
+		readonly removeSingleSlash?: boolean;
 
 		/**
 		Removes the default directory index file from path that matches any of the provided strings or regexes.
