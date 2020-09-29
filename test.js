@@ -119,10 +119,15 @@ test('forceHttps option', t => {
 
 test('removeTrailingSlash option', t => {
 	const options = {removeTrailingSlash: false};
+	t.is(normalizeUrl('http://sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(normalizeUrl('http://sindresorhus.com/'), 'http://sindresorhus.com');
+	t.is(normalizeUrl('http://sindresorhus.com', options), 'http://sindresorhus.com');
 	t.is(normalizeUrl('http://sindresorhus.com/', options), 'http://sindresorhus.com');
+	t.is(normalizeUrl('http://sindresorhus.com/redirect'), 'http://sindresorhus.com/redirect');
 	t.is(normalizeUrl('http://sindresorhus.com/redirect/'), 'http://sindresorhus.com/redirect');
 	t.is(normalizeUrl('http://sindresorhus.com/redirect/', options), 'http://sindresorhus.com/redirect/');
+	t.is(normalizeUrl('http://sindresorhus.com/redirect/', options), 'http://sindresorhus.com/redirect/');
+	t.is(normalizeUrl('http://sindresorhus.com/#/'), 'http://sindresorhus.com/#/');
 	t.is(normalizeUrl('http://sindresorhus.com/#/', options), 'http://sindresorhus.com/#/');
 	t.is(normalizeUrl('http://sindresorhus.com/?unicorns=true'), 'http://sindresorhus.com/?unicorns=true');
 	t.is(normalizeUrl('http://sindresorhus.com/?unicorns=true', options), 'http://sindresorhus.com/?unicorns=true');
@@ -130,7 +135,9 @@ test('removeTrailingSlash option', t => {
 
 test('removeSingleSlash option', t => {
 	const options = {removeSingleSlash: false};
+	t.is(normalizeUrl('https://sindresorhus.com', options), 'https://sindresorhus.com');
 	t.is(normalizeUrl('https://sindresorhus.com/', options), 'https://sindresorhus.com/');
+	t.is(normalizeUrl('https://sindresorhus.com/redirect', options), 'https://sindresorhus.com/redirect');
 	t.is(normalizeUrl('https://sindresorhus.com/redirect/', options), 'https://sindresorhus.com/redirect');
 	t.is(normalizeUrl('https://sindresorhus.com/#/', options), 'https://sindresorhus.com/#/');
 	t.is(normalizeUrl('https://sindresorhus.com/?unicorns=true', options), 'https://sindresorhus.com/?unicorns=true');
@@ -138,7 +145,9 @@ test('removeSingleSlash option', t => {
 
 test('removeSingleSlash option combined with removeTrailingSlash option', t => {
 	const options = {removeTrailingSlash: false, removeSingleSlash: false};
+	t.is(normalizeUrl('https://sindresorhus.com', options), 'https://sindresorhus.com');
 	t.is(normalizeUrl('https://sindresorhus.com/', options), 'https://sindresorhus.com/');
+	t.is(normalizeUrl('https://sindresorhus.com/redirect', options), 'https://sindresorhus.com/redirect');
 	t.is(normalizeUrl('https://sindresorhus.com/redirect/', options), 'https://sindresorhus.com/redirect/');
 	t.is(normalizeUrl('https://sindresorhus.com/#/', options), 'https://sindresorhus.com/#/');
 	t.is(normalizeUrl('https://sindresorhus.com/?unicorns=true', options), 'https://sindresorhus.com/?unicorns=true');
