@@ -175,8 +175,14 @@ const normalizeUrl = (urlString, options) => {
 		urlObj.pathname = urlObj.pathname.replace(/\/$/, '');
 	}
 
+	const oldUrlString = urlString;
+
 	// Take advantage of many of the Node `url` normalizations
 	urlString = urlObj.toString();
+
+	if (!options.removeSingleSlash && urlObj.pathname === '/' && !oldUrlString.endsWith('/') && urlObj.hash === '') {
+		urlString = urlString.replace(/\/$/, '');
+	}
 
 	// Remove ending `/` unless removeSingleSlash is false
 	if ((options.removeTrailingSlash || urlObj.pathname === '/') && urlObj.hash === '' && options.removeSingleSlash) {
