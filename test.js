@@ -310,6 +310,13 @@ test('data URL', t => {
 	t.is(normalizeUrl('data:,www.sindresorhus.com', options), 'data:,www.sindresorhus.com');
 });
 
+test('view-source URI scheme', t => {
+	// Invalid URL.
+	t.throws(() => normalizeUrl('view-source:'), 'Invalid URL: view-source:');
+
+	t.is(normalizeUrl('view-source:http://sindresorhus.com/?a=Z&b=Y&c=X&d=W'), 'view-source:http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
+});
+
 test('prevents homograph attack', t => {
 	// The input string uses Unicode to make it look like a valid `ebay.com` URL.
 	t.is(normalizeUrl('https://ebаy.com'), 'https://xn--eby-7cd.com');

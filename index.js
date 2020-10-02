@@ -8,6 +8,20 @@ const testParameter = (name, filters) => {
 	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 };
 
+const normalizeViewSourceURL = urlString => {
+	const match = /^view-source:(?<url>.+?)$/.exec(urlString);
+
+	if (!match) {
+		throw new Error(`Invalid URL: ${urlString}`);
+	}
+
+	const {url} = match.groups;
+
+	const normalizedUrl = normalizeUrl(url);
+
+	return `view-source:${normalizedUrl}`;
+};
+
 const normalizeDataURL = (urlString, {stripHash}) => {
 	const match = /^data:(?<type>.*?),(?<data>.*?)(?:#(?<hash>.*))?$/.exec(urlString);
 
@@ -81,6 +95,11 @@ const normalizeUrl = (urlString, options) => {
 	// Data URL
 	if (/^data:/i.test(urlString)) {
 		return normalizeDataURL(urlString, options);
+	}
+
+	// View-Source URL scheme
+	if (/^view-source:/i.test(urlString)) {
+		return normalizeViewSourceURL(urlString);
 	}
 
 	const hasRelativeProtocol = urlString.startsWith('//');
