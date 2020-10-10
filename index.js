@@ -83,6 +83,10 @@ const normalizeUrl = (urlString, options) => {
 		return normalizeDataURL(urlString, options);
 	}
 
+	if (/^view-source:/i.test(urlString)) {
+		throw new Error('`view-source:` is not supported as it is a non-standard protocol');
+	}
+
 	const hasRelativeProtocol = urlString.startsWith('//');
 	const isRelativeUrl = !hasRelativeProtocol && /^\.*\//.test(urlString);
 

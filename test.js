@@ -314,3 +314,9 @@ test('prevents homograph attack', t => {
 	// The input string uses Unicode to make it look like a valid `ebay.com` URL.
 	t.is(normalizeUrl('https://ebаy.com'), 'https://xn--eby-7cd.com');
 });
+
+test('view-source URL', t => {
+	t.throws(() => {
+		normalizeUrl('view-source:https://www.sindresorhus.com');
+	}, '`view-source:` is not supported as it is a non-standard protocol');
+});
