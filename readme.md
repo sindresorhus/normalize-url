@@ -1,4 +1,4 @@
-# normalize-url [![Build Status](https://travis-ci.org/sindresorhus/normalize-url.svg?branch=master)](https://travis-ci.org/sindresorhus/normalize-url) [![Coverage Status](https://coveralls.io/repos/github/sindresorhus/normalize-url/badge.svg?branch=master)](https://coveralls.io/github/sindresorhus/normalize-url?branch=master)
+# normalize-url [![Coverage Status](https://codecov.io/gh/sindresorhus/normalize-url/branch/master/graph/badge.svg)](https://codecov.io/gh/sindresorhus/normalize-url)
 
 > [Normalize](https://en.wikipedia.org/wiki/URL_normalization) a URL
 
@@ -231,7 +231,6 @@ normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {
 ## Related
 
 - [compare-urls](https://github.com/sindresorhus/compare-urls) - Compare URLs by first normalizing them
-
 
 ---
 

@@ -8,7 +8,7 @@
 	"author": {
 		"name": "Sindre Sorhus",
 		"email": "sindresorhus@gmail.com",
-		"url": "sindresorhus.com"
+		"url": "https://sindresorhus.com"
 	},
 	"engines": {
 		"node": ">=10"
@@ -37,9 +37,14 @@
 	],
 	"devDependencies": {
 		"ava": "^2.4.0",
-		"coveralls": "^3.0.6",
 		"nyc": "^15.0.0",
 		"tsd": "^0.11.0",
 		"xo": "^0.25.3"
+	},
+	"nyc": {
+		"reporter": [
+			"text",
+			"lcov"
+		]
 	}
 }
