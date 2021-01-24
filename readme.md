@@ -1,4 +1,4 @@
-# normalize-url [![Coverage Status](https://codecov.io/gh/sindresorhus/normalize-url/branch/master/graph/badge.svg)](https://codecov.io/gh/sindresorhus/normalize-url)
+# normalize-url [![Coverage Status](https://codecov.io/gh/sindresorhus/normalize-url/branch/main/graph/badge.svg)](https://codecov.io/gh/sindresorhus/normalize-url)
 
 > [Normalize](https://en.wikipedia.org/wiki/URL_normalization) a URL
 
