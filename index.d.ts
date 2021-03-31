@@ -104,6 +104,27 @@ declare namespace normalizeUrl {
 		readonly stripProtocol?: boolean;
 
 		/**
+		Strip the text fragment part of the URL
+		@default true
+
+		@example
+		```
+		normalizeUrl("http://sindresorhus.com/about.html#:~:text=hello");
+		//=> 'http://sindresorhus.com/about.html#'
+
+		normalizeUrl("http://sindresorhus.com/about.html#section:~:text=hello");
+		//=> 'http://sindresorhus.com/about.html#section'
+
+		normalizeUrl("http://sindresorhus.com/about.html#:~:text=hello", {stripTextFragment: false});
+		//=> 'http://sindresorhus.com/about.html#:~:text=hello'
+
+		normalizeUrl("http://sindresorhus.com/about.html#section:~:text=hello", {stripTextFragment: false});
+		//=> 'http://sindresorhus.com/about.html#section:~:text=hello'
+		```
+		*/
+		readonly stripTextFragment?: boolean;
+
+		/**
 		Removes `www.` from the URL.
 
 		@default true
