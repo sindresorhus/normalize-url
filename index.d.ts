@@ -104,21 +104,24 @@ declare namespace normalizeUrl {
 		readonly stripProtocol?: boolean;
 
 		/**
-		Strip the text fragment part of the URL
+		Strip the [text fragment](https://web.dev/text-fragments/) part of the URL
+
+		__Note:__ The text fragment will always be removed if the `stripHash` option is set to `true`, as the hash contains the text fragment.
+
 		@default true
 
 		@example
 		```
-		normalizeUrl("http://sindresorhus.com/about.html#:~:text=hello");
+		normalizeUrl('http://sindresorhus.com/about.html#:~:text=hello');
 		//=> 'http://sindresorhus.com/about.html#'
 
-		normalizeUrl("http://sindresorhus.com/about.html#section:~:text=hello");
+		normalizeUrl('http://sindresorhus.com/about.html#section:~:text=hello');
 		//=> 'http://sindresorhus.com/about.html#section'
 
-		normalizeUrl("http://sindresorhus.com/about.html#:~:text=hello", {stripTextFragment: false});
+		normalizeUrl('http://sindresorhus.com/about.html#:~:text=hello', {stripTextFragment: false});
 		//=> 'http://sindresorhus.com/about.html#:~:text=hello'
 
-		normalizeUrl("http://sindresorhus.com/about.html#section:~:text=hello", {stripTextFragment: false});
+		normalizeUrl('http://sindresorhus.com/about.html#section:~:text=hello', {stripTextFragment: false});
 		//=> 'http://sindresorhus.com/about.html#section:~:text=hello'
 		```
 		*/

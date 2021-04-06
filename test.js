@@ -73,7 +73,7 @@ test('stripProtocol option', t => {
 test('stripTextFragment option', t => {
 	t.is(normalizeUrl('http://sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(normalizeUrl('http://sindresorhus.com/about#'), 'http://sindresorhus.com/about');
-	t.is(normalizeUrl('http://sindresorhus.com/about#:~:text=hello'), 'http://sindresorhus.com/about');
+	t.is(normalizeUrl('http://sindresorhus.com/about#:~:text=hello'), 'http://sindresorhus.com/about#');
 	t.is(normalizeUrl('http://sindresorhus.com/about#main'), 'http://sindresorhus.com/about#main');
 	t.is(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello'), 'http://sindresorhus.com/about#main');
 	t.is(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello%20world'), 'http://sindresorhus.com/about#main');
