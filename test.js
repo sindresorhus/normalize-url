@@ -34,6 +34,7 @@ test('main', t => {
 	t.is(normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false}), '//sindresorhus.com');
 	t.is(normalizeUrl('http://sindresorhus.com/foo#bar'), 'http://sindresorhus.com/foo#bar');
 	t.is(normalizeUrl('http://sindresorhus.com/foo#bar', {stripHash: true}), 'http://sindresorhus.com/foo');
+	t.is(normalizeUrl('http://sindresorhus.com/foo#bar:~:text=hello%20world', {stripHash: true}), 'http://sindresorhus.com/foo');
 	t.is(normalizeUrl('http://sindresorhus.com/foo/bar/../baz'), 'http://sindresorhus.com/foo/baz');
 	t.is(normalizeUrl('http://sindresorhus.com/foo/bar/./baz'), 'http://sindresorhus.com/foo/bar/baz');
 	t.is(normalizeUrl('sindre://www.sorhus.com'), 'sindre://sorhus.com');
@@ -67,6 +68,29 @@ test('stripProtocol option', t => {
 	t.is(normalizeUrl('//www.sindresorhus.com', options), 'sindresorhus.com');
 	t.is(normalizeUrl('sindre://user:password@www.sorhus.com', options), 'sindre://sorhus.com');
 	t.is(normalizeUrl('sindre://www.sorhus.com', options), 'sindre://sorhus.com');
+});
+
+test('stripTextFragment option', t => {
+	t.is(normalizeUrl('http://sindresorhus.com'), 'http://sindresorhus.com');
+	t.is(normalizeUrl('http://sindresorhus.com/about#'), 'http://sindresorhus.com/about');
+	t.is(normalizeUrl('http://sindresorhus.com/about#:~:text=hello'), 'http://sindresorhus.com/about');
+	t.is(normalizeUrl('http://sindresorhus.com/about#main'), 'http://sindresorhus.com/about#main');
+	t.is(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello'), 'http://sindresorhus.com/about#main');
+	t.is(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello%20world'), 'http://sindresorhus.com/about#main');
+
+	const options = {stripTextFragment: false};
+	t.is(normalizeUrl('http://sindresorhus.com', options), 'http://sindresorhus.com');
+	t.is(normalizeUrl('http://sindresorhus.com/about#:~:text=hello', options), 'http://sindresorhus.com/about#:~:text=hello');
+	t.is(normalizeUrl('http://sindresorhus.com/about#main', options), 'http://sindresorhus.com/about#main');
+	t.is(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello', options), 'http://sindresorhus.com/about#main:~:text=hello');
+	t.is(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello%20world', options), 'http://sindresorhus.com/about#main:~:text=hello%20world');
+
+	const options2 = {stripHash: true, stripTextFragment: false};
+	t.is(normalizeUrl('http://sindresorhus.com', options2), 'http://sindresorhus.com');
+	t.is(normalizeUrl('http://sindresorhus.com/about#:~:text=hello', options2), 'http://sindresorhus.com/about');
+	t.is(normalizeUrl('http://sindresorhus.com/about#main', options2), 'http://sindresorhus.com/about');
+	t.is(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello', options2), 'http://sindresorhus.com/about');
+	t.is(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello%20world', options2), 'http://sindresorhus.com/about');
 });
 
 test('stripWWW option', t => {

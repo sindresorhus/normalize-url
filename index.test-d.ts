@@ -23,3 +23,6 @@ normalizeUrl('www.sindresorhus.com/foo/default.php', {
 normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {
 	sortQueryParameters: false
 });
+normalizeUrl('www.sindresorhus.com/about#:~:text=hello', {
+	stripTextFragment: false
+});

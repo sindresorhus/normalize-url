@@ -67,6 +67,7 @@ const normalizeUrl = (urlString, options) => {
 		forceHttps: false,
 		stripAuthentication: true,
 		stripHash: false,
+		stripTextFragment: true,
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
 		removeTrailingSlash: true,
@@ -118,6 +119,8 @@ const normalizeUrl = (urlString, options) => {
 	// Remove hash
 	if (options.stripHash) {
 		urlObj.hash = '';
+	} else if (options.stripTextFragment) {
+		urlObj.hash = urlObj.hash.replace(/#?:~:text.*?$/i, '');
 	}
 
 	// Remove duplicate slashes if not preceded by a protocol
