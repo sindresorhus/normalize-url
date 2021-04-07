@@ -250,6 +250,7 @@ test('allowCustomProtocols option', t => {
 	t.is(normalizeUrl('custom://sindresorhus.com', options1), 'custom://sindresorhus.com');
 	t.is(normalizeUrl('custom.with.periods://sindresorhus.com', options1), 'custom.with.periods://sindresorhus.com');
 	t.is(normalizeUrl('custom+with+plusses://sindresorhus.com', options1), 'custom+with+plusses://sindresorhus.com');
+	t.is(normalizeUrl('custom-with-hyphens://sindresorhus.com', options1), 'custom-with-hyphens://sindresorhus.com');
 
 	const options2 = {
 		allowCustomProtocols: false
@@ -259,6 +260,7 @@ test('allowCustomProtocols option', t => {
 	t.is(normalizeUrl('custom://sindresorhus.com', options2), 'custom://sindresorhus.com');
 	t.is(normalizeUrl('custom.with.periods://sindresorhus.com', options2), 'http://custom.with.periods/sindresorhus.com');
 	t.is(normalizeUrl('custom+with+plusses://sindresorhus.com', options2), 'http://custom+with+plusses/sindresorhus.com');
+	t.is(normalizeUrl('custom-with-hyphens://sindresorhus.com', options2), 'http://custom-with-hyphens/sindresorhus.com');
 });
 
 test('allowCustomProtocols option with stripProtocol, forceHttp, forceHttps', t => {

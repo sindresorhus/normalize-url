@@ -90,8 +90,8 @@ const normalizeUrl = (urlString, options) => {
 	}
 
 	const hasRelativeProtocol = urlString.startsWith('//');
-	// A protocol is deemed custom if it has a period (".") or a plus ("+") in it.
-	const hasCustomProtocol = /^[a-z.+]*[.+][a-z.+]*:\/\//i.test(urlString);
+	// A protocol is deemed custom if it has a period ("."), a hypen ("-"), or a plus ("+") in it.
+	const hasCustomProtocol = /^[a-z.+-]*[.+-][a-z.+-]*:\/\//i.test(urlString);
 	const isRelativeUrl = !hasRelativeProtocol && /^\.*\//.test(urlString);
 
 	// Prepend protocol
