@@ -120,7 +120,7 @@ const normalizeUrl = (urlString, options) => {
 	if (options.stripHash) {
 		urlObj.hash = '';
 	} else if (options.stripTextFragment) {
-		urlObj.hash = urlObj.hash.replace(/:~:text.*?$/i, '');
+		urlObj.hash = urlObj.hash.replace(/#?:~:text.*?$/i, '');
 	}
 
 	// Remove duplicate slashes if not preceded by a protocol
