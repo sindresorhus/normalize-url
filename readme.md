@@ -251,6 +251,25 @@ normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {
 //=> 'http://sindresorhus.com/?b=two&a=one&c=three'
 ```
 
+##### allowCustomProtocols
+
+Type: `boolean`\
+Default: `false`
+
+Allows more complex custom protocols.
+
+```js
+normalizeUrl('my.mobile.app://sindresorhus.com', {
+	allowCustomProtocols: false
+});
+//=> 'http://sindresorhus.com'
+
+normalizeUrl('my.mobile.app://sindresorhus.com', {
+	allowCustomProtocols: true
+});
+//=> 'my.mobile.app://sindresorhus.com'
+```
+
 ## Related
 
 - [compare-urls](https://github.com/sindresorhus/compare-urls) - Compare URLs by first normalizing them

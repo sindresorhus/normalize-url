@@ -225,6 +225,26 @@ declare namespace normalizeUrl {
 		```
 		*/
 		readonly sortQueryParameters?: boolean;
+
+		/**
+		Allows more complex custom protocols.
+
+		@default false
+
+		@example
+		```
+		normalizeUrl('my.mobile.app://sindresorhus.com', {
+			allowCustomProtocols: false
+		});
+		//=> 'http://sindresorhus.com'
+
+		normalizeUrl('my.mobile.app://sindresorhus.com', {
+			allowCustomProtocols: true
+		});
+		//=> 'my.mobile.app://sindresorhus.com'
+		```
+		*/
+		readonly allowCustomProtocols?: boolean;
 	}
 }
 

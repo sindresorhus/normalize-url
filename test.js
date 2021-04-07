@@ -241,6 +241,40 @@ test('sortQueryParameters option', t => {
 	t.is(normalizeUrl('http://sindresorhus.com/', options2), 'http://sindresorhus.com');
 });
 
+test('allowCustomProtocols option', t => {
+	const options1 = {
+		allowCustomProtocols: true
+	};
+	t.is(normalizeUrl('http://sindresorhus.com', options1), 'http://sindresorhus.com');
+	t.is(normalizeUrl('https://sindresorhus.com', options1), 'https://sindresorhus.com');
+	t.is(normalizeUrl('custom://sindresorhus.com', options1), 'custom://sindresorhus.com');
+	t.is(normalizeUrl('custom.with.periods://sindresorhus.com', options1), 'custom.with.periods://sindresorhus.com');
+	t.is(normalizeUrl('custom+with+plusses://sindresorhus.com', options1), 'custom+with+plusses://sindresorhus.com');
+
+	const options2 = {
+		allowCustomProtocols: false
+	};
+	t.is(normalizeUrl('http://sindresorhus.com', options2), 'http://sindresorhus.com');
+	t.is(normalizeUrl('https://sindresorhus.com', options2), 'https://sindresorhus.com');
+	t.is(normalizeUrl('custom://sindresorhus.com', options2), 'custom://sindresorhus.com');
+	t.is(normalizeUrl('custom.with.periods://sindresorhus.com', options2), 'http://custom.with.periods/sindresorhus.com');
+	t.is(normalizeUrl('custom+with+plusses://sindresorhus.com', options2), 'http://custom+with+plusses/sindresorhus.com');
+});
+
+test('allowCustomProtocols option with stripProtocol, forceHttp, forceHttps', t => {
+	t.throws(() => {
+		normalizeUrl('https://www.sindresorhus.com', {allowCustomProtocols: true, stripProtocol: true});
+	}, 'The `allowCustomProtocols` and `stripProtocol` options cannot be used together');
+
+	t.throws(() => {
+		normalizeUrl('https://www.sindresorhus.com', {allowCustomProtocols: true, forceHttp: true});
+	}, 'The `allowCustomProtocols` and `forceHttp` options cannot be used together');
+
+	t.throws(() => {
+		normalizeUrl('https://www.sindresorhus.com', {allowCustomProtocols: true, forceHttps: true});
+	}, 'The `allowCustomProtocols` and `forceHttps` options cannot be used together');
+});
+
 test('invalid urls', t => {
 	t.throws(() => {
 		normalizeUrl('http://');

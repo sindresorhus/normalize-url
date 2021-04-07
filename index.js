@@ -74,6 +74,7 @@ const normalizeUrl = (urlString, options) => {
 		removeSingleSlash: true,
 		removeDirectoryIndex: false,
 		sortQueryParameters: true,
+		allowCustomProtocols: false,
 		...options
 	};
 
@@ -89,10 +90,12 @@ const normalizeUrl = (urlString, options) => {
 	}
 
 	const hasRelativeProtocol = urlString.startsWith('//');
+	// A protocol is deemed custom if it has a period (".") or a plus ("+") in it.
+	const hasCustomProtocol = /^[a-z.+]*[.+][a-z.+]*:\/\//i.test(urlString);
 	const isRelativeUrl = !hasRelativeProtocol && /^\.*\//.test(urlString);
 
 	// Prepend protocol
-	if (!isRelativeUrl) {
+	if (!isRelativeUrl && !(hasCustomProtocol && options.allowCustomProtocols)) {
 		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, options.defaultProtocol);
 	}
 
@@ -100,6 +103,18 @@ const normalizeUrl = (urlString, options) => {
 
 	if (options.forceHttp && options.forceHttps) {
 		throw new Error('The `forceHttp` and `forceHttps` options cannot be used together');
+	}
+
+	if (options.allowCustomProtocols && options.stripProtocol) {
+		throw new Error('The `allowCustomProtocols` and `stripProtocol` options cannot be used together');
+	}
+
+	if (options.allowCustomProtocols && options.forceHttp) {
+		throw new Error('The `allowCustomProtocols` and `forceHttp` options cannot be used together');
+	}
+
+	if (options.allowCustomProtocols && options.forceHttps) {
+		throw new Error('The `allowCustomProtocols` and `forceHttps` options cannot be used together');
 	}
 
 	if (options.forceHttp && urlObj.protocol === 'https:') {
