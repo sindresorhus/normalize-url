@@ -236,7 +236,7 @@ declare namespace normalizeUrl {
 		normalizeUrl('my.mobile.app://sindresorhus.com', {
 			allowCustomProtocols: false
 		});
-		//=> 'http://sindresorhus.com'
+		//=> 'http://my.mobile.app/sindresorhus.com'
 
 		normalizeUrl('my.mobile.app://sindresorhus.com', {
 			allowCustomProtocols: true
