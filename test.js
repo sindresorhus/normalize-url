@@ -344,3 +344,17 @@ test('view-source URL', t => {
 		normalizeUrl('view-source:https://www.sindresorhus.com');
 	}, '`view-source:` is not supported as it is a non-standard protocol');
 });
+
+test('does not have exponential performance for data URLs', t => {
+	for (let index = 0; index < 1000; index += 50) {
+		const url = 'data:' + Array.from({length: index}).fill(',#').join('') + '\ra';
+		const start = Date.now();
+
+		try {
+			normalizeUrl(url);
+		} catch {}
+
+		const difference = Date.now() - start;
+		t.true(difference < 100, `Execution time: ${difference}`);
+	}
+});
