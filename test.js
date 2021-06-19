@@ -119,6 +119,28 @@ test('removeQueryParameters option', t => {
 	t.is(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options), 'http://www.sindresorhus.com/?foo=bar');
 });
 
+test('removeQueryParameters boolean `true` option', t => {
+	const options = {
+		stripWWW: false,
+		removeQueryParameters: true
+	};
+
+	t.is(normalizeUrl('http://www.sindresorhus.com', options), 'http://www.sindresorhus.com');
+	t.is(normalizeUrl('www.sindresorhus.com?foo=bar', options), 'http://www.sindresorhus.com');
+	t.is(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options), 'http://www.sindresorhus.com');
+});
+
+test('removeQueryParameters boolean `false` option', t => {
+	const options = {
+		stripWWW: false,
+		removeQueryParameters: false
+	};
+
+	t.is(normalizeUrl('http://www.sindresorhus.com', options), 'http://www.sindresorhus.com');
+	t.is(normalizeUrl('www.sindresorhus.com?foo=bar', options), 'http://www.sindresorhus.com/?foo=bar');
+	t.is(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options), 'http://www.sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test');
+});
+
 test('forceHttp option', t => {
 	const options = {forceHttp: true};
 	t.is(normalizeUrl('https://sindresorhus.com'), 'https://sindresorhus.com');

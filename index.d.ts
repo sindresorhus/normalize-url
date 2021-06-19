@@ -156,7 +156,7 @@ declare namespace normalizeUrl {
 		//=> 'http://sindresorhus.com/?foo=bar'
 		```
 		*/
-		readonly removeQueryParameters?: ReadonlyArray<RegExp | string>;
+		readonly removeQueryParameters?: ReadonlyArray<RegExp | string> | boolean;
 
 		/**
 		Removes trailing slash.
