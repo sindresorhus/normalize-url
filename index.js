@@ -174,9 +174,7 @@ const normalizeUrl = (urlString, options) => {
 	}
 
 	if (options.removeQueryParameters === true) {
-		for (const key of [...urlObj.searchParams.keys()]) {
-			urlObj.searchParams.delete(key);
-		}
+		urlObj.search = '';
 	}
 
 	// Sort query parameters
