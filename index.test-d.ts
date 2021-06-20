@@ -15,8 +15,11 @@ normalizeUrl('http://www.sindresorhus.com', {stripWWW: false});
 normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
 	removeQueryParameters: ['ref', /test/]
 });
-normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
+normalizeUrl('www.sindresorhus.com?foo=bar', {
 	removeQueryParameters: true
+});
+normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
+	removeQueryParameters: false
 });
 normalizeUrl('http://sindresorhus.com/', {removeTrailingSlash: false});
 normalizeUrl('http://sindresorhus.com/', {removeSingleSlash: false});

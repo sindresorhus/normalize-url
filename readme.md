@@ -196,7 +196,7 @@ normalizeUrl('www.sindresorhus.com?foo=bar', {
 //=> 'http://sindresorhus.com'
 ```
 
-`false` will not remove any query parameter. Other options like `sortQueryParameters` are still applied when toggled.
+`false` will not remove any query parameter.
 
 ```js
 normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {

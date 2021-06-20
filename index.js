@@ -173,6 +173,12 @@ const normalizeUrl = (urlString, options) => {
 		}
 	}
 
+	if (options.removeQueryParameters === true) {
+		for (const key of [...urlObj.searchParams.keys()]) {
+			urlObj.searchParams.delete(key);
+		}
+	}
+
 	// Sort query parameters
 	if (options.sortQueryParameters) {
 		urlObj.searchParams.sort();
@@ -186,10 +192,6 @@ const normalizeUrl = (urlString, options) => {
 
 	// Take advantage of many of the Node `url` normalizations
 	urlString = urlObj.toString();
-
-	if (options.removeQueryParameters === true) {
-		urlString = urlString.split('?')[0];
-	}
 
 	if (!options.removeSingleSlash && urlObj.pathname === '/' && !oldUrlString.endsWith('/') && urlObj.hash === '') {
 		urlString = urlString.replace(/\/$/, '');
