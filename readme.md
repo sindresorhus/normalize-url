@@ -175,7 +175,7 @@ normalizeUrl('http://www.sindresorhus.com', {stripWWW: false});
 
 ##### removeQueryParameters
 
-Type: `Array<RegExp | string>`\
+Type: `Array<RegExp | string> | boolean`\
 Default: `[/^utm_\w+/i]`
 
 Remove query parameters that matches any of the provided strings or regexes.
@@ -185,6 +185,24 @@ normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
 	removeQueryParameters: ['ref']
 });
 //=> 'http://sindresorhus.com/?foo=bar'
+```
+
+If a boolean is provided, `true` will remove all the query parameters.
+
+```js
+normalizeUrl('www.sindresorhus.com?foo=bar', {
+	removeQueryParameters: true
+});
+//=> 'http://sindresorhus.com'
+```
+
+`false` will not remove any query parameter.
+
+```js
+normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
+	removeQueryParameters: false
+});
+//=> 'http://www.sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test'
 ```
 
 ##### removeTrailingSlash

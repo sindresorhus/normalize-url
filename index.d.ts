@@ -155,8 +155,26 @@ declare namespace normalizeUrl {
 		});
 		//=> 'http://sindresorhus.com/?foo=bar'
 		```
+
+		If a boolean is provided, `true` will remove all the query parameters.
+
+		```
+		normalizeUrl('www.sindresorhus.com?foo=bar', {
+			removeQueryParameters: true
+		});
+		//=> 'http://sindresorhus.com'
+		```
+
+		`false` will not remove any query parameter.
+
+		```
+		normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
+			removeQueryParameters: false
+		});
+		//=> 'http://www.sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test'
+		```
 		*/
-		readonly removeQueryParameters?: ReadonlyArray<RegExp | string>;
+		readonly removeQueryParameters?: ReadonlyArray<RegExp | string> | boolean;
 
 		/**
 		Removes trailing slash.
