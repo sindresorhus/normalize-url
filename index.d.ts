@@ -155,14 +155,18 @@ declare namespace normalizeUrl {
 		});
 		//=> 'http://sindresorhus.com/?foo=bar'
 		```
+
 		If a boolean is provided, `true` will remove all the query parameters.
+
 		```
 		normalizeUrl('www.sindresorhus.com?foo=bar', {
 			removeQueryParameters: true
 		});
 		//=> 'http://sindresorhus.com'
 		```
+
 		`false` will not remove any query parameter.
+
 		```
 		normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
 			removeQueryParameters: false
