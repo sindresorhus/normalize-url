@@ -1,5 +1,3 @@
-'use strict';
-
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
 const DATA_URL_DEFAULT_MIME_TYPE = 'text/plain';
 const DATA_URL_DEFAULT_CHARSET = 'us-ascii';
@@ -52,14 +50,14 @@ const normalizeDataURL = (urlString, {stripHash}) => {
 		normalizedMediaType.push('base64');
 	}
 
-	if (normalizedMediaType.length !== 0 || (mimeType && mimeType !== DATA_URL_DEFAULT_MIME_TYPE)) {
+	if (normalizedMediaType.length > 0 || (mimeType && mimeType !== DATA_URL_DEFAULT_MIME_TYPE)) {
 		normalizedMediaType.unshift(mimeType);
 	}
 
 	return `data:${normalizedMediaType.join(';')},${isBase64 ? data.trim() : data}${hash ? `#${hash}` : ''}`;
 };
 
-const normalizeUrl = (urlString, options) => {
+export default function normalizeUrl(urlString, options) {
 	options = {
 		defaultProtocol: 'http:',
 		normalizeProtocol: true,
@@ -96,43 +94,43 @@ const normalizeUrl = (urlString, options) => {
 		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, options.defaultProtocol);
 	}
 
-	const urlObj = new URL(urlString);
+	const urlObject = new URL(urlString);
 
 	if (options.forceHttp && options.forceHttps) {
 		throw new Error('The `forceHttp` and `forceHttps` options cannot be used together');
 	}
 
-	if (options.forceHttp && urlObj.protocol === 'https:') {
-		urlObj.protocol = 'http:';
+	if (options.forceHttp && urlObject.protocol === 'https:') {
+		urlObject.protocol = 'http:';
 	}
 
-	if (options.forceHttps && urlObj.protocol === 'http:') {
-		urlObj.protocol = 'https:';
+	if (options.forceHttps && urlObject.protocol === 'http:') {
+		urlObject.protocol = 'https:';
 	}
 
 	// Remove auth
 	if (options.stripAuthentication) {
-		urlObj.username = '';
-		urlObj.password = '';
+		urlObject.username = '';
+		urlObject.password = '';
 	}
 
 	// Remove hash
 	if (options.stripHash) {
-		urlObj.hash = '';
+		urlObject.hash = '';
 	} else if (options.stripTextFragment) {
-		urlObj.hash = urlObj.hash.replace(/#?:~:text.*?$/i, '');
+		urlObject.hash = urlObject.hash.replace(/#?:~:text.*?$/i, '');
 	}
 
 	// Remove duplicate slashes if not preceded by a protocol
-	if (urlObj.pathname) {
-		urlObj.pathname = urlObj.pathname.replace(/(?<!\b(?:[a-z][a-z\d+\-.]{1,50}:))\/{2,}/g, '/');
+	if (urlObject.pathname) {
+		urlObject.pathname = urlObject.pathname.replace(/(?<!\b[a-z][a-z\d+\-.]{1,50}:)\/{2,}/g, '/');
 	}
 
 	// Decode URI octets
-	if (urlObj.pathname) {
+	if (urlObject.pathname) {
 		try {
-			urlObj.pathname = decodeURI(urlObj.pathname);
-		} catch (_) {}
+			urlObject.pathname = decodeURI(urlObject.pathname);
+		} catch {}
 	}
 
 	// Remove directory index
@@ -141,62 +139,62 @@ const normalizeUrl = (urlString, options) => {
 	}
 
 	if (Array.isArray(options.removeDirectoryIndex) && options.removeDirectoryIndex.length > 0) {
-		let pathComponents = urlObj.pathname.split('/');
+		let pathComponents = urlObject.pathname.split('/');
 		const lastComponent = pathComponents[pathComponents.length - 1];
 
 		if (testParameter(lastComponent, options.removeDirectoryIndex)) {
-			pathComponents = pathComponents.slice(0, pathComponents.length - 1);
-			urlObj.pathname = pathComponents.slice(1).join('/') + '/';
+			pathComponents = pathComponents.slice(0, -1);
+			urlObject.pathname = pathComponents.slice(1).join('/') + '/';
 		}
 	}
 
-	if (urlObj.hostname) {
+	if (urlObject.hostname) {
 		// Remove trailing dot
-		urlObj.hostname = urlObj.hostname.replace(/\.$/, '');
+		urlObject.hostname = urlObject.hostname.replace(/\.$/, '');
 
 		// Remove `www.`
-		if (options.stripWWW && /^www\.(?!www\.)(?:[a-z\-\d]{1,63})\.(?:[a-z.\-\d]{2,63})$/.test(urlObj.hostname)) {
+		if (options.stripWWW && /^www\.(?!www\.)[a-z\-\d]{1,63}\.[a-z.\-\d]{2,63}$/.test(urlObject.hostname)) {
 			// Each label should be max 63 at length (min: 1).
 			// Source: https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names
 			// Each TLD should be up to 63 characters long (min: 2).
 			// It is technically possible to have a single character TLD, but none currently exist.
-			urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
+			urlObject.hostname = urlObject.hostname.replace(/^www\./, '');
 		}
 	}
 
 	// Remove query unwanted parameters
 	if (Array.isArray(options.removeQueryParameters)) {
-		for (const key of [...urlObj.searchParams.keys()]) {
+		for (const key of [...urlObject.searchParams.keys()]) {
 			if (testParameter(key, options.removeQueryParameters)) {
-				urlObj.searchParams.delete(key);
+				urlObject.searchParams.delete(key);
 			}
 		}
 	}
 
 	if (options.removeQueryParameters === true) {
-		urlObj.search = '';
+		urlObject.search = '';
 	}
 
 	// Sort query parameters
 	if (options.sortQueryParameters) {
-		urlObj.searchParams.sort();
+		urlObject.searchParams.sort();
 	}
 
 	if (options.removeTrailingSlash) {
-		urlObj.pathname = urlObj.pathname.replace(/\/$/, '');
+		urlObject.pathname = urlObject.pathname.replace(/\/$/, '');
 	}
 
 	const oldUrlString = urlString;
 
 	// Take advantage of many of the Node `url` normalizations
-	urlString = urlObj.toString();
+	urlString = urlObject.toString();
 
-	if (!options.removeSingleSlash && urlObj.pathname === '/' && !oldUrlString.endsWith('/') && urlObj.hash === '') {
+	if (!options.removeSingleSlash && urlObject.pathname === '/' && !oldUrlString.endsWith('/') && urlObject.hash === '') {
 		urlString = urlString.replace(/\/$/, '');
 	}
 
 	// Remove ending `/` unless removeSingleSlash is false
-	if ((options.removeTrailingSlash || urlObj.pathname === '/') && urlObj.hash === '' && options.removeSingleSlash) {
+	if ((options.removeTrailingSlash || urlObject.pathname === '/') && urlObject.hash === '' && options.removeSingleSlash) {
 		urlString = urlString.replace(/\/$/, '');
 	}
 
@@ -211,6 +209,4 @@ const normalizeUrl = (urlString, options) => {
 	}
 
 	return urlString;
-};
-
-module.exports = normalizeUrl;
+}

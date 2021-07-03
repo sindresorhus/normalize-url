@@ -11,8 +11,10 @@
 		"url": "https://sindresorhus.com"
 	},
 	"engines": {
-		"node": ">=10"
+		"node": ">=12.20"
 	},
+	"type": "module",
+	"exports": "./index.js",
 	"scripts": {
 		"test": "xo && nyc ava && tsd"
 	},
@@ -36,10 +38,10 @@
 		"canonical"
 	],
 	"devDependencies": {
-		"ava": "^2.4.0",
-		"nyc": "^15.0.0",
-		"tsd": "^0.11.0",
-		"xo": "^0.25.3"
+		"ava": "^3.15.0",
+		"nyc": "^15.1.0",
+		"tsd": "^0.17.0",
+		"xo": "^0.40.3"
 	},
 	"nyc": {
 		"reporter": [
