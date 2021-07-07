@@ -269,19 +269,22 @@ test('invalid urls', t => {
 	t.throws(() => {
 		normalizeUrl('http://');
 	}, {
-		message: 'Invalid URL: http://'
+		message: 'Invalid URL',
+		input: 'http://'
 	});
 
 	t.throws(() => {
 		normalizeUrl('/');
 	}, {
-		message: 'Invalid URL: /'
+		message: 'Invalid URL',
+		input: '/'
 	});
 
 	t.throws(() => {
 		normalizeUrl('/relative/path/');
 	}, {
-		message: 'Invalid URL: /relative/path/'
+		message: 'Invalid URL',
+		input: '/relative/path/'
 	});
 });
 
