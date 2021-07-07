@@ -310,7 +310,7 @@ test('remove duplicate pathname slashes', t => {
 test('data URL', t => {
 	// Invalid URL.
 	t.throws(() => normalizeUrl('data:'), {
-		message: 'Invalid URL'
+		message: 'Invalid URL: data:'
 	});
 
 	// Strip default MIME type
