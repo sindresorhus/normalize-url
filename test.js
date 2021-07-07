@@ -269,22 +269,19 @@ test('invalid urls', t => {
 	t.throws(() => {
 		normalizeUrl('http://');
 	}, {
-		message: 'Invalid URL',
-		input: 'http://'
+		message: 'Invalid URL'
 	});
 
 	t.throws(() => {
 		normalizeUrl('/');
 	}, {
-		message: 'Invalid URL',
-		input: '/'
+		message: 'Invalid URL'
 	});
 
 	t.throws(() => {
 		normalizeUrl('/relative/path/');
 	}, {
-		message: 'Invalid URL',
-		input: '/relative/path/'
+		message: 'Invalid URL'
 	});
 });
 
@@ -313,7 +310,7 @@ test('remove duplicate pathname slashes', t => {
 test('data URL', t => {
 	// Invalid URL.
 	t.throws(() => normalizeUrl('data:'), {
-		message: 'Invalid URL: data:'
+		message: 'Invalid URL'
 	});
 
 	// Strip default MIME type
