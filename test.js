@@ -1,5 +1,5 @@
 import test from 'ava';
-import normalizeUrl from '.';
+import normalizeUrl from './index.js';
 
 test('main', t => {
 	t.is(normalizeUrl('sindresorhus.com'), 'http://sindresorhus.com');
@@ -152,7 +152,9 @@ test('forceHttp option', t => {
 test('forceHttp option with forceHttps', t => {
 	t.throws(() => {
 		normalizeUrl('https://www.sindresorhus.com', {forceHttp: true, forceHttps: true});
-	}, 'The `forceHttp` and `forceHttps` options cannot be used together');
+	}, {
+		message: 'The `forceHttp` and `forceHttps` options cannot be used together'
+	});
 });
 
 test('forceHttps option', t => {
@@ -266,15 +268,21 @@ test('sortQueryParameters option', t => {
 test('invalid urls', t => {
 	t.throws(() => {
 		normalizeUrl('http://');
-	}, 'Invalid URL: http://');
+	}, {
+		message: 'Invalid URL'
+	});
 
 	t.throws(() => {
 		normalizeUrl('/');
-	}, 'Invalid URL: /');
+	}, {
+		message: 'Invalid URL'
+	});
 
 	t.throws(() => {
 		normalizeUrl('/relative/path/');
-	}, 'Invalid URL: /relative/path/');
+	}, {
+		message: 'Invalid URL'
+	});
 });
 
 test('remove duplicate pathname slashes', t => {
@@ -301,7 +309,9 @@ test('remove duplicate pathname slashes', t => {
 
 test('data URL', t => {
 	// Invalid URL.
-	t.throws(() => normalizeUrl('data:'), 'Invalid URL: data:');
+	t.throws(() => normalizeUrl('data:'), {
+		message: 'Invalid URL: data:'
+	});
 
 	// Strip default MIME type
 	t.is(normalizeUrl('data:text/plain,foo'), 'data:,foo');
@@ -364,7 +374,9 @@ test('prevents homograph attack', t => {
 test('view-source URL', t => {
 	t.throws(() => {
 		normalizeUrl('view-source:https://www.sindresorhus.com');
-	}, '`view-source:` is not supported as it is a non-standard protocol');
+	}, {
+		message: '`view-source:` is not supported as it is a non-standard protocol'
+	});
 });
 
 test('does not have exponential performance for data URLs', t => {

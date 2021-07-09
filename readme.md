@@ -15,7 +15,7 @@ $ npm install normalize-url
 ## Usage
 
 ```js
-const normalizeUrl = require('normalize-url');
+import normalizeUrl from 'normalize-url';
 
 normalizeUrl('sindresorhus.com');
 //=> 'http://sindresorhus.com'
