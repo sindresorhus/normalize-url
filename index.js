@@ -2,9 +2,7 @@
 const DATA_URL_DEFAULT_MIME_TYPE = 'text/plain';
 const DATA_URL_DEFAULT_CHARSET = 'us-ascii';
 
-const testParameter = (name, filters) => {
-	return filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
-};
+const testParameter = (name, filters) => filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 
 const normalizeDataURL = (urlString, {stripHash}) => {
 	const match = /^data:(?<type>[^,]*?),(?<data>[^#]*?)(?:#(?<hash>.*))?$/.exec(urlString);
@@ -43,7 +41,7 @@ const normalizeDataURL = (urlString, {stripHash}) => {
 		.filter(Boolean);
 
 	const normalizedMediaType = [
-		...attributes
+		...attributes,
 	];
 
 	if (isBase64) {
@@ -72,7 +70,7 @@ export default function normalizeUrl(urlString, options) {
 		removeSingleSlash: true,
 		removeDirectoryIndex: false,
 		sortQueryParameters: true,
-		...options
+		...options,
 	};
 
 	urlString = urlString.trim();

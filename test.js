@@ -111,7 +111,7 @@ test('stripWWW option', t => {
 test('removeQueryParameters option', t => {
 	const options = {
 		stripWWW: false,
-		removeQueryParameters: [/^utm_\w+/i, 'ref']
+		removeQueryParameters: [/^utm_\w+/i, 'ref'],
 	};
 	t.is(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test'), 'http://sindresorhus.com/?foo=bar');
 	t.is(normalizeUrl('http://www.sindresorhus.com', options), 'http://www.sindresorhus.com');
@@ -122,7 +122,7 @@ test('removeQueryParameters option', t => {
 test('removeQueryParameters boolean `true` option', t => {
 	const options = {
 		stripWWW: false,
-		removeQueryParameters: true
+		removeQueryParameters: true,
 	};
 
 	t.is(normalizeUrl('http://www.sindresorhus.com', options), 'http://www.sindresorhus.com');
@@ -133,7 +133,7 @@ test('removeQueryParameters boolean `true` option', t => {
 test('removeQueryParameters boolean `false` option', t => {
 	const options = {
 		stripWWW: false,
-		removeQueryParameters: false
+		removeQueryParameters: false,
 	};
 
 	t.is(normalizeUrl('http://www.sindresorhus.com', options), 'http://www.sindresorhus.com');
@@ -153,7 +153,7 @@ test('forceHttp option with forceHttps', t => {
 	t.throws(() => {
 		normalizeUrl('https://www.sindresorhus.com', {forceHttp: true, forceHttps: true});
 	}, {
-		message: 'The `forceHttp` and `forceHttps` options cannot be used together'
+		message: 'The `forceHttp` and `forceHttps` options cannot be used together',
 	});
 });
 
@@ -231,7 +231,7 @@ test('removeDirectoryIndex option', t => {
 test('removeTrailingSlash and removeDirectoryIndex options)', t => {
 	const options1 = {
 		removeTrailingSlash: true,
-		removeDirectoryIndex: true
+		removeDirectoryIndex: true,
 	};
 	t.is(normalizeUrl('http://sindresorhus.com/path/', options1), 'http://sindresorhus.com/path');
 	t.is(normalizeUrl('http://sindresorhus.com/path/index.html', options1), 'http://sindresorhus.com/path');
@@ -240,7 +240,7 @@ test('removeTrailingSlash and removeDirectoryIndex options)', t => {
 
 	const options2 = {
 		removeTrailingSlash: false,
-		removeDirectoryIndex: true
+		removeDirectoryIndex: true,
 	};
 	t.is(normalizeUrl('http://sindresorhus.com/path/', options2), 'http://sindresorhus.com/path/');
 	t.is(normalizeUrl('http://sindresorhus.com/path/index.html', options2), 'http://sindresorhus.com/path/');
@@ -249,7 +249,7 @@ test('removeTrailingSlash and removeDirectoryIndex options)', t => {
 
 test('sortQueryParameters option', t => {
 	const options1 = {
-		sortQueryParameters: true
+		sortQueryParameters: true,
 	};
 	t.is(normalizeUrl('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W', options1), 'http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
 	t.is(normalizeUrl('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W', options1), 'http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
@@ -257,7 +257,7 @@ test('sortQueryParameters option', t => {
 	t.is(normalizeUrl('http://sindresorhus.com/', options1), 'http://sindresorhus.com');
 
 	const options2 = {
-		sortQueryParameters: false
+		sortQueryParameters: false,
 	};
 	t.is(normalizeUrl('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W', options2), 'http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
 	t.is(normalizeUrl('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W', options2), 'http://sindresorhus.com/?b=Y&c=X&a=Z&d=W');
@@ -269,19 +269,19 @@ test('invalid urls', t => {
 	t.throws(() => {
 		normalizeUrl('http://');
 	}, {
-		message: 'Invalid URL'
+		message: 'Invalid URL',
 	});
 
 	t.throws(() => {
 		normalizeUrl('/');
 	}, {
-		message: 'Invalid URL'
+		message: 'Invalid URL',
 	});
 
 	t.throws(() => {
 		normalizeUrl('/relative/path/');
 	}, {
-		message: 'Invalid URL'
+		message: 'Invalid URL',
 	});
 });
 
@@ -309,8 +309,10 @@ test('remove duplicate pathname slashes', t => {
 
 test('data URL', t => {
 	// Invalid URL.
-	t.throws(() => normalizeUrl('data:'), {
-		message: 'Invalid URL: data:'
+	t.throws(() => {
+		normalizeUrl('data:');
+	}, {
+		message: 'Invalid URL: data:',
 	});
 
 	// Strip default MIME type
@@ -357,7 +359,7 @@ test('data URL', t => {
 		removeQueryParameters: [/^utm_\w+/i, 'ref'],
 		sortQueryParameters: true,
 		removeTrailingSlash: true,
-		removeDirectoryIndex: true
+		removeDirectoryIndex: true,
 	};
 	t.is(normalizeUrl('data:,sindresorhus.com/', options), 'data:,sindresorhus.com/');
 	t.is(normalizeUrl('data:,sindresorhus.com/index.html', options), 'data:,sindresorhus.com/index.html');
@@ -375,7 +377,7 @@ test('view-source URL', t => {
 	t.throws(() => {
 		normalizeUrl('view-source:https://www.sindresorhus.com');
 	}, {
-		message: '`view-source:` is not supported as it is a non-standard protocol'
+		message: '`view-source:` is not supported as it is a non-standard protocol',
 	});
 });
 

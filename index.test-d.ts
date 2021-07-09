@@ -13,22 +13,22 @@ normalizeUrl('sindresorhus.com/about.html#contact', {stripHash: true});
 normalizeUrl('https://sindresorhus.com', {stripProtocol: true});
 normalizeUrl('http://www.sindresorhus.com', {stripWWW: false});
 normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
-	removeQueryParameters: ['ref', /test/]
+	removeQueryParameters: ['ref', /test/],
 });
 normalizeUrl('www.sindresorhus.com?foo=bar', {
-	removeQueryParameters: true
+	removeQueryParameters: true,
 });
 normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
-	removeQueryParameters: false
+	removeQueryParameters: false,
 });
 normalizeUrl('http://sindresorhus.com/', {removeTrailingSlash: false});
 normalizeUrl('http://sindresorhus.com/', {removeSingleSlash: false});
 normalizeUrl('www.sindresorhus.com/foo/default.php', {
-	removeDirectoryIndex: [/^default\.[a-z]+$/, 'foo']
+	removeDirectoryIndex: [/^default\.[a-z]+$/, 'foo'],
 });
 normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {
-	sortQueryParameters: false
+	sortQueryParameters: false,
 });
 normalizeUrl('www.sindresorhus.com/about#:~:text=hello', {
-	stripTextFragment: false
+	stripTextFragment: false,
 });
