@@ -4,14 +4,14 @@ const DATA_URL_DEFAULT_CHARSET = 'us-ascii';
 
 const testParameter = (name, filters) => filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 
-const normalizeDataURL = (urlString, { stripHash }) => {
+const normalizeDataURL = (urlString, {stripHash}) => {
 	const match = /^data:(?<type>[^,]*?),(?<data>[^#]*?)(?:#(?<hash>.*))?$/.exec(urlString);
 
 	if (!match) {
 		throw new Error(`Invalid URL: ${urlString}`);
 	}
 
-	let { type, data, hash } = match.groups;
+	let {type, data, hash} = match.groups;
 	const mediaType = type.split(';');
 	hash = stripHash ? '' : hash;
 
@@ -123,14 +123,16 @@ export default function normalizeUrl(urlString, options) {
 	if (urlObject.pathname) {
 		try {
 			urlObject.pathname = urlObject.pathname.replace(
-				// ref: https://caniuse.com/js-regexp-lookbehind
+				// https://caniuse.com/js-regexp-lookbehind
 				// prevent SyntaxError which can not be try-catch
 				// convert from /(?<!\b[a-z][a-z\d+\-.]{1,50}:)\/{2,}/g
-				new RegExp('(?<!\\b[a-z][a-z\\d+\\-.]{1,50}:)\\/{2,}','g'),
-				'/'
+
+				// eslint-disable-next-line prefer-regex-literals
+				new RegExp('(?<!\\b[a-z][a-z\\d+\\-.]{1,50}:)\\/{2,}', 'g'),
+				'/',
 			);
 		} catch {
-			// ref: https://github.com/sindresorhus/normalize-url/blob/454970b662086e8856d1af074c7a57df96545b8b/index.js#L136
+			// https://github.com/sindresorhus/normalize-url/blob/454970b662086e8856d1af074c7a57df96545b8b/index.js#L136
 			// TODO: Use the following instead when targeting Node.js 10
 			// `urlObj.pathname = urlObj.pathname.replace(/(?<!https?:)\/{2,}/g, '/');`
 			urlObject.pathname = urlObject.pathname.replace(/((?!:).|^)\/{2,}/g, (_, p1) => {
@@ -147,7 +149,7 @@ export default function normalizeUrl(urlString, options) {
 	if (urlObject.pathname) {
 		try {
 			urlObject.pathname = decodeURI(urlObject.pathname);
-		} catch { }
+		} catch {}
 	}
 
 	// Remove directory index
