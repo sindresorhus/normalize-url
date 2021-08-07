@@ -125,10 +125,8 @@ export default function normalizeUrl(urlString, options) {
 			urlObject.pathname = urlObject.pathname.replace(
 				// ref: https://caniuse.com/js-regexp-lookbehind
 				// prevent SyntaxError which can not be try-catch
-				new RegExp(
-					// generated from /(?<!\b[a-z][a-z\d+\-.]{1,50}:)\/{2,}/g
-					"/(?<!\\b[a-z][a-z\\d+\\-.]{1,50}:)\\/{2,}/g"
-				),
+				// convert from /(?<!\b[a-z][a-z\d+\-.]{1,50}:)\/{2,}/g
+				new RegExp('(?<!\\b[a-z][a-z\\d+\\-.]{1,50}:)\\/{2,}','g'),
 				'/'
 			);
 		} catch {
