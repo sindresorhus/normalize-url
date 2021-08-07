@@ -121,9 +121,8 @@ export default function normalizeUrl(urlString, options) {
 
 	// Remove duplicate slashes if not preceded by a protocol
 	if (urlObject.pathname) {
-		let urlObjectPathname;
 		try {
-			urlObjectPathname = urlObject.pathname.replace(
+			urlObject.pathname = urlObject.pathname.replace(
 				// ref: https://caniuse.com/js-regexp-lookbehind
 				// prevent SyntaxError which can not be try-catch
 				new RegExp(
@@ -132,13 +131,11 @@ export default function normalizeUrl(urlString, options) {
 				),
 				'/'
 			);
-		} catch { }
-
-		if (!!urlObjectPathname) {
+		} catch {
 			// ref: https://github.com/sindresorhus/normalize-url/blob/454970b662086e8856d1af074c7a57df96545b8b/index.js#L136
 			// TODO: Use the following instead when targeting Node.js 10
 			// `urlObj.pathname = urlObj.pathname.replace(/(?<!https?:)\/{2,}/g, '/');`
-			urlObjectPathname = urlObject.pathname.replace(/((?!:).|^)\/{2,}/g, (_, p1) => {
+			urlObject.pathname = urlObject.pathname.replace(/((?!:).|^)\/{2,}/g, (_, p1) => {
 				if (/^(?!\/)/g.test(p1)) {
 					return `${p1}/`;
 				}
@@ -146,8 +143,6 @@ export default function normalizeUrl(urlString, options) {
 				return '/';
 			});
 		}
-
-		urlObject.pathname = urlObjectPathname;
 	}
 
 	// Decode URI octets
