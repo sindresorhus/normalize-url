@@ -242,13 +242,6 @@ export interface Options {
 	```
 	*/
 	readonly sortQueryParameters?: boolean;
-
-	/**
-	prefer js-regexp-lookbehind{@link https://caniuse.com/js-regexp-lookbehind}
-
-	@default true
-	*/
-	readonly preferJsRegexpLookbehind?: boolean;
 }
 
 /**

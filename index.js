@@ -70,8 +70,6 @@ export default function normalizeUrl(urlString, options) {
 		removeSingleSlash: true,
 		removeDirectoryIndex: false,
 		sortQueryParameters: true,
-		// ref: https://caniuse.com/js-regexp-lookbehind
-		preferJsRegexpLookbehind: true,
 		...options,
 	};
 
@@ -124,18 +122,17 @@ export default function normalizeUrl(urlString, options) {
 	// Remove duplicate slashes if not preceded by a protocol
 	if (urlObject.pathname) {
 		let urlObjectPathname;
-		if (options.preferJsRegexpLookbehind) {
-			try {
-				urlObjectPathname = urlObject.pathname.replace(
-					// prevent SyntaxError which can not be try-catch
-					new RegExp(
-						// generated from /(?<!\b[a-z][a-z\d+\-.]{1,50}:)\/{2,}/g
-						"/(?<!\\b[a-z][a-z\\d+\\-.]{1,50}:)\\/{2,}/g"
-					),
-					'/'
-				);
-			} catch { }
-		}
+		try {
+			urlObjectPathname = urlObject.pathname.replace(
+				// ref: https://caniuse.com/js-regexp-lookbehind
+				// prevent SyntaxError which can not be try-catch
+				new RegExp(
+					// generated from /(?<!\b[a-z][a-z\d+\-.]{1,50}:)\/{2,}/g
+					"/(?<!\\b[a-z][a-z\\d+\\-.]{1,50}:)\\/{2,}/g"
+				),
+				'/'
+			);
+		} catch { }
 
 		if (!!urlObjectPathname) {
 			// ref: https://github.com/sindresorhus/normalize-url/blob/454970b662086e8856d1af074c7a57df96545b8b/index.js#L136
