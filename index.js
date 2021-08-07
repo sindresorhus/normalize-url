@@ -4,14 +4,14 @@ const DATA_URL_DEFAULT_CHARSET = 'us-ascii';
 
 const testParameter = (name, filters) => filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 
-const normalizeDataURL = (urlString, {stripHash}) => {
+const normalizeDataURL = (urlString, { stripHash }) => {
 	const match = /^data:(?<type>[^,]*?),(?<data>[^#]*?)(?:#(?<hash>.*))?$/.exec(urlString);
 
 	if (!match) {
 		throw new Error(`Invalid URL: ${urlString}`);
 	}
 
-	let {type, data, hash} = match.groups;
+	let { type, data, hash } = match.groups;
 	const mediaType = type.split(';');
 	hash = stripHash ? '' : hash;
 
@@ -123,20 +123,25 @@ export default function normalizeUrl(urlString, options) {
 
 	// Remove duplicate slashes if not preceded by a protocol
 	if (urlObject.pathname) {
+		let urlObjectPathname;
 		if (options.preferJsRegexpLookbehind) {
-			urlObject.pathname = urlObject.pathname.replace(
-				// prevent SyntaxError which can not be try-catch
-				new RegExp(
-					// generated from /(?<!\b[a-z][a-z\d+\-.]{1,50}:)\/{2,}/g
-					"/(?<!\\b[a-z][a-z\\d+\\-.]{1,50}:)\\/{2,}/g"
-				),
-				'/'
-			);
-		} else {
+			try {
+				urlObjectPathname = urlObject.pathname.replace(
+					// prevent SyntaxError which can not be try-catch
+					new RegExp(
+						// generated from /(?<!\b[a-z][a-z\d+\-.]{1,50}:)\/{2,}/g
+						"/(?<!\\b[a-z][a-z\\d+\\-.]{1,50}:)\\/{2,}/g"
+					),
+					'/'
+				);
+			} catch { }
+		}
+
+		if (!!urlObjectPathname) {
 			// ref: https://github.com/sindresorhus/normalize-url/blob/454970b662086e8856d1af074c7a57df96545b8b/index.js#L136
 			// TODO: Use the following instead when targeting Node.js 10
 			// `urlObj.pathname = urlObj.pathname.replace(/(?<!https?:)\/{2,}/g, '/');`
-			urlObject.pathname = urlObject.pathname.replace(/((?!:).|^)\/{2,}/g, (_, p1) => {
+			urlObjectPathname = urlObject.pathname.replace(/((?!:).|^)\/{2,}/g, (_, p1) => {
 				if (/^(?!\/)/g.test(p1)) {
 					return `${p1}/`;
 				}
@@ -144,13 +149,15 @@ export default function normalizeUrl(urlString, options) {
 				return '/';
 			});
 		}
+
+		urlObject.pathname = urlObjectPathname;
 	}
 
 	// Decode URI octets
 	if (urlObject.pathname) {
 		try {
 			urlObject.pathname = decodeURI(urlObject.pathname);
-		} catch {}
+		} catch { }
 	}
 
 	// Remove directory index
