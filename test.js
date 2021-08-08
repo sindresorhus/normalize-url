@@ -1,352 +1,368 @@
-import test from 'ava';
+/* global it */
+import {expect} from 'chai';
 import normalizeUrl from './index.js';
 
-test('main', t => {
-	t.is(normalizeUrl('sindresorhus.com'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('sindresorhus.com '), 'http://sindresorhus.com');
-	t.is(normalizeUrl('sindresorhus.com.'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('SindreSorhus.com'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('sindresorhus.com', {defaultProtocol: 'https:'}), 'https://sindresorhus.com');
-	t.is(normalizeUrl('HTTP://sindresorhus.com'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('//sindresorhus.com'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com:80'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('https://sindresorhus.com:443'), 'https://sindresorhus.com');
-	t.is(normalizeUrl('ftp://sindresorhus.com:21'), 'ftp://sindresorhus.com');
-	t.is(normalizeUrl('http://www.sindresorhus.com'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('www.com'), 'http://www.com');
-	t.is(normalizeUrl('http://www.www.sindresorhus.com'), 'http://www.www.sindresorhus.com');
-	t.is(normalizeUrl('www.sindresorhus.com'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/foo/'), 'http://sindresorhus.com/foo');
-	t.is(normalizeUrl('sindresorhus.com/?foo=bar baz'), 'http://sindresorhus.com/?foo=bar+baz');
-	t.is(normalizeUrl('https://foo.com/https://bar.com'), 'https://foo.com/https://bar.com');
-	t.is(normalizeUrl('https://foo.com/https://bar.com/foo//bar'), 'https://foo.com/https://bar.com/foo/bar');
-	t.is(normalizeUrl('https://foo.com/http://bar.com'), 'https://foo.com/http://bar.com');
-	t.is(normalizeUrl('https://foo.com/http://bar.com/foo//bar'), 'https://foo.com/http://bar.com/foo/bar');
-	t.is(normalizeUrl('http://sindresorhus.com/%7Efoo/'), 'http://sindresorhus.com/~foo', 'decode URI octets');
-	t.is(normalizeUrl('https://foo.com/%FAIL%/07/94/ca/55.jpg'), 'https://foo.com/%FAIL%/07/94/ca/55.jpg');
-	t.is(normalizeUrl('http://sindresorhus.com/?'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('êxample.com'), 'http://xn--xample-hva.com');
-	t.is(normalizeUrl('http://sindresorhus.com/?b=bar&a=foo'), 'http://sindresorhus.com/?a=foo&b=bar');
-	t.is(normalizeUrl('http://sindresorhus.com/?foo=bar*|<>:"'), 'http://sindresorhus.com/?foo=bar*%7C%3C%3E%3A%22');
-	t.is(normalizeUrl('http://sindresorhus.com:5000'), 'http://sindresorhus.com:5000');
-	t.is(normalizeUrl('//sindresorhus.com/', {normalizeProtocol: false}), '//sindresorhus.com');
-	t.is(normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false}), '//sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/foo#bar'), 'http://sindresorhus.com/foo#bar');
-	t.is(normalizeUrl('http://sindresorhus.com/foo#bar', {stripHash: true}), 'http://sindresorhus.com/foo');
-	t.is(normalizeUrl('http://sindresorhus.com/foo#bar:~:text=hello%20world', {stripHash: true}), 'http://sindresorhus.com/foo');
-	t.is(normalizeUrl('http://sindresorhus.com/foo/bar/../baz'), 'http://sindresorhus.com/foo/baz');
-	t.is(normalizeUrl('http://sindresorhus.com/foo/bar/./baz'), 'http://sindresorhus.com/foo/bar/baz');
-	t.is(normalizeUrl('sindre://www.sorhus.com'), 'sindre://sorhus.com');
-	t.is(normalizeUrl('sindre://www.sorhus.com/'), 'sindre://sorhus.com');
-	t.is(normalizeUrl('sindre://www.sorhus.com/foo/bar'), 'sindre://sorhus.com/foo/bar');
-	t.is(normalizeUrl('https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png'), 'https://i.vimeocdn.com/filter/overlay?src0=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F598160082_1280x720.jpg&src1=https%3A%2F%2Ff.vimeocdn.com%2Fimages_v6%2Fshare%2Fplay_icon_overlay.png');
+it('main', async () => {
+	expect(normalizeUrl('sindresorhus.com')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('sindresorhus.com ')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('sindresorhus.com.')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('SindreSorhus.com')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('sindresorhus.com', {defaultProtocol: 'https:'})).to.deep.equal('https://sindresorhus.com');
+	expect(normalizeUrl('HTTP://sindresorhus.com')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('//sindresorhus.com')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com:80')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('https://sindresorhus.com:443')).to.deep.equal('https://sindresorhus.com');
+	expect(normalizeUrl('ftp://sindresorhus.com:21')).to.deep.equal('ftp://sindresorhus.com');
+	expect(normalizeUrl('http://www.sindresorhus.com')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('www.com')).to.deep.equal('http://www.com');
+	expect(normalizeUrl('http://www.www.sindresorhus.com')).to.deep.equal('http://www.www.sindresorhus.com');
+	expect(normalizeUrl('www.sindresorhus.com')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/foo/')).to.deep.equal('http://sindresorhus.com/foo');
+	expect(normalizeUrl('sindresorhus.com/?foo=bar baz')).to.deep.equal('http://sindresorhus.com/?foo=bar+baz');
+	expect(normalizeUrl('https://foo.com/https://bar.com')).to.deep.equal('https://foo.com/https://bar.com');
+	expect(normalizeUrl('https://foo.com/https://bar.com/foo//bar')).to.deep.equal('https://foo.com/https://bar.com/foo/bar');
+	expect(normalizeUrl('https://foo.com/http://bar.com')).to.deep.equal('https://foo.com/http://bar.com');
+	expect(normalizeUrl('https://foo.com/http://bar.com/foo//bar')).to.deep.equal('https://foo.com/http://bar.com/foo/bar');
+	expect(normalizeUrl('http://sindresorhus.com/%7Efoo/')).to.deep.equal('http://sindresorhus.com/~foo', 'decode URI octets');
+	expect(normalizeUrl('https://foo.com/%FAIL%/07/94/ca/55.jpg')).to.deep.equal('https://foo.com/%FAIL%/07/94/ca/55.jpg');
+	expect(normalizeUrl('http://sindresorhus.com/?')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('êxample.com')).to.deep.equal('http://xn--xample-hva.com');
+	expect(normalizeUrl('http://sindresorhus.com/?b=bar&a=foo')).to.deep.equal('http://sindresorhus.com/?a=foo&b=bar');
+	expect(normalizeUrl('http://sindresorhus.com/?foo=bar*|<>:"')).to.deep.equal('http://sindresorhus.com/?foo=bar*%7C%3C%3E%3A%22');
+	expect(normalizeUrl('http://sindresorhus.com:5000')).to.deep.equal('http://sindresorhus.com:5000');
+	expect(normalizeUrl('//sindresorhus.com/', {normalizeProtocol: false})).to.deep.equal('//sindresorhus.com');
+	expect(normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false})).to.deep.equal('//sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/foo#bar')).to.deep.equal('http://sindresorhus.com/foo#bar');
+	expect(normalizeUrl('http://sindresorhus.com/foo#bar', {stripHash: true})).to.deep.equal('http://sindresorhus.com/foo');
+	expect(normalizeUrl('http://sindresorhus.com/foo#bar:~:text=hello%20world', {stripHash: true})).to.deep.equal('http://sindresorhus.com/foo');
+	expect(normalizeUrl('http://sindresorhus.com/foo/bar/../baz')).to.deep.equal('http://sindresorhus.com/foo/baz');
+	expect(normalizeUrl('http://sindresorhus.com/foo/bar/./baz')).to.deep.equal('http://sindresorhus.com/foo/bar/baz');
+	expect(normalizeUrl('https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png')).to.deep.equal('https://i.vimeocdn.com/filter/overlay?src0=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F598160082_1280x720.jpg&src1=https%3A%2F%2Ff.vimeocdn.com%2Fimages_v6%2Fshare%2Fplay_icon_overlay.png');
 });
 
-test('stripAuthentication option', t => {
-	t.is(normalizeUrl('http://user:password@www.sindresorhus.com'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('https://user:password@www.sindresorhus.com'), 'https://sindresorhus.com');
-	t.is(normalizeUrl('https://user:password@www.sindresorhus.com/@user'), 'https://sindresorhus.com/@user');
-	t.is(normalizeUrl('user:password@sindresorhus.com'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://user:password@www.êxample.com'), 'http://xn--xample-hva.com');
-	t.is(normalizeUrl('sindre://user:password@www.sorhus.com'), 'sindre://sorhus.com');
+// https://nodejs.org/api/url.html#url_special_schemes
+it('main: non-special-protocol-schemes', async () => {
+	expect(normalizeUrl('sindre://www.sorhus.com')).to.deep.equal('sindre://sorhus.com');
+	expect(normalizeUrl('sindre://www.sorhus.com/')).to.deep.equal('sindre://sorhus.com');
+	expect(normalizeUrl('sindre://www.sorhus.com/foo/bar')).to.deep.equal('sindre://sorhus.com/foo/bar');
+});
+
+it('stripAuthentication option', async () => {
+	expect(normalizeUrl('http://user:password@www.sindresorhus.com')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('https://user:password@www.sindresorhus.com')).to.deep.equal('https://sindresorhus.com');
+	expect(normalizeUrl('https://user:password@www.sindresorhus.com/@user')).to.deep.equal('https://sindresorhus.com/@user');
+	expect(normalizeUrl('user:password@sindresorhus.com')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://user:password@www.êxample.com')).to.deep.equal('http://xn--xample-hva.com');
 
 	const options = {stripAuthentication: false};
-	t.is(normalizeUrl('http://user:password@www.sindresorhus.com', options), 'http://user:password@sindresorhus.com');
-	t.is(normalizeUrl('https://user:password@www.sindresorhus.com', options), 'https://user:password@sindresorhus.com');
-	t.is(normalizeUrl('https://user:password@www.sindresorhus.com/@user', options), 'https://user:password@sindresorhus.com/@user');
-	t.is(normalizeUrl('user:password@sindresorhus.com', options), 'http://user:password@sindresorhus.com');
-	t.is(normalizeUrl('http://user:password@www.êxample.com', options), 'http://user:password@xn--xample-hva.com');
-	t.is(normalizeUrl('sindre://user:password@www.sorhus.com', options), 'sindre://user:password@sorhus.com');
+	expect(normalizeUrl('http://user:password@www.sindresorhus.com', options)).to.deep.equal('http://user:password@sindresorhus.com');
+	expect(normalizeUrl('https://user:password@www.sindresorhus.com', options)).to.deep.equal('https://user:password@sindresorhus.com');
+	expect(normalizeUrl('https://user:password@www.sindresorhus.com/@user', options)).to.deep.equal('https://user:password@sindresorhus.com/@user');
+	expect(normalizeUrl('user:password@sindresorhus.com', options)).to.deep.equal('http://user:password@sindresorhus.com');
+	expect(normalizeUrl('http://user:password@www.êxample.com', options)).to.deep.equal('http://user:password@xn--xample-hva.com');
 });
 
-test('stripProtocol option', t => {
+it('stripAuthentication option: non-special-protocol-schemes', async () => {
+	expect(normalizeUrl('sindre://user:password@www.sorhus.com')).to.deep.equal('sindre://sorhus.com');
+
+	const options = {stripAuthentication: false};
+	expect(normalizeUrl('sindre://user:password@www.sorhus.com', options)).to.deep.equal('sindre://user:password@sorhus.com');
+});
+
+it('stripProtocol option', async () => {
 	const options = {stripProtocol: true};
-	t.is(normalizeUrl('http://www.sindresorhus.com', options), 'sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com', options), 'sindresorhus.com');
-	t.is(normalizeUrl('https://www.sindresorhus.com', options), 'sindresorhus.com');
-	t.is(normalizeUrl('//www.sindresorhus.com', options), 'sindresorhus.com');
-	t.is(normalizeUrl('sindre://user:password@www.sorhus.com', options), 'sindre://sorhus.com');
-	t.is(normalizeUrl('sindre://www.sorhus.com', options), 'sindre://sorhus.com');
+	expect(normalizeUrl('http://www.sindresorhus.com', options)).to.deep.equal('sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com', options)).to.deep.equal('sindresorhus.com');
+	expect(normalizeUrl('https://www.sindresorhus.com', options)).to.deep.equal('sindresorhus.com');
+	expect(normalizeUrl('//www.sindresorhus.com', options)).to.deep.equal('sindresorhus.com');
 });
 
-test('stripTextFragment option', t => {
-	t.is(normalizeUrl('http://sindresorhus.com'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/about#'), 'http://sindresorhus.com/about');
-	t.is(normalizeUrl('http://sindresorhus.com/about#:~:text=hello'), 'http://sindresorhus.com/about');
-	t.is(normalizeUrl('http://sindresorhus.com/about#main'), 'http://sindresorhus.com/about#main');
-	t.is(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello'), 'http://sindresorhus.com/about#main');
-	t.is(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello%20world'), 'http://sindresorhus.com/about#main');
+it('stripProtocol option: non-special-protocol-schemes', async () => {
+	const options = {stripProtocol: true};
+	expect(normalizeUrl('sindre://user:password@www.sorhus.com', options)).to.deep.equal('sindre://sorhus.com');
+	expect(normalizeUrl('sindre://www.sorhus.com', options)).to.deep.equal('sindre://sorhus.com');
+});
+
+it('stripTextFragment option', async () => {
+	expect(normalizeUrl('http://sindresorhus.com')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/about#')).to.deep.equal('http://sindresorhus.com/about');
+	expect(normalizeUrl('http://sindresorhus.com/about#:~:text=hello')).to.deep.equal('http://sindresorhus.com/about');
+	expect(normalizeUrl('http://sindresorhus.com/about#main')).to.deep.equal('http://sindresorhus.com/about#main');
+	expect(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello')).to.deep.equal('http://sindresorhus.com/about#main');
+	expect(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello%20world')).to.deep.equal('http://sindresorhus.com/about#main');
 
 	const options = {stripTextFragment: false};
-	t.is(normalizeUrl('http://sindresorhus.com', options), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/about#:~:text=hello', options), 'http://sindresorhus.com/about#:~:text=hello');
-	t.is(normalizeUrl('http://sindresorhus.com/about#main', options), 'http://sindresorhus.com/about#main');
-	t.is(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello', options), 'http://sindresorhus.com/about#main:~:text=hello');
-	t.is(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello%20world', options), 'http://sindresorhus.com/about#main:~:text=hello%20world');
+	expect(normalizeUrl('http://sindresorhus.com', options)).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/about#:~:text=hello', options)).to.deep.equal('http://sindresorhus.com/about#:~:text=hello');
+	expect(normalizeUrl('http://sindresorhus.com/about#main', options)).to.deep.equal('http://sindresorhus.com/about#main');
+	expect(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello', options)).to.deep.equal('http://sindresorhus.com/about#main:~:text=hello');
+	expect(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello%20world', options)).to.deep.equal('http://sindresorhus.com/about#main:~:text=hello%20world');
 
 	const options2 = {stripHash: true, stripTextFragment: false};
-	t.is(normalizeUrl('http://sindresorhus.com', options2), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/about#:~:text=hello', options2), 'http://sindresorhus.com/about');
-	t.is(normalizeUrl('http://sindresorhus.com/about#main', options2), 'http://sindresorhus.com/about');
-	t.is(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello', options2), 'http://sindresorhus.com/about');
-	t.is(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello%20world', options2), 'http://sindresorhus.com/about');
+	expect(normalizeUrl('http://sindresorhus.com', options2)).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/about#:~:text=hello', options2)).to.deep.equal('http://sindresorhus.com/about');
+	expect(normalizeUrl('http://sindresorhus.com/about#main', options2)).to.deep.equal('http://sindresorhus.com/about');
+	expect(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello', options2)).to.deep.equal('http://sindresorhus.com/about');
+	expect(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello%20world', options2)).to.deep.equal('http://sindresorhus.com/about');
 });
 
-test('stripWWW option', t => {
+it('stripWWW option', async () => {
 	const options = {stripWWW: false};
-	t.is(normalizeUrl('http://www.sindresorhus.com', options), 'http://www.sindresorhus.com');
-	t.is(normalizeUrl('www.sindresorhus.com', options), 'http://www.sindresorhus.com');
-	t.is(normalizeUrl('http://www.êxample.com', options), 'http://www.xn--xample-hva.com');
-	t.is(normalizeUrl('sindre://www.sorhus.com', options), 'sindre://www.sorhus.com');
+	expect(normalizeUrl('http://www.sindresorhus.com', options)).to.deep.equal('http://www.sindresorhus.com');
+	expect(normalizeUrl('www.sindresorhus.com', options)).to.deep.equal('http://www.sindresorhus.com');
+	expect(normalizeUrl('http://www.êxample.com', options)).to.deep.equal('http://www.xn--xample-hva.com');
 
 	const options2 = {stripWWW: true};
-	t.is(normalizeUrl('http://www.vue.amsterdam', options2), 'http://vue.amsterdam');
-	t.is(normalizeUrl('http://www.sorhus.xx--bck1b9a5dre4c', options2), 'http://sorhus.xx--bck1b9a5dre4c');
+	expect(normalizeUrl('http://www.vue.amsterdam', options2)).to.deep.equal('http://vue.amsterdam');
+	expect(normalizeUrl('http://www.sorhus.xx--bck1b9a5dre4c', options2)).to.deep.equal('http://sorhus.xx--bck1b9a5dre4c');
 
 	const tooLongTLDURL = 'http://www.sorhus.' + ''.padEnd(64, 'a');
-	t.is(normalizeUrl(tooLongTLDURL, options2), tooLongTLDURL);
+	expect(normalizeUrl(tooLongTLDURL, options2)).to.deep.equal(tooLongTLDURL);
 });
 
-test('removeQueryParameters option', t => {
+it('stripWWW option: non-special-protocol-schemes', async () => {
+	const options = {stripWWW: false};
+	expect(normalizeUrl('sindre://www.sorhus.com', options)).to.deep.equal('sindre://www.sorhus.com');
+});
+
+it('removeQueryParameters option', async () => {
 	const options = {
 		stripWWW: false,
 		removeQueryParameters: [/^utm_\w+/i, 'ref'],
 	};
-	t.is(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test'), 'http://sindresorhus.com/?foo=bar');
-	t.is(normalizeUrl('http://www.sindresorhus.com', options), 'http://www.sindresorhus.com');
-	t.is(normalizeUrl('www.sindresorhus.com?foo=bar', options), 'http://www.sindresorhus.com/?foo=bar');
-	t.is(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options), 'http://www.sindresorhus.com/?foo=bar');
+	expect(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test')).to.deep.equal('http://sindresorhus.com/?foo=bar');
+	expect(normalizeUrl('http://www.sindresorhus.com', options)).to.deep.equal('http://www.sindresorhus.com');
+	expect(normalizeUrl('www.sindresorhus.com?foo=bar', options)).to.deep.equal('http://www.sindresorhus.com/?foo=bar');
+	expect(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options)).to.deep.equal('http://www.sindresorhus.com/?foo=bar');
 });
 
-test('removeQueryParameters boolean `true` option', t => {
+it('removeQueryParameters boolean `true` option', async () => {
 	const options = {
 		stripWWW: false,
 		removeQueryParameters: true,
 	};
 
-	t.is(normalizeUrl('http://www.sindresorhus.com', options), 'http://www.sindresorhus.com');
-	t.is(normalizeUrl('www.sindresorhus.com?foo=bar', options), 'http://www.sindresorhus.com');
-	t.is(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options), 'http://www.sindresorhus.com');
+	expect(normalizeUrl('http://www.sindresorhus.com', options)).to.deep.equal('http://www.sindresorhus.com');
+	expect(normalizeUrl('www.sindresorhus.com?foo=bar', options)).to.deep.equal('http://www.sindresorhus.com');
+	expect(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options)).to.deep.equal('http://www.sindresorhus.com');
 });
 
-test('removeQueryParameters boolean `false` option', t => {
+it('removeQueryParameters boolean `false` option', async () => {
 	const options = {
 		stripWWW: false,
 		removeQueryParameters: false,
 	};
 
-	t.is(normalizeUrl('http://www.sindresorhus.com', options), 'http://www.sindresorhus.com');
-	t.is(normalizeUrl('www.sindresorhus.com?foo=bar', options), 'http://www.sindresorhus.com/?foo=bar');
-	t.is(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options), 'http://www.sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test');
+	expect(normalizeUrl('http://www.sindresorhus.com', options)).to.deep.equal('http://www.sindresorhus.com');
+	expect(normalizeUrl('www.sindresorhus.com?foo=bar', options)).to.deep.equal('http://www.sindresorhus.com/?foo=bar');
+	expect(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options)).to.deep.equal('http://www.sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test');
 });
 
-test('forceHttp option', t => {
+it('forceHttp option', async () => {
 	const options = {forceHttp: true};
-	t.is(normalizeUrl('https://sindresorhus.com'), 'https://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com', options), 'http://sindresorhus.com');
-	t.is(normalizeUrl('https://www.sindresorhus.com', options), 'http://sindresorhus.com');
-	t.is(normalizeUrl('//sindresorhus.com', options), 'http://sindresorhus.com');
+	expect(normalizeUrl('https://sindresorhus.com')).to.deep.equal('https://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com', options)).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('https://www.sindresorhus.com', options)).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('//sindresorhus.com', options)).to.deep.equal('http://sindresorhus.com');
 });
 
-test('forceHttp option with forceHttps', t => {
-	t.throws(() => {
+it('forceHttp option with forceHttps', async () => {
+	expect(() => {
 		normalizeUrl('https://www.sindresorhus.com', {forceHttp: true, forceHttps: true});
-	}, {
-		message: 'The `forceHttp` and `forceHttps` options cannot be used together',
-	});
+	}).to.throw('The `forceHttp` and `forceHttps` options cannot be used together');
 });
 
-test('forceHttps option', t => {
+it('forceHttps option', async () => {
 	const options = {forceHttps: true};
-	t.is(normalizeUrl('https://sindresorhus.com'), 'https://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com', options), 'https://sindresorhus.com');
-	t.is(normalizeUrl('https://www.sindresorhus.com', options), 'https://sindresorhus.com');
-	t.is(normalizeUrl('//sindresorhus.com', options), 'https://sindresorhus.com');
+	expect(normalizeUrl('https://sindresorhus.com')).to.deep.equal('https://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com', options)).to.deep.equal('https://sindresorhus.com');
+	expect(normalizeUrl('https://www.sindresorhus.com', options)).to.deep.equal('https://sindresorhus.com');
+	expect(normalizeUrl('//sindresorhus.com', options)).to.deep.equal('https://sindresorhus.com');
 });
 
-test('removeTrailingSlash option', t => {
+it('removeTrailingSlash option', async () => {
 	const options = {removeTrailingSlash: false};
-	t.is(normalizeUrl('http://sindresorhus.com'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com', options), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/', options), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/redirect'), 'http://sindresorhus.com/redirect');
-	t.is(normalizeUrl('http://sindresorhus.com/redirect/'), 'http://sindresorhus.com/redirect');
-	t.is(normalizeUrl('http://sindresorhus.com/redirect/', options), 'http://sindresorhus.com/redirect/');
-	t.is(normalizeUrl('http://sindresorhus.com/redirect/', options), 'http://sindresorhus.com/redirect/');
-	t.is(normalizeUrl('http://sindresorhus.com/#/'), 'http://sindresorhus.com/#/');
-	t.is(normalizeUrl('http://sindresorhus.com/#/', options), 'http://sindresorhus.com/#/');
-	t.is(normalizeUrl('http://sindresorhus.com/?unicorns=true'), 'http://sindresorhus.com/?unicorns=true');
-	t.is(normalizeUrl('http://sindresorhus.com/?unicorns=true', options), 'http://sindresorhus.com/?unicorns=true');
+	expect(normalizeUrl('http://sindresorhus.com')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/')).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com', options)).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/', options)).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/redirect')).to.deep.equal('http://sindresorhus.com/redirect');
+	expect(normalizeUrl('http://sindresorhus.com/redirect/')).to.deep.equal('http://sindresorhus.com/redirect');
+	expect(normalizeUrl('http://sindresorhus.com/redirect/', options)).to.deep.equal('http://sindresorhus.com/redirect/');
+	expect(normalizeUrl('http://sindresorhus.com/redirect/', options)).to.deep.equal('http://sindresorhus.com/redirect/');
+	expect(normalizeUrl('http://sindresorhus.com/#/')).to.deep.equal('http://sindresorhus.com/#/');
+	expect(normalizeUrl('http://sindresorhus.com/#/', options)).to.deep.equal('http://sindresorhus.com/#/');
+	expect(normalizeUrl('http://sindresorhus.com/?unicorns=true')).to.deep.equal('http://sindresorhus.com/?unicorns=true');
+	expect(normalizeUrl('http://sindresorhus.com/?unicorns=true', options)).to.deep.equal('http://sindresorhus.com/?unicorns=true');
 });
 
-test('removeSingleSlash option', t => {
+it('removeSingleSlash option', async () => {
 	const options = {removeSingleSlash: false};
-	t.is(normalizeUrl('https://sindresorhus.com', options), 'https://sindresorhus.com');
-	t.is(normalizeUrl('https://sindresorhus.com/', options), 'https://sindresorhus.com/');
-	t.is(normalizeUrl('https://sindresorhus.com/redirect', options), 'https://sindresorhus.com/redirect');
-	t.is(normalizeUrl('https://sindresorhus.com/redirect/', options), 'https://sindresorhus.com/redirect');
-	t.is(normalizeUrl('https://sindresorhus.com/#/', options), 'https://sindresorhus.com/#/');
-	t.is(normalizeUrl('https://sindresorhus.com/?unicorns=true', options), 'https://sindresorhus.com/?unicorns=true');
+	expect(normalizeUrl('https://sindresorhus.com', options)).to.deep.equal('https://sindresorhus.com');
+	expect(normalizeUrl('https://sindresorhus.com/', options)).to.deep.equal('https://sindresorhus.com/');
+	expect(normalizeUrl('https://sindresorhus.com/redirect', options)).to.deep.equal('https://sindresorhus.com/redirect');
+	expect(normalizeUrl('https://sindresorhus.com/redirect/', options)).to.deep.equal('https://sindresorhus.com/redirect');
+	expect(normalizeUrl('https://sindresorhus.com/#/', options)).to.deep.equal('https://sindresorhus.com/#/');
+	expect(normalizeUrl('https://sindresorhus.com/?unicorns=true', options)).to.deep.equal('https://sindresorhus.com/?unicorns=true');
 });
 
-test('removeSingleSlash option combined with removeTrailingSlash option', t => {
+it('removeSingleSlash option combined with removeTrailingSlash option', async () => {
 	const options = {removeTrailingSlash: false, removeSingleSlash: false};
-	t.is(normalizeUrl('https://sindresorhus.com', options), 'https://sindresorhus.com');
-	t.is(normalizeUrl('https://sindresorhus.com/', options), 'https://sindresorhus.com/');
-	t.is(normalizeUrl('https://sindresorhus.com/redirect', options), 'https://sindresorhus.com/redirect');
-	t.is(normalizeUrl('https://sindresorhus.com/redirect/', options), 'https://sindresorhus.com/redirect/');
-	t.is(normalizeUrl('https://sindresorhus.com/#/', options), 'https://sindresorhus.com/#/');
-	t.is(normalizeUrl('https://sindresorhus.com/?unicorns=true', options), 'https://sindresorhus.com/?unicorns=true');
+	expect(normalizeUrl('https://sindresorhus.com', options)).to.deep.equal('https://sindresorhus.com');
+	expect(normalizeUrl('https://sindresorhus.com/', options)).to.deep.equal('https://sindresorhus.com/');
+	expect(normalizeUrl('https://sindresorhus.com/redirect', options)).to.deep.equal('https://sindresorhus.com/redirect');
+	expect(normalizeUrl('https://sindresorhus.com/redirect/', options)).to.deep.equal('https://sindresorhus.com/redirect/');
+	expect(normalizeUrl('https://sindresorhus.com/#/', options)).to.deep.equal('https://sindresorhus.com/#/');
+	expect(normalizeUrl('https://sindresorhus.com/?unicorns=true', options)).to.deep.equal('https://sindresorhus.com/?unicorns=true');
 });
 
-test('removeDirectoryIndex option', t => {
+it('removeDirectoryIndex option', async () => {
 	const options1 = {removeDirectoryIndex: ['index.html', 'index.php']};
-	t.is(normalizeUrl('http://sindresorhus.com/index.html'), 'http://sindresorhus.com/index.html');
-	t.is(normalizeUrl('http://sindresorhus.com/index.html', options1), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/index.htm', options1), 'http://sindresorhus.com/index.htm');
-	t.is(normalizeUrl('http://sindresorhus.com/index.php', options1), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/path/index.html'), 'http://sindresorhus.com/path/index.html');
-	t.is(normalizeUrl('http://sindresorhus.com/path/index.html', options1), 'http://sindresorhus.com/path');
-	t.is(normalizeUrl('http://sindresorhus.com/path/index.htm', options1), 'http://sindresorhus.com/path/index.htm');
-	t.is(normalizeUrl('http://sindresorhus.com/path/index.php', options1), 'http://sindresorhus.com/path');
-	t.is(normalizeUrl('http://sindresorhus.com/foo/bar/index.html', options1), 'http://sindresorhus.com/foo/bar');
+	expect(normalizeUrl('http://sindresorhus.com/index.html')).to.deep.equal('http://sindresorhus.com/index.html');
+	expect(normalizeUrl('http://sindresorhus.com/index.html', options1)).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/index.htm', options1)).to.deep.equal('http://sindresorhus.com/index.htm');
+	expect(normalizeUrl('http://sindresorhus.com/index.php', options1)).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/path/index.html')).to.deep.equal('http://sindresorhus.com/path/index.html');
+	expect(normalizeUrl('http://sindresorhus.com/path/index.html', options1)).to.deep.equal('http://sindresorhus.com/path');
+	expect(normalizeUrl('http://sindresorhus.com/path/index.htm', options1)).to.deep.equal('http://sindresorhus.com/path/index.htm');
+	expect(normalizeUrl('http://sindresorhus.com/path/index.php', options1)).to.deep.equal('http://sindresorhus.com/path');
+	expect(normalizeUrl('http://sindresorhus.com/foo/bar/index.html', options1)).to.deep.equal('http://sindresorhus.com/foo/bar');
 
 	const options2 = {removeDirectoryIndex: [/^index\.[a-z]+$/, 'remove.html']};
-	t.is(normalizeUrl('http://sindresorhus.com/index.html'), 'http://sindresorhus.com/index.html');
-	t.is(normalizeUrl('http://sindresorhus.com/index.html', options2), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/index/index.html', options2), 'http://sindresorhus.com/index');
-	t.is(normalizeUrl('http://sindresorhus.com/remove.html', options2), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/default.htm', options2), 'http://sindresorhus.com/default.htm');
-	t.is(normalizeUrl('http://sindresorhus.com/index.php', options2), 'http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/index.html')).to.deep.equal('http://sindresorhus.com/index.html');
+	expect(normalizeUrl('http://sindresorhus.com/index.html', options2)).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/index/index.html', options2)).to.deep.equal('http://sindresorhus.com/index');
+	expect(normalizeUrl('http://sindresorhus.com/remove.html', options2)).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/default.htm', options2)).to.deep.equal('http://sindresorhus.com/default.htm');
+	expect(normalizeUrl('http://sindresorhus.com/index.php', options2)).to.deep.equal('http://sindresorhus.com');
 
 	const options3 = {removeDirectoryIndex: true};
-	t.is(normalizeUrl('http://sindresorhus.com/index.html'), 'http://sindresorhus.com/index.html');
-	t.is(normalizeUrl('http://sindresorhus.com/index.html', options3), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/index.htm', options3), 'http://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/index.php', options3), 'http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/index.html')).to.deep.equal('http://sindresorhus.com/index.html');
+	expect(normalizeUrl('http://sindresorhus.com/index.html', options3)).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/index.htm', options3)).to.deep.equal('http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/index.php', options3)).to.deep.equal('http://sindresorhus.com');
 });
 
-test('removeTrailingSlash and removeDirectoryIndex options)', t => {
+it('removeTrailingSlash and removeDirectoryIndex options)', async () => {
 	const options1 = {
 		removeTrailingSlash: true,
 		removeDirectoryIndex: true,
 	};
-	t.is(normalizeUrl('http://sindresorhus.com/path/', options1), 'http://sindresorhus.com/path');
-	t.is(normalizeUrl('http://sindresorhus.com/path/index.html', options1), 'http://sindresorhus.com/path');
-	t.is(normalizeUrl('http://sindresorhus.com/#/path/', options1), 'http://sindresorhus.com/#/path/');
-	t.is(normalizeUrl('http://sindresorhus.com/foo/#/bar/', options1), 'http://sindresorhus.com/foo#/bar/');
+	expect(normalizeUrl('http://sindresorhus.com/path/', options1)).to.deep.equal('http://sindresorhus.com/path');
+	expect(normalizeUrl('http://sindresorhus.com/path/index.html', options1)).to.deep.equal('http://sindresorhus.com/path');
+	expect(normalizeUrl('http://sindresorhus.com/#/path/', options1)).to.deep.equal('http://sindresorhus.com/#/path/');
+	expect(normalizeUrl('http://sindresorhus.com/foo/#/bar/', options1)).to.deep.equal('http://sindresorhus.com/foo#/bar/');
 
 	const options2 = {
 		removeTrailingSlash: false,
 		removeDirectoryIndex: true,
 	};
-	t.is(normalizeUrl('http://sindresorhus.com/path/', options2), 'http://sindresorhus.com/path/');
-	t.is(normalizeUrl('http://sindresorhus.com/path/index.html', options2), 'http://sindresorhus.com/path/');
-	t.is(normalizeUrl('http://sindresorhus.com/#/path/', options2), 'http://sindresorhus.com/#/path/');
+	expect(normalizeUrl('http://sindresorhus.com/path/', options2)).to.deep.equal('http://sindresorhus.com/path/');
+	expect(normalizeUrl('http://sindresorhus.com/path/index.html', options2)).to.deep.equal('http://sindresorhus.com/path/');
+	expect(normalizeUrl('http://sindresorhus.com/#/path/', options2)).to.deep.equal('http://sindresorhus.com/#/path/');
 });
 
-test('sortQueryParameters option', t => {
+it('sortQueryParameters option', async () => {
 	const options1 = {
 		sortQueryParameters: true,
 	};
-	t.is(normalizeUrl('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W', options1), 'http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
-	t.is(normalizeUrl('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W', options1), 'http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
-	t.is(normalizeUrl('http://sindresorhus.com/?a=Z&d=W&b=Y&c=X', options1), 'http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
-	t.is(normalizeUrl('http://sindresorhus.com/', options1), 'http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W', options1)).to.deep.equal('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
+	expect(normalizeUrl('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W', options1)).to.deep.equal('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
+	expect(normalizeUrl('http://sindresorhus.com/?a=Z&d=W&b=Y&c=X', options1)).to.deep.equal('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
+	expect(normalizeUrl('http://sindresorhus.com/', options1)).to.deep.equal('http://sindresorhus.com');
 
 	const options2 = {
 		sortQueryParameters: false,
 	};
-	t.is(normalizeUrl('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W', options2), 'http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
-	t.is(normalizeUrl('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W', options2), 'http://sindresorhus.com/?b=Y&c=X&a=Z&d=W');
-	t.is(normalizeUrl('http://sindresorhus.com/?a=Z&d=W&b=Y&c=X', options2), 'http://sindresorhus.com/?a=Z&d=W&b=Y&c=X');
-	t.is(normalizeUrl('http://sindresorhus.com/', options2), 'http://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W', options2)).to.deep.equal('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
+	expect(normalizeUrl('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W', options2)).to.deep.equal('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W');
+	expect(normalizeUrl('http://sindresorhus.com/?a=Z&d=W&b=Y&c=X', options2)).to.deep.equal('http://sindresorhus.com/?a=Z&d=W&b=Y&c=X');
+	expect(normalizeUrl('http://sindresorhus.com/', options2)).to.deep.equal('http://sindresorhus.com');
 });
 
-test('invalid urls', t => {
-	t.throws(() => {
+it('invalid urls', async () => {
+	/**
+	 *
+	 * Node.js: ^Invalid URL: .*$
+	 * Chrome: ^Failed to construct 'URL': Invalid URL$
+	 * Firefox: ^URL constructor: .* is not a valid URL\.$
+	 */
+	const INVALID_URL_REGEXP = /^Invalid URL: .*$|^Failed to construct 'URL': Invalid URL$|^URL constructor: .* is not a valid URL\.$/;
+
+	expect(() => {
 		normalizeUrl('http://');
-	}, {
-		message: /^Invalid URL/,
-	});
+	}).to.throw(INVALID_URL_REGEXP);
 
-	t.throws(() => {
+	expect(() => {
 		normalizeUrl('/');
-	}, {
-		message: /^Invalid URL/,
-	});
+	}).to.throw(INVALID_URL_REGEXP);
 
-	t.throws(() => {
+	expect(() => {
 		normalizeUrl('/relative/path/');
-	}, {
-		message: /^Invalid URL/,
-	});
+	}).to.throw(INVALID_URL_REGEXP);
 });
 
-test('remove duplicate pathname slashes', t => {
-	t.is(normalizeUrl('http://sindresorhus.com////foo/bar'), 'http://sindresorhus.com/foo/bar');
-	t.is(normalizeUrl('http://sindresorhus.com////foo////bar'), 'http://sindresorhus.com/foo/bar');
-	t.is(normalizeUrl('//sindresorhus.com//foo', {normalizeProtocol: false}), '//sindresorhus.com/foo');
-	t.is(normalizeUrl('http://sindresorhus.com:5000///foo'), 'http://sindresorhus.com:5000/foo');
-	t.is(normalizeUrl('http://sindresorhus.com///foo'), 'http://sindresorhus.com/foo');
-	t.is(normalizeUrl('http://sindresorhus.com:5000//foo'), 'http://sindresorhus.com:5000/foo');
-	t.is(normalizeUrl('http://sindresorhus.com//foo'), 'http://sindresorhus.com/foo');
-	t.is(normalizeUrl('http://sindresorhus.com/s3://sindresorhus.com'), 'http://sindresorhus.com/s3://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/s3://sindresorhus.com//foo'), 'http://sindresorhus.com/s3://sindresorhus.com/foo');
-	t.is(normalizeUrl('http://sindresorhus.com//foo/s3://sindresorhus.com'), 'http://sindresorhus.com/foo/s3://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/git://sindresorhus.com'), 'http://sindresorhus.com/git://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/git://sindresorhus.com//foo'), 'http://sindresorhus.com/git://sindresorhus.com/foo');
-	t.is(normalizeUrl('http://sindresorhus.com//foo/git://sindresorhus.com//foo'), 'http://sindresorhus.com/foo/git://sindresorhus.com/foo');
-	t.is(normalizeUrl('http://sindresorhus.com/a://sindresorhus.com//foo'), 'http://sindresorhus.com/a:/sindresorhus.com/foo');
-	t.is(normalizeUrl('http://sindresorhus.com/alongprotocolwithin50charlimitxxxxxxxxxxxxxxxxxxxx://sindresorhus.com//foo'), 'http://sindresorhus.com/alongprotocolwithin50charlimitxxxxxxxxxxxxxxxxxxxx://sindresorhus.com/foo');
-	t.is(normalizeUrl('http://sindresorhus.com/alongprotocolexceeds50charlimitxxxxxxxxxxxxxxxxxxxxx://sindresorhus.com//foo'), 'http://sindresorhus.com/alongprotocolexceeds50charlimitxxxxxxxxxxxxxxxxxxxxx:/sindresorhus.com/foo');
-	t.is(normalizeUrl('http://sindresorhus.com/a2-.+://sindresorhus.com'), 'http://sindresorhus.com/a2-.+://sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/a2-.+_://sindresorhus.com'), 'http://sindresorhus.com/a2-.+_:/sindresorhus.com');
-	t.is(normalizeUrl('http://sindresorhus.com/2abc://sindresorhus.com'), 'http://sindresorhus.com/2abc:/sindresorhus.com');
+it('remove duplicate pathname slashes', async () => {
+	expect(normalizeUrl('http://sindresorhus.com////foo/bar')).to.deep.equal('http://sindresorhus.com/foo/bar');
+	expect(normalizeUrl('http://sindresorhus.com////foo////bar')).to.deep.equal('http://sindresorhus.com/foo/bar');
+	expect(normalizeUrl('//sindresorhus.com//foo', {normalizeProtocol: false})).to.deep.equal('//sindresorhus.com/foo');
+	expect(normalizeUrl('http://sindresorhus.com:5000///foo')).to.deep.equal('http://sindresorhus.com:5000/foo');
+	expect(normalizeUrl('http://sindresorhus.com///foo')).to.deep.equal('http://sindresorhus.com/foo');
+	expect(normalizeUrl('http://sindresorhus.com:5000//foo')).to.deep.equal('http://sindresorhus.com:5000/foo');
+	expect(normalizeUrl('http://sindresorhus.com//foo')).to.deep.equal('http://sindresorhus.com/foo');
+	expect(normalizeUrl('http://sindresorhus.com/s3://sindresorhus.com')).to.deep.equal('http://sindresorhus.com/s3://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/s3://sindresorhus.com//foo')).to.deep.equal('http://sindresorhus.com/s3://sindresorhus.com/foo');
+	expect(normalizeUrl('http://sindresorhus.com//foo/s3://sindresorhus.com')).to.deep.equal('http://sindresorhus.com/foo/s3://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/git://sindresorhus.com')).to.deep.equal('http://sindresorhus.com/git://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/git://sindresorhus.com//foo')).to.deep.equal('http://sindresorhus.com/git://sindresorhus.com/foo');
+	expect(normalizeUrl('http://sindresorhus.com//foo/git://sindresorhus.com//foo')).to.deep.equal('http://sindresorhus.com/foo/git://sindresorhus.com/foo');
+	expect(normalizeUrl('http://sindresorhus.com/a://sindresorhus.com//foo')).to.deep.equal('http://sindresorhus.com/a:/sindresorhus.com/foo');
+	expect(normalizeUrl('http://sindresorhus.com/alongprotocolwithin50charlimitxxxxxxxxxxxxxxxxxxxx://sindresorhus.com//foo')).to.deep.equal('http://sindresorhus.com/alongprotocolwithin50charlimitxxxxxxxxxxxxxxxxxxxx://sindresorhus.com/foo');
+	expect(normalizeUrl('http://sindresorhus.com/alongprotocolexceeds50charlimitxxxxxxxxxxxxxxxxxxxxx://sindresorhus.com//foo')).to.deep.equal('http://sindresorhus.com/alongprotocolexceeds50charlimitxxxxxxxxxxxxxxxxxxxxx:/sindresorhus.com/foo');
+	expect(normalizeUrl('http://sindresorhus.com/a2-.+://sindresorhus.com')).to.deep.equal('http://sindresorhus.com/a2-.+://sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/a2-.+_://sindresorhus.com')).to.deep.equal('http://sindresorhus.com/a2-.+_:/sindresorhus.com');
+	expect(normalizeUrl('http://sindresorhus.com/2abc://sindresorhus.com')).to.deep.equal('http://sindresorhus.com/2abc:/sindresorhus.com');
 });
 
-test('data URL', t => {
+it('data URL', async () => {
 	// Invalid URL.
-	t.throws(() => {
+	expect(() => {
 		normalizeUrl('data:');
-	}, {
-		message: 'Invalid URL: data:',
-	});
+	}).to.throw('Invalid URL: data:');
 
 	// Strip default MIME type
-	t.is(normalizeUrl('data:text/plain,foo'), 'data:,foo');
+	expect(normalizeUrl('data:text/plain,foo')).to.deep.equal('data:,foo');
 
 	// Strip default charset
-	t.is(normalizeUrl('data:;charset=us-ascii,foo'), 'data:,foo');
+	expect(normalizeUrl('data:;charset=us-ascii,foo')).to.deep.equal('data:,foo');
 
 	// Normalize away trailing semicolon.
-	t.is(normalizeUrl('data:;charset=UTF-8;,foo'), 'data:;charset=utf-8,foo');
+	expect(normalizeUrl('data:;charset=UTF-8;,foo')).to.deep.equal('data:;charset=utf-8,foo');
 
 	// Empty MIME type.
-	t.is(normalizeUrl('data:,'), 'data:,');
+	expect(normalizeUrl('data:,')).to.deep.equal('data:,');
 
 	// Empty MIME type with charset.
-	t.is(normalizeUrl('data:;charset=utf-8,foo'), 'data:;charset=utf-8,foo');
+	expect(normalizeUrl('data:;charset=utf-8,foo')).to.deep.equal('data:;charset=utf-8,foo');
 
 	// Lowercase the MIME type.
-	t.is(normalizeUrl('data:TEXT/HTML,foo'), 'data:text/html,foo');
+	expect(normalizeUrl('data:TEXT/HTML,foo')).to.deep.equal('data:text/html,foo');
 
 	// Strip empty hash.
-	t.is(normalizeUrl('data:,foo# '), 'data:,foo');
+	expect(normalizeUrl('data:,foo# ')).to.deep.equal('data:,foo');
 
 	// Key only mediaType attribute.
-	t.is(normalizeUrl('data:;foo=;bar,'), 'data:;foo;bar,');
+	expect(normalizeUrl('data:;foo=;bar,')).to.deep.equal('data:;foo;bar,');
 
 	// Lowercase the charset.
-	t.is(normalizeUrl('data:;charset=UTF-8,foo'), 'data:;charset=utf-8,foo');
+	expect(normalizeUrl('data:;charset=UTF-8,foo')).to.deep.equal('data:;charset=utf-8,foo');
 
 	// Remove spaces after the comma when it's base64.
-	t.is(normalizeUrl('data:;base64, Zm9v #foo #bar'), 'data:;base64,Zm9v#foo #bar');
+	expect(normalizeUrl('data:;base64, Zm9v #foo #bar')).to.deep.equal('data:;base64,Zm9v#foo #bar');
 
 	// Keep spaces when it's not base64.
-	t.is(normalizeUrl('data:, foo #bar'), 'data:, foo #bar');
+	expect(normalizeUrl('data:, foo #bar')).to.deep.equal('data:, foo #bar');
 
 	// Options.
 	const options = {
@@ -361,27 +377,25 @@ test('data URL', t => {
 		removeTrailingSlash: true,
 		removeDirectoryIndex: true,
 	};
-	t.is(normalizeUrl('data:,sindresorhus.com/', options), 'data:,sindresorhus.com/');
-	t.is(normalizeUrl('data:,sindresorhus.com/index.html', options), 'data:,sindresorhus.com/index.html');
-	t.is(normalizeUrl('data:,sindresorhus.com?foo=bar&a=a&utm_medium=test', options), 'data:,sindresorhus.com?foo=bar&a=a&utm_medium=test');
-	t.is(normalizeUrl('data:,foo#bar', options), 'data:,foo');
-	t.is(normalizeUrl('data:,www.sindresorhus.com', options), 'data:,www.sindresorhus.com');
+	expect(normalizeUrl('data:,sindresorhus.com/', options)).to.deep.equal('data:,sindresorhus.com/');
+	expect(normalizeUrl('data:,sindresorhus.com/index.html', options)).to.deep.equal('data:,sindresorhus.com/index.html');
+	expect(normalizeUrl('data:,sindresorhus.com?foo=bar&a=a&utm_medium=test', options)).to.deep.equal('data:,sindresorhus.com?foo=bar&a=a&utm_medium=test');
+	expect(normalizeUrl('data:,foo#bar', options)).to.deep.equal('data:,foo');
+	expect(normalizeUrl('data:,www.sindresorhus.com', options)).to.deep.equal('data:,www.sindresorhus.com');
 });
 
-test('prevents homograph attack', t => {
+it('prevents homograph attack', async () => {
 	// The input string uses Unicode to make it look like a valid `ebay.com` URL.
-	t.is(normalizeUrl('https://ebаy.com'), 'https://xn--eby-7cd.com');
+	expect(normalizeUrl('https://ebаy.com')).to.deep.equal('https://xn--eby-7cd.com');
 });
 
-test('view-source URL', t => {
-	t.throws(() => {
+it('view-source URL', async () => {
+	expect(() => {
 		normalizeUrl('view-source:https://www.sindresorhus.com');
-	}, {
-		message: '`view-source:` is not supported as it is a non-standard protocol',
-	});
+	}).to.throw('`view-source:` is not supported as it is a non-standard protocol');
 });
 
-test('does not have exponential performance for data URLs', t => {
+it('does not have exponential performance for data URLs', async () => {
 	for (let index = 0; index < 1000; index += 50) {
 		const url = 'data:' + Array.from({length: index}).fill(',#').join('') + '\ra';
 		const start = Date.now();
@@ -391,6 +405,6 @@ test('does not have exponential performance for data URLs', t => {
 		} catch {}
 
 		const difference = Date.now() - start;
-		t.true(difference < 100, `Execution time: ${difference}`);
+		expect(difference < 100, `Execution time: ${difference}`).to.deep.equal(true);
 	}
 });

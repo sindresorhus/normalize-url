@@ -12,6 +12,8 @@ $ npm install normalize-url
 
 *If you need to use this in the browser, use version 4: `npm i normalize-url@4`*
 
+*If you want to test version >= 7.0.0 in real browser, visit [browser-test/index.html](browser-test/index.html)*
+
 ## Usage
 
 ```js
