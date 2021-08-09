@@ -282,6 +282,20 @@ it('sortQueryParameters option', async () => {
 });
 
 it('invalid urls', async () => {
+	expect(() => {
+		normalizeUrl('http://');
+	}).to.throw();
+
+	expect(() => {
+		normalizeUrl('/');
+	}).to.throw();
+
+	expect(() => {
+		normalizeUrl('/relative/path/');
+	}).to.throw();
+});
+
+it('invalid urls strict', async () => {
 	/**
 	 *
 	 * Node.js: ^Invalid URL: .*$
@@ -290,17 +304,25 @@ it('invalid urls', async () => {
 	 */
 	const INVALID_URL_REGEXP = /^Invalid URL: .*$|^Failed to construct 'URL': Invalid URL$|^URL constructor: .* is not a valid URL\.$/;
 
-	expect(() => {
+	try {
 		normalizeUrl('http://');
-	}).to.throw(INVALID_URL_REGEXP);
+	} catch (error) {
+		// Provide helpeful output message on the left,
+		// so can update regexp from user feedback.
+		expect(error.message).to.match(INVALID_URL_REGEXP);
+	}
 
-	expect(() => {
+	try {
 		normalizeUrl('/');
-	}).to.throw(INVALID_URL_REGEXP);
+	} catch (error) {
+		expect(error.message).to.match(INVALID_URL_REGEXP);
+	}
 
-	expect(() => {
+	try {
 		normalizeUrl('/relative/path/');
-	}).to.throw(INVALID_URL_REGEXP);
+	} catch (error) {
+		expect(error.message).to.match(INVALID_URL_REGEXP);
+	}
 });
 
 it('remove duplicate pathname slashes', async () => {

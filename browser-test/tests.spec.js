@@ -404,16 +404,33 @@
     expect(normalizeUrl("http://sindresorhus.com/", options2)).to.deep.equal("http://sindresorhus.com");
   });
   it("invalid urls", async () => {
-    const INVALID_URL_REGEXP = /^Invalid URL: .*$|^Failed to construct 'URL': Invalid URL$|^URL constructor: .* is not a valid URL\.$/;
     expect(() => {
       normalizeUrl("http://");
-    }).to.throw(INVALID_URL_REGEXP);
+    }).to.throw();
     expect(() => {
       normalizeUrl("/");
-    }).to.throw(INVALID_URL_REGEXP);
+    }).to.throw();
     expect(() => {
       normalizeUrl("/relative/path/");
-    }).to.throw(INVALID_URL_REGEXP);
+    }).to.throw();
+  });
+  it("invalid urls strict", async () => {
+    const INVALID_URL_REGEXP = /^Invalid URL: .*$|^Failed to construct 'URL': Invalid URL$|^URL constructor: .* is not a valid URL\.$/;
+    try {
+      normalizeUrl("http://");
+    } catch (error) {
+      expect(error.message).to.match(INVALID_URL_REGEXP);
+    }
+    try {
+      normalizeUrl("/");
+    } catch (error) {
+      expect(error.message).to.match(INVALID_URL_REGEXP);
+    }
+    try {
+      normalizeUrl("/relative/path/");
+    } catch (error) {
+      expect(error.message).to.match(INVALID_URL_REGEXP);
+    }
   });
   it("remove duplicate pathname slashes", async () => {
     expect(normalizeUrl("http://sindresorhus.com////foo/bar")).to.deep.equal("http://sindresorhus.com/foo/bar");
