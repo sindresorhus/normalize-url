@@ -6,6 +6,7 @@
   var DATA_URL_DEFAULT_MIME_TYPE = "text/plain";
   var DATA_URL_DEFAULT_CHARSET = "us-ascii";
   var testParameter = (name, filters) => filters.some((filter) => filter instanceof RegExp ? filter.test(name) : filter === name);
+  var reverse = (s) => s.split("").reverse().join("");
   var normalizeDataURL = (urlString, { stripHash }) => {
     const match = /^data:(?<type>[^,]*?),(?<data>[^#]*?)(?:#(?<hash>.*))?$/.exec(urlString);
     if (!match) {
@@ -56,6 +57,7 @@
       removeSingleSlash: true,
       removeDirectoryIndex: false,
       sortQueryParameters: true,
+      preferJsRegexpLookbehind: true,
       ...options
     };
     urlString = urlString.trim();
@@ -90,15 +92,19 @@
       urlObject.hash = urlObject.hash.replace(/#?:~:text.*?$/i, "");
     }
     if (urlObject.pathname) {
-      try {
-        urlObject.pathname = urlObject.pathname.replace(new RegExp("(?<!\\b[a-z][a-z\\d+\\-.]{1,50}:)\\/{2,}", "g"), "/");
-      } catch {
-        urlObject.pathname = urlObject.pathname.replace(/((?!:).|^)\/{2,}/g, (_, p1) => {
-          if (/^(?!\/)/g.test(p1)) {
-            return `${p1}/`;
-          }
-          return "/";
-        });
+      const SREGEXP_DUPLICATE_SLASHES = "(?<!\\b[a-z][a-z\\d+\\-.]{1,50}:)\\/{2,}";
+      const REVERSE_REGEXP_DUPLICATE_SLASHES = /\/{2,}(?!:[a-z\d+\-.]{1,50}[a-z]\b)/g;
+      let urlObjectPathname;
+      if (options.preferJsRegexpLookbehind) {
+        try {
+          urlObjectPathname = urlObject.pathname.replace(new RegExp(SREGEXP_DUPLICATE_SLASHES, "g"), "/");
+        } catch {
+        }
+      }
+      if (urlObjectPathname) {
+        urlObject.pathname = urlObjectPathname;
+      } else {
+        urlObject.pathname = reverse(reverse(urlObject.pathname).replace(REVERSE_REGEXP_DUPLICATE_SLASHES, "/"));
       }
     }
     if (urlObject.pathname) {
@@ -432,7 +438,28 @@
       expect(error.message).to.match(INVALID_URL_REGEXP);
     }
   });
-  it("remove duplicate pathname slashes", async () => {
+  it("remove duplicate pathname slashes v4 with JsRegexpLookbehind", async () => {
+    expect(normalizeUrl("http://sindresorhus.com////foo/bar")).to.deep.equal("http://sindresorhus.com/foo/bar");
+    expect(normalizeUrl("http://sindresorhus.com////foo////bar")).to.deep.equal("http://sindresorhus.com/foo/bar");
+    expect(normalizeUrl("//sindresorhus.com//foo", { normalizeProtocol: false })).to.deep.equal("//sindresorhus.com/foo");
+    expect(normalizeUrl("http://sindresorhus.com:5000///foo")).to.deep.equal("http://sindresorhus.com:5000/foo");
+    expect(normalizeUrl("http://sindresorhus.com///foo")).to.deep.equal("http://sindresorhus.com/foo");
+    expect(normalizeUrl("http://sindresorhus.com:5000//foo")).to.deep.equal("http://sindresorhus.com:5000/foo");
+    expect(normalizeUrl("http://sindresorhus.com//foo")).to.deep.equal("http://sindresorhus.com/foo");
+  });
+  it("remove duplicate pathname slashes v4 without JsRegexpLookbehind", async () => {
+    const options = {
+      preferJsRegexpLookbehind: false
+    };
+    expect(normalizeUrl("http://sindresorhus.com////foo/bar", options)).to.deep.equal("http://sindresorhus.com/foo/bar");
+    expect(normalizeUrl("http://sindresorhus.com////foo////bar", options)).to.deep.equal("http://sindresorhus.com/foo/bar");
+    expect(normalizeUrl("//sindresorhus.com//foo", { normalizeProtocol: false, preferJsRegexpLookbehind: false })).to.deep.equal("//sindresorhus.com/foo");
+    expect(normalizeUrl("http://sindresorhus.com:5000///foo", options)).to.deep.equal("http://sindresorhus.com:5000/foo");
+    expect(normalizeUrl("http://sindresorhus.com///foo", options)).to.deep.equal("http://sindresorhus.com/foo");
+    expect(normalizeUrl("http://sindresorhus.com:5000//foo", options)).to.deep.equal("http://sindresorhus.com:5000/foo");
+    expect(normalizeUrl("http://sindresorhus.com//foo", options)).to.deep.equal("http://sindresorhus.com/foo");
+  });
+  it("remove duplicate pathname slashes v7 with JsRegexpLookbehind", async () => {
     expect(normalizeUrl("http://sindresorhus.com////foo/bar")).to.deep.equal("http://sindresorhus.com/foo/bar");
     expect(normalizeUrl("http://sindresorhus.com////foo////bar")).to.deep.equal("http://sindresorhus.com/foo/bar");
     expect(normalizeUrl("//sindresorhus.com//foo", { normalizeProtocol: false })).to.deep.equal("//sindresorhus.com/foo");
@@ -452,6 +479,30 @@
     expect(normalizeUrl("http://sindresorhus.com/a2-.+://sindresorhus.com")).to.deep.equal("http://sindresorhus.com/a2-.+://sindresorhus.com");
     expect(normalizeUrl("http://sindresorhus.com/a2-.+_://sindresorhus.com")).to.deep.equal("http://sindresorhus.com/a2-.+_:/sindresorhus.com");
     expect(normalizeUrl("http://sindresorhus.com/2abc://sindresorhus.com")).to.deep.equal("http://sindresorhus.com/2abc:/sindresorhus.com");
+  });
+  it("remove duplicate pathname slashes v7 without JsRegexpLookbehind", async () => {
+    const options = {
+      preferJsRegexpLookbehind: false
+    };
+    expect(normalizeUrl("http://sindresorhus.com////foo/bar", options)).to.deep.equal("http://sindresorhus.com/foo/bar");
+    expect(normalizeUrl("http://sindresorhus.com////foo////bar", options)).to.deep.equal("http://sindresorhus.com/foo/bar");
+    expect(normalizeUrl("//sindresorhus.com//foo", { normalizeProtocol: false, preferJsRegexpLookbehind: false })).to.deep.equal("//sindresorhus.com/foo");
+    expect(normalizeUrl("http://sindresorhus.com:5000///foo", options)).to.deep.equal("http://sindresorhus.com:5000/foo");
+    expect(normalizeUrl("http://sindresorhus.com///foo", options)).to.deep.equal("http://sindresorhus.com/foo");
+    expect(normalizeUrl("http://sindresorhus.com:5000//foo", options)).to.deep.equal("http://sindresorhus.com:5000/foo");
+    expect(normalizeUrl("http://sindresorhus.com//foo", options)).to.deep.equal("http://sindresorhus.com/foo");
+    expect(normalizeUrl("http://sindresorhus.com/s3://sindresorhus.com", options)).to.deep.equal("http://sindresorhus.com/s3://sindresorhus.com");
+    expect(normalizeUrl("http://sindresorhus.com/s3://sindresorhus.com//foo", options)).to.deep.equal("http://sindresorhus.com/s3://sindresorhus.com/foo");
+    expect(normalizeUrl("http://sindresorhus.com//foo/s3://sindresorhus.com", options)).to.deep.equal("http://sindresorhus.com/foo/s3://sindresorhus.com");
+    expect(normalizeUrl("http://sindresorhus.com/git://sindresorhus.com", options)).to.deep.equal("http://sindresorhus.com/git://sindresorhus.com");
+    expect(normalizeUrl("http://sindresorhus.com/git://sindresorhus.com//foo", options)).to.deep.equal("http://sindresorhus.com/git://sindresorhus.com/foo");
+    expect(normalizeUrl("http://sindresorhus.com//foo/git://sindresorhus.com//foo", options)).to.deep.equal("http://sindresorhus.com/foo/git://sindresorhus.com/foo");
+    expect(normalizeUrl("http://sindresorhus.com/a://sindresorhus.com//foo", options)).to.deep.equal("http://sindresorhus.com/a:/sindresorhus.com/foo");
+    expect(normalizeUrl("http://sindresorhus.com/alongprotocolwithin50charlimitxxxxxxxxxxxxxxxxxxxx://sindresorhus.com//foo", options)).to.deep.equal("http://sindresorhus.com/alongprotocolwithin50charlimitxxxxxxxxxxxxxxxxxxxx://sindresorhus.com/foo");
+    expect(normalizeUrl("http://sindresorhus.com/alongprotocolexceeds50charlimitxxxxxxxxxxxxxxxxxxxxx://sindresorhus.com//foo", options)).to.deep.equal("http://sindresorhus.com/alongprotocolexceeds50charlimitxxxxxxxxxxxxxxxxxxxxx:/sindresorhus.com/foo");
+    expect(normalizeUrl("http://sindresorhus.com/a2-.+://sindresorhus.com", options)).to.deep.equal("http://sindresorhus.com/a2-.+://sindresorhus.com");
+    expect(normalizeUrl("http://sindresorhus.com/a2-.+_://sindresorhus.com", options)).to.deep.equal("http://sindresorhus.com/a2-.+_:/sindresorhus.com");
+    expect(normalizeUrl("http://sindresorhus.com/2abc://sindresorhus.com", options)).to.deep.equal("http://sindresorhus.com/2abc:/sindresorhus.com");
   });
   it("data URL", async () => {
     expect(() => {

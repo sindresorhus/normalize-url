@@ -4,6 +4,8 @@ const DATA_URL_DEFAULT_CHARSET = 'us-ascii';
 
 const testParameter = (name, filters) => filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 
+const reverse = s => s.split('').reverse().join('');
+
 const normalizeDataURL = (urlString, {stripHash}) => {
 	const match = /^data:(?<type>[^,]*?),(?<data>[^#]*?)(?:#(?<hash>.*))?$/.exec(urlString);
 
@@ -70,6 +72,7 @@ export default function normalizeUrl(urlString, options) {
 		removeSingleSlash: true,
 		removeDirectoryIndex: false,
 		sortQueryParameters: true,
+		preferJsRegexpLookbehind: true,
 		...options,
 	};
 
@@ -121,27 +124,34 @@ export default function normalizeUrl(urlString, options) {
 
 	// Remove duplicate slashes if not preceded by a protocol
 	if (urlObject.pathname) {
-		try {
-			urlObject.pathname = urlObject.pathname.replace(
-				// https://caniuse.com/js-regexp-lookbehind
-				// prevent SyntaxError which can not be try-catch
-				// convert from /(?<!\b[a-z][a-z\d+\-.]{1,50}:)\/{2,}/g
+		// https://caniuse.com/js-regexp-lookbehind
+		// prevent SyntaxError which can not be try-catch
 
-				// eslint-disable-next-line prefer-regex-literals
-				new RegExp('(?<!\\b[a-z][a-z\\d+\\-.]{1,50}:)\\/{2,}', 'g'),
+		// DO NOT USE
+		// const REGEXP_DUPLICATE_SLASHES = /(?<!\b[a-z][a-z\d+\-.]{1,50}:)\/{2,}/g;
+
+		// // eslint-disable-next-line prefer-regex-literals
+		const SREGEXP_DUPLICATE_SLASHES = '(?<!\\b[a-z][a-z\\d+\\-.]{1,50}:)\\/{2,}';
+
+		const REVERSE_REGEXP_DUPLICATE_SLASHES = /\/{2,}(?!:[a-z\d+\-.]{1,50}[a-z]\b)/g;
+
+		let urlObjectPathname;
+		if (options.preferJsRegexpLookbehind) {
+			try {
+				urlObjectPathname = urlObject.pathname.replace(
+					new RegExp(SREGEXP_DUPLICATE_SLASHES, 'g'),
+					'/',
+				);
+			} catch {}
+		}
+
+		if (urlObjectPathname) {
+			urlObject.pathname = urlObjectPathname;
+		} else {
+			urlObject.pathname = reverse(reverse(urlObject.pathname).replace(
+				REVERSE_REGEXP_DUPLICATE_SLASHES,
 				'/',
-			);
-		} catch {
-			// https://github.com/sindresorhus/normalize-url/blob/454970b662086e8856d1af074c7a57df96545b8b/index.js#L136
-			// TODO: Use the following instead when targeting Node.js 10
-			// `urlObj.pathname = urlObj.pathname.replace(/(?<!https?:)\/{2,}/g, '/');`
-			urlObject.pathname = urlObject.pathname.replace(/((?!:).|^)\/{2,}/g, (_, p1) => {
-				if (/^(?!\/)/g.test(p1)) {
-					return `${p1}/`;
-				}
-
-				return '/';
-			});
+			));
 		}
 	}
 
