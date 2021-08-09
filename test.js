@@ -325,7 +325,7 @@ it('invalid urls strict', async () => {
 	}
 });
 
-it('remove duplicate pathname slashes', async () => {
+it('remove duplicate pathname slashes (<= v4)', async () => {
 	expect(normalizeUrl('http://sindresorhus.com////foo/bar')).to.deep.equal('http://sindresorhus.com/foo/bar');
 	expect(normalizeUrl('http://sindresorhus.com////foo////bar')).to.deep.equal('http://sindresorhus.com/foo/bar');
 	expect(normalizeUrl('//sindresorhus.com//foo', {normalizeProtocol: false})).to.deep.equal('//sindresorhus.com/foo');
@@ -333,6 +333,17 @@ it('remove duplicate pathname slashes', async () => {
 	expect(normalizeUrl('http://sindresorhus.com///foo')).to.deep.equal('http://sindresorhus.com/foo');
 	expect(normalizeUrl('http://sindresorhus.com:5000//foo')).to.deep.equal('http://sindresorhus.com:5000/foo');
 	expect(normalizeUrl('http://sindresorhus.com//foo')).to.deep.equal('http://sindresorhus.com/foo');
+});
+
+it('remove duplicate pathname slashes (> v4)', async () => {
+	expect(normalizeUrl('http://sindresorhus.com////foo/bar')).to.deep.equal('http://sindresorhus.com/foo/bar');
+	expect(normalizeUrl('http://sindresorhus.com////foo////bar')).to.deep.equal('http://sindresorhus.com/foo/bar');
+	expect(normalizeUrl('//sindresorhus.com//foo', {normalizeProtocol: false})).to.deep.equal('//sindresorhus.com/foo');
+	expect(normalizeUrl('http://sindresorhus.com:5000///foo')).to.deep.equal('http://sindresorhus.com:5000/foo');
+	expect(normalizeUrl('http://sindresorhus.com///foo')).to.deep.equal('http://sindresorhus.com/foo');
+	expect(normalizeUrl('http://sindresorhus.com:5000//foo')).to.deep.equal('http://sindresorhus.com:5000/foo');
+	expect(normalizeUrl('http://sindresorhus.com//foo')).to.deep.equal('http://sindresorhus.com/foo');
+
 	expect(normalizeUrl('http://sindresorhus.com/s3://sindresorhus.com')).to.deep.equal('http://sindresorhus.com/s3://sindresorhus.com');
 	expect(normalizeUrl('http://sindresorhus.com/s3://sindresorhus.com//foo')).to.deep.equal('http://sindresorhus.com/s3://sindresorhus.com/foo');
 	expect(normalizeUrl('http://sindresorhus.com//foo/s3://sindresorhus.com')).to.deep.equal('http://sindresorhus.com/foo/s3://sindresorhus.com');
