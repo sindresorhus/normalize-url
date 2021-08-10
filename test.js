@@ -2,7 +2,7 @@
 import {expect} from 'chai';
 import normalizeUrl from './index.js';
 
-it('main', async () => {
+it('main', () => {
 	expect(normalizeUrl('sindresorhus.com')).to.deep.equal('http://sindresorhus.com');
 	expect(normalizeUrl('sindresorhus.com ')).to.deep.equal('http://sindresorhus.com');
 	expect(normalizeUrl('sindresorhus.com.')).to.deep.equal('http://sindresorhus.com');
@@ -42,13 +42,13 @@ it('main', async () => {
 });
 
 // https://nodejs.org/api/url.html#url_special_schemes
-it('main: non-special-protocol-schemes', async () => {
+it('main: non-special-protocol-schemes', () => {
 	expect(normalizeUrl('sindre://www.sorhus.com')).to.deep.equal('sindre://sorhus.com');
 	expect(normalizeUrl('sindre://www.sorhus.com/')).to.deep.equal('sindre://sorhus.com');
 	expect(normalizeUrl('sindre://www.sorhus.com/foo/bar')).to.deep.equal('sindre://sorhus.com/foo/bar');
 });
 
-it('stripAuthentication option', async () => {
+it('stripAuthentication option', () => {
 	expect(normalizeUrl('http://user:password@www.sindresorhus.com')).to.deep.equal('http://sindresorhus.com');
 	expect(normalizeUrl('https://user:password@www.sindresorhus.com')).to.deep.equal('https://sindresorhus.com');
 	expect(normalizeUrl('https://user:password@www.sindresorhus.com/@user')).to.deep.equal('https://sindresorhus.com/@user');
@@ -63,14 +63,14 @@ it('stripAuthentication option', async () => {
 	expect(normalizeUrl('http://user:password@www.êxample.com', options)).to.deep.equal('http://user:password@xn--xample-hva.com');
 });
 
-it('stripAuthentication option: non-special-protocol-schemes', async () => {
+it('stripAuthentication option: non-special-protocol-schemes', () => {
 	expect(normalizeUrl('sindre://user:password@www.sorhus.com')).to.deep.equal('sindre://sorhus.com');
 
 	const options = {stripAuthentication: false};
 	expect(normalizeUrl('sindre://user:password@www.sorhus.com', options)).to.deep.equal('sindre://user:password@sorhus.com');
 });
 
-it('stripProtocol option', async () => {
+it('stripProtocol option', () => {
 	const options = {stripProtocol: true};
 	expect(normalizeUrl('http://www.sindresorhus.com', options)).to.deep.equal('sindresorhus.com');
 	expect(normalizeUrl('http://sindresorhus.com', options)).to.deep.equal('sindresorhus.com');
@@ -78,13 +78,13 @@ it('stripProtocol option', async () => {
 	expect(normalizeUrl('//www.sindresorhus.com', options)).to.deep.equal('sindresorhus.com');
 });
 
-it('stripProtocol option: non-special-protocol-schemes', async () => {
+it('stripProtocol option: non-special-protocol-schemes', () => {
 	const options = {stripProtocol: true};
 	expect(normalizeUrl('sindre://user:password@www.sorhus.com', options)).to.deep.equal('sindre://sorhus.com');
 	expect(normalizeUrl('sindre://www.sorhus.com', options)).to.deep.equal('sindre://sorhus.com');
 });
 
-it('stripTextFragment option', async () => {
+it('stripTextFragment option', () => {
 	expect(normalizeUrl('http://sindresorhus.com')).to.deep.equal('http://sindresorhus.com');
 	expect(normalizeUrl('http://sindresorhus.com/about#')).to.deep.equal('http://sindresorhus.com/about');
 	expect(normalizeUrl('http://sindresorhus.com/about#:~:text=hello')).to.deep.equal('http://sindresorhus.com/about');
@@ -107,7 +107,7 @@ it('stripTextFragment option', async () => {
 	expect(normalizeUrl('http://sindresorhus.com/about#main:~:text=hello%20world', options2)).to.deep.equal('http://sindresorhus.com/about');
 });
 
-it('stripWWW option', async () => {
+it('stripWWW option', () => {
 	const options = {stripWWW: false};
 	expect(normalizeUrl('http://www.sindresorhus.com', options)).to.deep.equal('http://www.sindresorhus.com');
 	expect(normalizeUrl('www.sindresorhus.com', options)).to.deep.equal('http://www.sindresorhus.com');
@@ -117,16 +117,16 @@ it('stripWWW option', async () => {
 	expect(normalizeUrl('http://www.vue.amsterdam', options2)).to.deep.equal('http://vue.amsterdam');
 	expect(normalizeUrl('http://www.sorhus.xx--bck1b9a5dre4c', options2)).to.deep.equal('http://sorhus.xx--bck1b9a5dre4c');
 
-	const tooLongTLDURL = 'http://www.sorhus.' + ''.padEnd(64, 'a');
+	const tooLongTLDURL = 'http://www.sorhus.' + 'a'.repeat(64);
 	expect(normalizeUrl(tooLongTLDURL, options2)).to.deep.equal(tooLongTLDURL);
 });
 
-it('stripWWW option: non-special-protocol-schemes', async () => {
+it('stripWWW option: non-special-protocol-schemes', () => {
 	const options = {stripWWW: false};
 	expect(normalizeUrl('sindre://www.sorhus.com', options)).to.deep.equal('sindre://www.sorhus.com');
 });
 
-it('removeQueryParameters option', async () => {
+it('removeQueryParameters option', () => {
 	const options = {
 		stripWWW: false,
 		removeQueryParameters: [/^utm_\w+/i, 'ref'],
@@ -137,7 +137,7 @@ it('removeQueryParameters option', async () => {
 	expect(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options)).to.deep.equal('http://www.sindresorhus.com/?foo=bar');
 });
 
-it('removeQueryParameters boolean `true` option', async () => {
+it('removeQueryParameters boolean `true` option', () => {
 	const options = {
 		stripWWW: false,
 		removeQueryParameters: true,
@@ -148,7 +148,7 @@ it('removeQueryParameters boolean `true` option', async () => {
 	expect(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options)).to.deep.equal('http://www.sindresorhus.com');
 });
 
-it('removeQueryParameters boolean `false` option', async () => {
+it('removeQueryParameters boolean `false` option', () => {
 	const options = {
 		stripWWW: false,
 		removeQueryParameters: false,
@@ -159,7 +159,7 @@ it('removeQueryParameters boolean `false` option', async () => {
 	expect(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options)).to.deep.equal('http://www.sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test');
 });
 
-it('forceHttp option', async () => {
+it('forceHttp option', () => {
 	const options = {forceHttp: true};
 	expect(normalizeUrl('https://sindresorhus.com')).to.deep.equal('https://sindresorhus.com');
 	expect(normalizeUrl('http://sindresorhus.com', options)).to.deep.equal('http://sindresorhus.com');
@@ -167,13 +167,13 @@ it('forceHttp option', async () => {
 	expect(normalizeUrl('//sindresorhus.com', options)).to.deep.equal('http://sindresorhus.com');
 });
 
-it('forceHttp option with forceHttps', async () => {
+it('forceHttp option with forceHttps', () => {
 	expect(() => {
 		normalizeUrl('https://www.sindresorhus.com', {forceHttp: true, forceHttps: true});
 	}).to.throw('The `forceHttp` and `forceHttps` options cannot be used together');
 });
 
-it('forceHttps option', async () => {
+it('forceHttps option', () => {
 	const options = {forceHttps: true};
 	expect(normalizeUrl('https://sindresorhus.com')).to.deep.equal('https://sindresorhus.com');
 	expect(normalizeUrl('http://sindresorhus.com', options)).to.deep.equal('https://sindresorhus.com');
@@ -181,7 +181,7 @@ it('forceHttps option', async () => {
 	expect(normalizeUrl('//sindresorhus.com', options)).to.deep.equal('https://sindresorhus.com');
 });
 
-it('removeTrailingSlash option', async () => {
+it('removeTrailingSlash option', () => {
 	const options = {removeTrailingSlash: false};
 	expect(normalizeUrl('http://sindresorhus.com')).to.deep.equal('http://sindresorhus.com');
 	expect(normalizeUrl('http://sindresorhus.com/')).to.deep.equal('http://sindresorhus.com');
@@ -197,7 +197,7 @@ it('removeTrailingSlash option', async () => {
 	expect(normalizeUrl('http://sindresorhus.com/?unicorns=true', options)).to.deep.equal('http://sindresorhus.com/?unicorns=true');
 });
 
-it('removeSingleSlash option', async () => {
+it('removeSingleSlash option', () => {
 	const options = {removeSingleSlash: false};
 	expect(normalizeUrl('https://sindresorhus.com', options)).to.deep.equal('https://sindresorhus.com');
 	expect(normalizeUrl('https://sindresorhus.com/', options)).to.deep.equal('https://sindresorhus.com/');
@@ -207,7 +207,7 @@ it('removeSingleSlash option', async () => {
 	expect(normalizeUrl('https://sindresorhus.com/?unicorns=true', options)).to.deep.equal('https://sindresorhus.com/?unicorns=true');
 });
 
-it('removeSingleSlash option combined with removeTrailingSlash option', async () => {
+it('removeSingleSlash option combined with removeTrailingSlash option', () => {
 	const options = {removeTrailingSlash: false, removeSingleSlash: false};
 	expect(normalizeUrl('https://sindresorhus.com', options)).to.deep.equal('https://sindresorhus.com');
 	expect(normalizeUrl('https://sindresorhus.com/', options)).to.deep.equal('https://sindresorhus.com/');
@@ -217,7 +217,7 @@ it('removeSingleSlash option combined with removeTrailingSlash option', async ()
 	expect(normalizeUrl('https://sindresorhus.com/?unicorns=true', options)).to.deep.equal('https://sindresorhus.com/?unicorns=true');
 });
 
-it('removeDirectoryIndex option', async () => {
+it('removeDirectoryIndex option', () => {
 	const options1 = {removeDirectoryIndex: ['index.html', 'index.php']};
 	expect(normalizeUrl('http://sindresorhus.com/index.html')).to.deep.equal('http://sindresorhus.com/index.html');
 	expect(normalizeUrl('http://sindresorhus.com/index.html', options1)).to.deep.equal('http://sindresorhus.com');
@@ -244,7 +244,7 @@ it('removeDirectoryIndex option', async () => {
 	expect(normalizeUrl('http://sindresorhus.com/index.php', options3)).to.deep.equal('http://sindresorhus.com');
 });
 
-it('removeTrailingSlash and removeDirectoryIndex options)', async () => {
+it('removeTrailingSlash and removeDirectoryIndex options)', () => {
 	const options1 = {
 		removeTrailingSlash: true,
 		removeDirectoryIndex: true,
@@ -263,7 +263,7 @@ it('removeTrailingSlash and removeDirectoryIndex options)', async () => {
 	expect(normalizeUrl('http://sindresorhus.com/#/path/', options2)).to.deep.equal('http://sindresorhus.com/#/path/');
 });
 
-it('sortQueryParameters option', async () => {
+it('sortQueryParameters option', () => {
 	const options1 = {
 		sortQueryParameters: true,
 	};
@@ -281,7 +281,25 @@ it('sortQueryParameters option', async () => {
 	expect(normalizeUrl('http://sindresorhus.com/', options2)).to.deep.equal('http://sindresorhus.com');
 });
 
-it('invalid urls', async () => {
+it('sortQueryParameters option (old browser)', () => {
+	const options1 = {
+		sortQueryParameters: true, preferURLSearchParamsSort: false,
+	};
+	expect(normalizeUrl('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W', options1)).to.deep.equal('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
+	expect(normalizeUrl('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W', options1)).to.deep.equal('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
+	expect(normalizeUrl('http://sindresorhus.com/?a=Z&d=W&b=Y&c=X', options1)).to.deep.equal('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
+	expect(normalizeUrl('http://sindresorhus.com/', options1)).to.deep.equal('http://sindresorhus.com');
+
+	const options2 = {
+		sortQueryParameters: false, preferURLSearchParamsSort: false,
+	};
+	expect(normalizeUrl('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W', options2)).to.deep.equal('http://sindresorhus.com/?a=Z&b=Y&c=X&d=W');
+	expect(normalizeUrl('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W', options2)).to.deep.equal('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W');
+	expect(normalizeUrl('http://sindresorhus.com/?a=Z&d=W&b=Y&c=X', options2)).to.deep.equal('http://sindresorhus.com/?a=Z&d=W&b=Y&c=X');
+	expect(normalizeUrl('http://sindresorhus.com/', options2)).to.deep.equal('http://sindresorhus.com');
+});
+
+it('invalid urls loose', () => {
 	expect(() => {
 		normalizeUrl('http://');
 	}).to.throw();
@@ -295,14 +313,15 @@ it('invalid urls', async () => {
 	}).to.throw();
 });
 
-it('invalid urls strict', async () => {
+it('invalid urls strict', () => {
 	/**
 	 *
 	 * Node.js: ^Invalid URL: .*$
 	 * Chrome: ^Failed to construct 'URL': Invalid URL$
 	 * Firefox: ^URL constructor: .* is not a valid URL\.$
 	 */
-	const INVALID_URL_REGEXP = /^Invalid URL: .*$|^Failed to construct 'URL': Invalid URL$|^URL constructor: .* is not a valid URL\.$/;
+	// const INVALID_URL_REGEXP = /^Invalid URL: .*$|^Failed to construct 'URL': Invalid URL$|^URL constructor: .* is not a valid URL\.$/;
+	const INVALID_URL_REGEXP = /not\s+.*\s+valid\s+url|invalid\s+url/i;
 
 	try {
 		normalizeUrl('http://');
@@ -325,7 +344,7 @@ it('invalid urls strict', async () => {
 	}
 });
 
-it('remove duplicate pathname slashes v4 with JsRegexpLookbehind', async () => {
+it('remove duplicate pathname slashes v4 with JsRegexpLookbehind', () => {
 	expect(normalizeUrl('http://sindresorhus.com////foo/bar')).to.deep.equal('http://sindresorhus.com/foo/bar');
 	expect(normalizeUrl('http://sindresorhus.com////foo////bar')).to.deep.equal('http://sindresorhus.com/foo/bar');
 	expect(normalizeUrl('//sindresorhus.com//foo', {normalizeProtocol: false})).to.deep.equal('//sindresorhus.com/foo');
@@ -335,7 +354,7 @@ it('remove duplicate pathname slashes v4 with JsRegexpLookbehind', async () => {
 	expect(normalizeUrl('http://sindresorhus.com//foo')).to.deep.equal('http://sindresorhus.com/foo');
 });
 
-it('remove duplicate pathname slashes v4 without JsRegexpLookbehind', async () => {
+it('remove duplicate pathname slashes v4 without JsRegexpLookbehind', () => {
 	const options = {
 		preferJsRegexpLookbehind: false,
 	};
@@ -349,7 +368,7 @@ it('remove duplicate pathname slashes v4 without JsRegexpLookbehind', async () =
 	expect(normalizeUrl('http://sindresorhus.com//foo', options)).to.deep.equal('http://sindresorhus.com/foo');
 });
 
-it('remove duplicate pathname slashes v7 with JsRegexpLookbehind', async () => {
+it('remove duplicate pathname slashes v7 with JsRegexpLookbehind', () => {
 	expect(normalizeUrl('http://sindresorhus.com////foo/bar')).to.deep.equal('http://sindresorhus.com/foo/bar');
 	expect(normalizeUrl('http://sindresorhus.com////foo////bar')).to.deep.equal('http://sindresorhus.com/foo/bar');
 	expect(normalizeUrl('//sindresorhus.com//foo', {normalizeProtocol: false})).to.deep.equal('//sindresorhus.com/foo');
@@ -372,7 +391,7 @@ it('remove duplicate pathname slashes v7 with JsRegexpLookbehind', async () => {
 	expect(normalizeUrl('http://sindresorhus.com/2abc://sindresorhus.com')).to.deep.equal('http://sindresorhus.com/2abc:/sindresorhus.com');
 });
 
-it('remove duplicate pathname slashes v7 without JsRegexpLookbehind', async () => {
+it('remove duplicate pathname slashes v7 without JsRegexpLookbehind', () => {
 	const options = {
 		preferJsRegexpLookbehind: false,
 	};
@@ -398,7 +417,7 @@ it('remove duplicate pathname slashes v7 without JsRegexpLookbehind', async () =
 	expect(normalizeUrl('http://sindresorhus.com/2abc://sindresorhus.com', options)).to.deep.equal('http://sindresorhus.com/2abc:/sindresorhus.com');
 });
 
-it('data URL', async () => {
+it('data URL', () => {
 	// Invalid URL.
 	expect(() => {
 		normalizeUrl('data:');
@@ -457,18 +476,18 @@ it('data URL', async () => {
 	expect(normalizeUrl('data:,www.sindresorhus.com', options)).to.deep.equal('data:,www.sindresorhus.com');
 });
 
-it('prevents homograph attack', async () => {
+it('prevents homograph attack', () => {
 	// The input string uses Unicode to make it look like a valid `ebay.com` URL.
 	expect(normalizeUrl('https://ebаy.com')).to.deep.equal('https://xn--eby-7cd.com');
 });
 
-it('view-source URL', async () => {
+it('view-source URL', () => {
 	expect(() => {
 		normalizeUrl('view-source:https://www.sindresorhus.com');
 	}).to.throw('`view-source:` is not supported as it is a non-standard protocol');
 });
 
-it('does not have exponential performance for data URLs', async () => {
+it('does not have exponential performance for data URLs', () => {
 	for (let index = 0; index < 1000; index += 50) {
 		const url = 'data:' + Array.from({length: index}).fill(',#').join('') + '\ra';
 		const start = Date.now();

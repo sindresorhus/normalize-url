@@ -15,12 +15,9 @@
 	"engines": {
 		"node": ">=12.20"
 	},
-	"browser": {
-		"chai": "browser-test/global-chai.js"
-	},
 	"scripts": {
-		"test": "npm run build && xo && c8 mocha && tsd && npm run browser:help",
-		"build": "esbuild test.js --bundle --outfile=browser-test/tests.spec.js",
+		"test": "xo && npm run build && c8 mocha && karma start karma.conf.cjs && tsd && npm run browser:help",
+		"build": "rollup -c",
 		"style:fix": "xo --fix index.js test.js",
 		"browser:help": "echo 'For real browser test, call\n  npm run browser:test'",
 		"browser:test": "npx -y http-server -o browser-test"
@@ -45,10 +42,18 @@
 		"canonical"
 	],
 	"devDependencies": {
-		"ava": "^3.15.0",
+		"rollup": "^2.56.1",
+		"rollup-plugin-terser": "^7.0.2",
+		"@rollup/plugin-alias": "^3.1.5",
+		"@rollup/plugin-babel": "^5.3.0",
 		"c8": "^7.7.3",
 		"chai": "^4.3.4",
-		"esbuild": "0.12.18",
+		"http-server": "^13.0.0",
+		"karma": "^6.3.4",
+		"karma-chai": "^0.1.0",
+		"karma-chrome-launcher": "^3.1.0",
+		"karma-firefox-launcher": "^2.1.1",
+		"karma-mocha": "^2.0.1",
 		"mocha": "^9.0.3",
 		"tsd": "^0.17.0",
 		"typescript": "^4.3.5",

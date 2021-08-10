@@ -1,21 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Mocha</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mocha@9.0.3/mocha.min.css" />
-  </head>
-  <body>
-    <div id="mocha"></div>
-    <script src="https://cdn.jsdelivr.net/npm/mocha@9.0.3/mocha.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chai@4.3.4/chai.min.js"></script>
-    <script>
-      mocha.setup('bdd');
-    </script>
-    <script src="./tests.spec.js"></script>
-    <script>
-      mocha.run();
-    </script>
-  </body>
+	<head>
+		<meta charset="utf-8" />
+		<title>Mocha</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link
+			rel="stylesheet"
+			href="https://cdn.jsdelivr.net/npm/mocha@9.0.3/mocha.min.css"
+		/>
+
+		<script src="https://cdn.jsdelivr.net/npm/mocha@9.0.3/mocha.min.js"></script>
+		<script>window.chai||document.write("<scr" + "ipt src='./js/vendor/mocha-9.0.3.min.js'></scr" + "ipt>");</script>
+		<script src="https://cdn.jsdelivr.net/npm/chai@4.3.4/chai.min.js"></script>
+		<script>window.chai||document.write("<scr" + "ipt src='./js/vendor/chai-4.3.4.min.js'></scr" + "ipt>");</script>
+
+		<script src="./normalizeUrl.umd.min.js"></script>
+	</head>
+	<body>
+		<div id="mocha"></div>
+		<script>
+			mocha.setup("bdd");
+		</script>
+		<script src="./tests.spec.js"></script>
+		<script>
+			mocha.run();
+		</script>
+	</body>
 </html>

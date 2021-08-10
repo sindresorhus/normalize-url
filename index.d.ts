@@ -242,6 +242,21 @@ export interface Options {
 	```
 	*/
 	readonly sortQueryParameters?: boolean;
+
+	/**
+	Set to false to test fallback logic when not support Js Regexp Lookbehind.
+
+	@default true
+	*/
+	readonly preferJsRegexpLookbehind?: boolean;
+
+	/**
+	Set to false to test fallback logic when not support URLSearchParams Sort.
+
+	@default true
+	*/
+	readonly preferURLSearchParamsSort?: boolean;
+
 }
 
 /**
