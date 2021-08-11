@@ -124,6 +124,8 @@ export default function normalizeUrl(urlString, options) {
 	// regex, but we avoid that to maintain compatibility with older js engines
 	// which do not have support for that feature.
 	if (urlObject.pathname) {
+		// TODO: Replace everything below with `urlObject.pathname = urlObject.pathname.replace(/(?<!\b[a-z][a-z\d+\-.]{1,50}:)\/{2,}/g, '/');` when Safari supports negative lookbehind.
+
 		// Split the string by occurrences of this protocol regex, and perform
 		// duplicate-slash replacement on the strings between those occurrences
 		// (if any).
