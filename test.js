@@ -394,3 +394,10 @@ test('does not have exponential performance for data URLs', t => {
 		t.true(difference < 100, `Execution time: ${difference}`);
 	}
 });
+
+test('supports custom protocol', t => {
+	t.is(normalizeUrl('custom://sindresorhus.com'), 'custom://sindresorhus.com');
+	t.is(normalizeUrl('custom+with+plusses://sindresorhus.com'), 'custom+with+plusses://sindresorhus.com');
+	t.is(normalizeUrl('custom.with.periods://sindresorhus.com'), 'custom.with.periods://sindresorhus.com');
+	t.is(normalizeUrl('custom-with-hyphens://sindresorhus.com'), 'custom-with-hyphens://sindresorhus.com');
+});

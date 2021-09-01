@@ -86,9 +86,10 @@ export default function normalizeUrl(urlString, options) {
 
 	const hasRelativeProtocol = urlString.startsWith('//');
 	const isRelativeUrl = !hasRelativeProtocol && /^\.*\//.test(urlString);
+	const hasCustomProtocol = /^[a-z.+-]*[.+-][a-z.+-]*:\/\//i.test(urlString);
 
 	// Prepend protocol
-	if (!isRelativeUrl) {
+	if (!isRelativeUrl & !hasCustomProtocol) {
 		urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, options.defaultProtocol);
 	}
 
