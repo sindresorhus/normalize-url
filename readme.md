@@ -242,7 +242,6 @@ normalizeUrl('https://sindresorhus.com/', {removeSingleSlash: false});
 //=> 'https://sindresorhus.com/'
 ```
 
-
 ##### removeDirectoryIndex
 
 Type: `boolean | Array<RegExp | string>`\
