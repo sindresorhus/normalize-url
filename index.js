@@ -208,10 +208,12 @@ export default function normalizeUrl(urlString, options) {
 		urlObject.searchParams.sort();
 	}
 
+	if (options.sortQueryParameters) {
 	// Decode query parameters
-	try {
-		urlObject.search = decodeURIComponent(urlObject.search);
-	} catch {}
+		try {
+			urlObject.search = decodeURIComponent(urlObject.search);
+		} catch {}
+	}
 
 	if (options.removeTrailingSlash) {
 		urlObject.pathname = urlObject.pathname.replace(/\/$/, '');
