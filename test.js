@@ -28,7 +28,7 @@ test('main', t => {
 	t.is(normalizeUrl('http://sindresorhus.com/?'), 'http://sindresorhus.com');
 	t.is(normalizeUrl('êxample.com'), 'http://xn--xample-hva.com');
 	t.is(normalizeUrl('http://sindresorhus.com/?b=bar&a=foo'), 'http://sindresorhus.com/?a=foo&b=bar');
-	t.is(normalizeUrl('http://sindresorhus.com/?foo=bar*|<>:"'), 'http://sindresorhus.com/?foo=bar*%7C%3C%3E%3A%22');
+	t.is(normalizeUrl('http://sindresorhus.com/?foo=bar*|<>:"'), 'http://sindresorhus.com/?foo=bar*|%3C%3E:%22');
 	t.is(normalizeUrl('http://sindresorhus.com:5000'), 'http://sindresorhus.com:5000');
 	t.is(normalizeUrl('//sindresorhus.com/', {normalizeProtocol: false}), '//sindresorhus.com');
 	t.is(normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false}), '//sindresorhus.com');
@@ -40,7 +40,7 @@ test('main', t => {
 	t.is(normalizeUrl('sindre://www.sorhus.com'), 'sindre://sorhus.com');
 	t.is(normalizeUrl('sindre://www.sorhus.com/'), 'sindre://sorhus.com');
 	t.is(normalizeUrl('sindre://www.sorhus.com/foo/bar'), 'sindre://sorhus.com/foo/bar');
-	t.is(normalizeUrl('https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png'), 'https://i.vimeocdn.com/filter/overlay?src0=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F598160082_1280x720.jpg&src1=https%3A%2F%2Ff.vimeocdn.com%2Fimages_v6%2Fshare%2Fplay_icon_overlay.png');
+	t.is(normalizeUrl('https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png'), 'https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png');
 });
 
 test('stripAuthentication option', t => {
@@ -263,6 +263,7 @@ test('sortQueryParameters option', t => {
 	t.is(normalizeUrl('http://sindresorhus.com/?b=Y&c=X&a=Z&d=W', options2), 'http://sindresorhus.com/?b=Y&c=X&a=Z&d=W');
 	t.is(normalizeUrl('http://sindresorhus.com/?a=Z&d=W&b=Y&c=X', options2), 'http://sindresorhus.com/?a=Z&d=W&b=Y&c=X');
 	t.is(normalizeUrl('http://sindresorhus.com/', options2), 'http://sindresorhus.com');
+	t.is(normalizeUrl('http://sindresorhus.com/?a=/path', options1), normalizeUrl('http://sindresorhus.com/?a=/path', options2));
 });
 
 test('invalid urls', t => {

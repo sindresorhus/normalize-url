@@ -206,6 +206,11 @@ export default function normalizeUrl(urlString, options) {
 	// Sort query parameters
 	if (options.sortQueryParameters) {
 		urlObject.searchParams.sort();
+
+		// Calling `.sort()` encodes the search parameters, so we need to decode them again.
+		try {
+			urlObject.search = decodeURIComponent(urlObject.search);
+		} catch {}
 	}
 
 	if (options.removeTrailingSlash) {
