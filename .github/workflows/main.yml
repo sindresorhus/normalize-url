@@ -20,7 +20,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install
       - run: npm test
-      - uses: codecov/codecov-action@v1
-        if: matrix.node-version == 14
+      - uses: codecov/codecov-action@v2
+        if: matrix.node-version == 16
         with:
           fail_ci_if_error: true

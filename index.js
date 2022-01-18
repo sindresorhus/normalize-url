@@ -192,6 +192,7 @@ export default function normalizeUrl(urlString, options) {
 
 	// Remove query unwanted parameters
 	if (Array.isArray(options.removeQueryParameters)) {
+		// eslint-disable-next-line unicorn/no-useless-spread -- We are intentionally spreading to get a copy.
 		for (const key of [...urlObject.searchParams.keys()]) {
 			if (testParameter(key, options.removeQueryParameters)) {
 				urlObject.searchParams.delete(key);
