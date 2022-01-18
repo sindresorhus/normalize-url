@@ -16,7 +16,7 @@
 		"node": ">=12.20"
 	},
 	"scripts": {
-		"test": "ava && tsd"
+		"test": "xo && c8 ava && tsd"
 	},
 	"files": [
 		"index.js",
