@@ -12,7 +12,7 @@ Useful when you need to display, store, deduplicate, sort, compare, etc, URLs.
 npm install normalize-url
 ```
 
-*If you need to use this in the browser, use version 4: `npm i normalize-url@4`*
+*If you need Safari support, use version 4: `npm i normalize-url@4`*
 
 ## Usage
 
@@ -43,7 +43,8 @@ Type: `object`
 ##### defaultProtocol
 
 Type: `string`\
-Default: `http:`
+Default: `http:`\
+Values: `'https:' | 'http:'`
 
 ##### normalizeProtocol
 
@@ -127,7 +128,9 @@ normalizeUrl('sindresorhus.com/about.html#contact', {stripHash: true});
 Type: `boolean`\
 Default: `false`
 
-Remove HTTP(S) protocol from the URL: `http://sindresorhus.com` → `sindresorhus.com`.
+Remove the protocol from the URL: `http://sindresorhus.com` → `sindresorhus.com`.
+
+It will only remove `https://` and `http://` protocols.
 
 ```js
 normalizeUrl('https://sindresorhus.com');

@@ -1,8 +1,10 @@
 export interface Options {
 	/**
 	@default 'http:'
+
+	Values: `'https:' | 'http:'`
 	*/
-	readonly defaultProtocol?: string;
+	readonly defaultProtocol?: string; // TODO: Make this `'https:' | 'http:'` in the next major version.
 
 	/**
 	Prepends `defaultProtocol` to the URL if it's protocol-relative.
@@ -87,7 +89,9 @@ export interface Options {
 	readonly stripHash?: boolean;
 
 	/**
-	Removes HTTP(S) protocol from an URL `http://sindresorhus.com` → `sindresorhus.com`.
+	Remove the protocol from the URL: `http://sindresorhus.com` → `sindresorhus.com`.
+
+	It will only remove `https://` and `http://` protocols.
 
 	@default false
 
