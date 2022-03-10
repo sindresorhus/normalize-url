@@ -270,7 +270,7 @@ Sorts the query parameters alphabetically by key.
 normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {
 	sortQueryParameters: false
 });
-//=> 'http://sindresorhus.com/?b=two&a=one&c=three'
+//=> 'http://sindresorhus.com/?a=one&b=two&c=three'
 ```
 
 ## Related
