@@ -235,7 +235,7 @@ normalizeUrl('http://sindresorhus.com/', {removeTrailingSlash: false});
 Type: `boolean`\
 Default: `true`
 
-Remove a sole `/` pathname in the output. This option is independant of `removeTrailingSlash`.
+Remove a sole `/` pathname in the output. This option is independent of `removeTrailingSlash`.
 
 ```js
 normalizeUrl('https://sindresorhus.com/');
