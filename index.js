@@ -66,6 +66,7 @@ export default function normalizeUrl(urlString, options) {
 		stripTextFragment: true,
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
+		keepQueryParameters: [],
 		removeTrailingSlash: true,
 		removeSingleSlash: true,
 		removeDirectoryIndex: false,
@@ -202,6 +203,16 @@ export default function normalizeUrl(urlString, options) {
 
 	if (options.removeQueryParameters === true) {
 		urlObject.search = '';
+	}
+
+	// Keep wanted query parameters
+	if (Array.isArray(options.keepQueryParameters) && options.keepQueryParameters.length > 0) {
+		// eslint-disable-next-line unicorn/no-useless-spread -- We are intentionally spreading to get a copy.
+		for (const key of [...urlObject.searchParams.keys()]) {
+			if (!testParameter(key, options.keepQueryParameters)) {
+				urlObject.searchParams.delete(key);
+			}
+		}
 	}
 
 	// Sort query parameters

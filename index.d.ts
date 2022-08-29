@@ -180,6 +180,21 @@ export interface Options {
 	readonly removeQueryParameters?: ReadonlyArray<RegExp | string> | boolean;
 
 	/**
+	Keeps query parameters that matches any of the provided strings or regexes.
+
+	@default []
+
+	@example
+	```
+	normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
+		keepQueryParameters: ['ref']
+	});
+	//=> 'http://sindresorhus.com/?ref=test_ref'
+	```
+	 */
+	readonly keepQueryParameters?: ReadonlyArray<RegExp | string>;
+
+	/**
 	Removes trailing slash.
 
 	__Note__: Trailing slash is always removed if the URL doesn't have a pathname unless the `removeSingleSlash` option is set to `false`.

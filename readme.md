@@ -210,6 +210,20 @@ normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
 //=> 'http://www.sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test'
 ```
 
+##### keepQueryParameters
+
+Type: `Array<RegExp | string>`\
+Default: `[]`
+
+Keep query parameters that matches any of the provided strings or regexes.
+
+```js
+normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
+	keepQueryParameters: ['ref']
+});
+//=> 'http://sindresorhus.com/?ref=test_ref'
+```
+
 ##### removeTrailingSlash
 
 Type: `boolean`\
