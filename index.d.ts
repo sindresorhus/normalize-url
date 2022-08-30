@@ -191,7 +191,7 @@ export interface Options {
 	});
 	//=> 'http://sindresorhus.com/?ref=test_ref'
 	```
-	 */
+	*/
 	readonly keepQueryParameters?: ReadonlyArray<RegExp | string>;
 
 	/**
