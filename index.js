@@ -201,7 +201,7 @@ export default function normalizeUrl(urlString, options) {
 		}
 	}
 
-	if (options.removeQueryParameters === true) {
+	if (options.keepQueryParameters.length === 0 && options.removeQueryParameters === true) {
 		urlObject.search = '';
 	}
 
