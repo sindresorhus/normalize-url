@@ -186,10 +186,10 @@ export interface Options {
 
 	@example
 	```
-	normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
+	normalizeUrl('https://sindresorhus.com?foo=bar&ref=unicorn', {
 		keepQueryParameters: ['ref']
 	});
-	//=> 'http://sindresorhus.com/?ref=test_ref'
+	//=> 'https://sindresorhus.com/?ref=unicorn'
 	```
 	*/
 	readonly keepQueryParameters?: ReadonlyArray<RegExp | string>;
