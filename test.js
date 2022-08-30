@@ -147,7 +147,7 @@ test('keepQueryParameters option', t => {
 		removeQueryParameters: false,
 		keepQueryParameters: [/^utm_\w+/i, 'ref'],
 	};
-	t.is(normalizeUrl('http://www.sindresorhus.com', options), 'http://www.sindresorhus.com');
+	t.is(normalizeUrl('https://sindresorhus.com', options), 'https://sindresorhus.com');
 	t.is(normalizeUrl('www.sindresorhus.com?foo=bar', options), 'http://www.sindresorhus.com');
 	t.is(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options), 'http://www.sindresorhus.com/?ref=test_ref&utm_medium=test');
 });
