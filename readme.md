@@ -215,15 +215,15 @@ normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
 Type: `Array<RegExp | string>`\
 Default: `[]`
 
-Keep query parameters that matches any of the provided strings or regexes.
+Keeps only query parameters that matches any of the provided strings or regexes.
 
 **Note:** It overrides `removeQueryParameters` option.
 
 ```js
-normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
+normalizeUrl('https://sindresorhus.com?foo=bar&ref=unicorn', {
 	keepQueryParameters: ['ref']
 });
-//=> 'http://sindresorhus.com/?ref=test_ref'
+//=> 'https://sindresorhus.com/?ref=unicorn'
 ```
 
 ##### removeTrailingSlash
