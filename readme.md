@@ -217,6 +217,8 @@ Default: `[]`
 
 Keep query parameters that matches any of the provided strings or regexes.
 
+**Note:** It overrides `removeQueryParameters` option.
+
 ```js
 normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
 	keepQueryParameters: ['ref']
