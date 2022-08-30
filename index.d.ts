@@ -180,7 +180,7 @@ export interface Options {
 	readonly removeQueryParameters?: ReadonlyArray<RegExp | string> | boolean;
 
 	/**
-	Keeps query parameters that matches any of the provided strings or regexes.
+	Keeps only query parameters that matches any of the provided strings or regexes.
 
 	@default []
 
