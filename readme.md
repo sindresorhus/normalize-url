@@ -213,7 +213,7 @@ normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
 ##### keepQueryParameters
 
 Type: `Array<RegExp | string>`\
-Default: `[]`
+Default: `undefined`
 
 Keeps only query parameters that matches any of the provided strings or regexes.
 

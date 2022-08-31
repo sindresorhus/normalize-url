@@ -184,7 +184,7 @@ export interface Options {
 
 	__Note__: It overrides `removeQueryParameters` option.
 
-	@default []
+	@default undefined
 
 	@example
 	```

@@ -66,7 +66,6 @@ export default function normalizeUrl(urlString, options) {
 		stripTextFragment: true,
 		stripWWW: true,
 		removeQueryParameters: [/^utm_\w+/i],
-		keepQueryParameters: [],
 		removeTrailingSlash: true,
 		removeSingleSlash: true,
 		removeDirectoryIndex: false,
@@ -201,7 +200,7 @@ export default function normalizeUrl(urlString, options) {
 		}
 	}
 
-	if (options.keepQueryParameters.length === 0 && options.removeQueryParameters === true) {
+	if (!Array.isArray(options.keepQueryParameters) && options.removeQueryParameters === true) {
 		urlObject.search = '';
 	}
 
