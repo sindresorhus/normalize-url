@@ -182,7 +182,7 @@ export interface Options {
 	/**
 	Keeps only query parameters that matches any of the provided strings or regexes.
 
-	__Note__: It overrides `removeQueryParameters` option.
+	__Note__: It overrides the `removeQueryParameters` option.
 
 	@default undefined
 
