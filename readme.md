@@ -210,6 +210,22 @@ normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
 //=> 'http://www.sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test'
 ```
 
+##### keepQueryParameters
+
+Type: `Array<RegExp | string>`\
+Default: `undefined`
+
+Keeps only query parameters that matches any of the provided strings or regexes.
+
+**Note:** It overrides the `removeQueryParameters` option.
+
+```js
+normalizeUrl('https://sindresorhus.com?foo=bar&ref=unicorn', {
+	keepQueryParameters: ['ref']
+});
+//=> 'https://sindresorhus.com/?ref=unicorn'
+```
+
 ##### removeTrailingSlash
 
 Type: `boolean`\
