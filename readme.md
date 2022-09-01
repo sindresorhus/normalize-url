@@ -54,10 +54,10 @@ Default: `true`
 Prepend `defaultProtocol` to the URL if it's protocol-relative.
 
 ```js
-normalizeUrl('//sindresorhus.com:80/');
+normalizeUrl('//sindresorhus.com');
 //=> 'http://sindresorhus.com'
 
-normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false});
+normalizeUrl('//sindresorhus.com', {normalizeProtocol: false});
 //=> '//sindresorhus.com'
 ```
 
@@ -69,10 +69,10 @@ Default: `false`
 Normalize `https:` to `http:`.
 
 ```js
-normalizeUrl('https://sindresorhus.com:80/');
+normalizeUrl('https://sindresorhus.com');
 //=> 'https://sindresorhus.com'
 
-normalizeUrl('https://sindresorhus.com:80/', {forceHttp: true});
+normalizeUrl('https://sindresorhus.com', {forceHttp: true});
 //=> 'http://sindresorhus.com'
 ```
 
@@ -84,10 +84,10 @@ Default: `false`
 Normalize `http:` to `https:`.
 
 ```js
-normalizeUrl('https://sindresorhus.com:80/');
-//=> 'https://sindresorhus.com'
+normalizeUrl('http://sindresorhus.com');
+//=> 'http://sindresorhus.com'
 
-normalizeUrl('http://sindresorhus.com:80/', {forceHttps: true});
+normalizeUrl('http://sindresorhus.com', {forceHttps: true});
 //=> 'https://sindresorhus.com'
 ```
 
