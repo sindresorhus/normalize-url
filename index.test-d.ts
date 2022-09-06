@@ -29,6 +29,7 @@ normalizeUrl('http://sindresorhus.com/', {removeSingleSlash: false});
 normalizeUrl('www.sindresorhus.com/foo/default.php', {
 	removeDirectoryIndex: [/^default\.[a-z]+$/, 'foo'],
 });
+normalizeUrl('www.sindresorhus.com/', {removeExplicitPort: false});
 normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {
 	sortQueryParameters: false,
 });

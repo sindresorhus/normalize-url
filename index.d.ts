@@ -250,6 +250,22 @@ export interface Options {
 	readonly removeDirectoryIndex?: boolean | ReadonlyArray<RegExp | string>;
 
 	/**
+	Removes a port number corresponding to the protocol part of a url, excluding a default port
+	number e.g., 80 for http, and 443 for https.
+
+	@default false
+
+	@example
+	```
+	normalizeUrl('sindresorhus.com:123', {
+		removeExplicitPort: true
+	});
+	//=> 'sindresorhus.com'
+	```
+	*/
+	readonly removeExplicitPort?: boolean;
+
+	/**
 	Sorts the query parameters alphabetically by key.
 
 	@default true

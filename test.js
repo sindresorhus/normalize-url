@@ -192,6 +192,14 @@ test('removeTrailingSlash option', t => {
 	t.is(normalizeUrl('http://sindresorhus.com/?unicorns=true', options), 'http://sindresorhus.com/?unicorns=true');
 });
 
+test('removeExplicitPort option', t => {
+	const options = {removeExplicitPort: true};
+	t.is(normalizeUrl('http://sindresorhus.com:123', options), 'http://sindresorhus.com');
+	t.is(normalizeUrl('https://sindresorhus.com:123', options), 'https://sindresorhus.com');
+	t.is(normalizeUrl('http://sindresorhus.com:443', options), 'http://sindresorhus.com');
+	t.is(normalizeUrl('https://sindresorhus.com:80', options), 'https://sindresorhus.com');
+});
+
 test('removeSingleSlash option', t => {
 	const options = {removeSingleSlash: false};
 	t.is(normalizeUrl('https://sindresorhus.com', options), 'https://sindresorhus.com');

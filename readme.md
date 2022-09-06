@@ -275,6 +275,34 @@ normalizeUrl('www.sindresorhus.com/foo/default.php', {
 //=> 'http://sindresorhus.com/foo'
 ```
 
+##### removeExplicitPort
+
+Type: `boolean`\
+Default: `false`
+
+Removes a port number corresponding to the protocol part of a url, excluding a default port number e.g., 80 for http, and 443 for https.
+
+```js
+normalizeUrl('sindresorhus.com:123', {
+	removeExplicitPort: true
+});
+//=> 'sindresorhus.com'
+```
+
+```js
+normalizeUrl('http://sindresorhus.com:443', {
+	removeExplicitPort: true
+});
+//=> 'http://sindresorhus.com'
+```
+
+```js
+normalizeUrl('https://sindresorhus.com:80', {
+	removeExplicitPort: true
+});
+//=> 'https://sindresorhus.com'
+```
+
 ##### sortQueryParameters
 
 Type: `boolean`\
