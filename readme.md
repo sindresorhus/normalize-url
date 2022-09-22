@@ -289,20 +289,6 @@ normalizeUrl('sindresorhus.com:123', {
 //=> 'http://sindresorhus.com'
 ```
 
-```js
-normalizeUrl('http://sindresorhus.com:443', {
-	removeExplicitPort: true
-});
-//=> 'http://sindresorhus.com'
-```
-
-```js
-normalizeUrl('https://sindresorhus.com:80', {
-	removeExplicitPort: true
-});
-//=> 'https://sindresorhus.com'
-```
-
 ##### sortQueryParameters
 
 Type: `boolean`\
