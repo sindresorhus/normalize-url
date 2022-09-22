@@ -250,8 +250,9 @@ export interface Options {
 	readonly removeDirectoryIndex?: boolean | ReadonlyArray<RegExp | string>;
 
 	/**
-	Removes a port number corresponding to the protocol part of a url, excluding a default port
-	number e.g., 80 for http, and 443 for https.
+	Removes an explicit port number from the URL.
+
+	Port 443 is always removed from HTTPS URLs and 80 is always removed from HTTP URLs regardless of this option.
 
 	@default false
 
