@@ -260,7 +260,7 @@ export interface Options {
 	normalizeUrl('sindresorhus.com:123', {
 		removeExplicitPort: true
 	});
-	//=> 'sindresorhus.com'
+	//=> 'http://sindresorhus.com'
 	```
 	*/
 	readonly removeExplicitPort?: boolean;

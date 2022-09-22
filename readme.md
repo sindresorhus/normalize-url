@@ -286,7 +286,7 @@ Removes a port number corresponding to the protocol part of a url, excluding a d
 normalizeUrl('sindresorhus.com:123', {
 	removeExplicitPort: true
 });
-//=> 'sindresorhus.com'
+//=> 'http://sindresorhus.com'
 ```
 
 ```js
