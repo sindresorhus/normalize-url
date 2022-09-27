@@ -275,6 +275,22 @@ normalizeUrl('www.sindresorhus.com/foo/default.php', {
 //=> 'http://sindresorhus.com/foo'
 ```
 
+##### removeExplicitPort
+
+Type: `boolean`\
+Default: `false`
+
+Removes an explicit port number from the URL.
+
+Port 443 is always removed from HTTPS URLs and 80 is always removed from HTTP URLs regardless of this option.
+
+```js
+normalizeUrl('sindresorhus.com:123', {
+	removeExplicitPort: true
+});
+//=> 'http://sindresorhus.com'
+```
+
 ##### sortQueryParameters
 
 Type: `boolean`\
