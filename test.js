@@ -141,6 +141,28 @@ test('removeQueryParameters boolean `false` option', t => {
 	t.is(normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', options), 'http://www.sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test');
 });
 
+test('removeQueryParametersByValue option', t => {
+	const options = {
+		stripWWW: false,
+		removeQueryParametersByValue: [
+			{
+				key: 'page',
+				value: 1,
+				type: Number,
+			},
+			{
+				key: 'page_size',
+				value: 10,
+				type: Number,
+			},
+		],
+	};
+
+	t.is(normalizeUrl('http://www.sindresorhus.com/?page=1&page_size=10', options), 'http://www.sindresorhus.com');
+	t.is(normalizeUrl('www.sindresorhus.com?foo=bar&page=2&page_size=10', options), 'http://www.sindresorhus.com/?foo=bar&page=2');
+	t.is(normalizeUrl('www.sindresorhus.com?foo=bar&page=2&page_size=20', options), 'http://www.sindresorhus.com/?foo=bar&page=2&page_size=20');
+});
+
 test('keepQueryParameters option', t => {
 	const options = {
 		stripWWW: false,

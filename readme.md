@@ -209,6 +209,28 @@ normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
 });
 //=> 'http://www.sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test'
 ```
+##### removeQueryParametersByValue
+
+Removes query parameters that match the specified values. May be helpful to make a canonical URL.
+
+Type: `Array<{ key: string; value: string | number; }>`\
+Default: `undefined`
+
+```js
+normalizeUrl('www.sindresorhus.com?foo=bar&page=1&page_size=30', {
+	removeQueryParametersByValue: [
+		{
+			key: 'page',
+			value: 1
+		},
+		{
+			key: 'page_size',
+			value: 10
+		}
+	]
+});
+//=> 'http://sindresorhus.com/?foo=bar&page_size=30'
+```
 
 ##### keepQueryParameters
 

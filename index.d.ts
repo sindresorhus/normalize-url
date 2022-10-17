@@ -180,6 +180,30 @@ export interface Options {
 	readonly removeQueryParameters?: ReadonlyArray<RegExp | string> | boolean;
 
 	/**
+	Removes query parameters that matches specified value. May be helpful to make canonical URL.
+
+	@default undefined
+
+	@example
+	```
+	normalizeUrl('www.sindresorhus.com?foo=bar&page=1&page_size=30', {
+		removeQueryParametersByValue: [
+			{
+				key: 'page',
+				value: 1
+			},
+			{
+				key: 'page_size',
+				value: 10
+			}
+		]
+	});
+	//=> 'http://sindresorhus.com/?foo=bar&page_size=30'
+	```
+	*/
+	readonly removeQueryParametersByValue?: ReadonlyArray<{key: string; value: string | number}> | undefined;
+
+	/**
 	Keeps only query parameters that matches any of the provided strings or regexes.
 
 	__Note__: It overrides the `removeQueryParameters` option.
@@ -286,7 +310,7 @@ export interface Options {
 [Normalize](https://en.wikipedia.org/wiki/URL_normalization) a URL.
 
 @param url - URL to normalize, including [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs).
-
+@param options — options
 @example
 ```
 import normalizeUrl from 'normalize-url';
