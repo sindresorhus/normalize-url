@@ -1,4 +1,4 @@
-export interface Options {
+export type Options = {
 	/**
 	@default 'http:'
 
@@ -280,7 +280,7 @@ export interface Options {
 	```
 	*/
 	readonly sortQueryParameters?: boolean;
-}
+};
 
 /**
 [Normalize](https://en.wikipedia.org/wiki/URL_normalization) a URL.

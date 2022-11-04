@@ -406,4 +406,5 @@ test('ignore custom schemes', t => {
 	t.is(normalizeUrl('tel:004346382763'), 'tel:004346382763');
 	t.is(normalizeUrl('mailto:office@foo.com'), 'mailto:office@foo.com');
 	t.is(normalizeUrl('sindre://www.sindresorhus.com'), 'sindre://www.sindresorhus.com');
+	t.is(normalizeUrl('foo:bar'), 'foo:bar');
 });
