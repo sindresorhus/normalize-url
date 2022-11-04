@@ -4,6 +4,21 @@ const DATA_URL_DEFAULT_CHARSET = 'us-ascii';
 
 const testParameter = (name, filters) => filters.some(filter => filter instanceof RegExp ? filter.test(name) : filter === name);
 
+const supportedProtocols = new Set([
+	'https:',
+	'http:',
+	'file:',
+]);
+
+const hasCustomProtocol = urlString => {
+	try {
+		const {protocol} = new URL(urlString);
+		return protocol.endsWith(':') && !supportedProtocols.has(protocol);
+	} catch {
+		return false;
+	}
+};
+
 const normalizeDataURL = (urlString, {stripHash}) => {
 	const match = /^data:(?<type>[^,]*?),(?<data>[^#]*?)(?:#(?<hash>.*))?$/.exec(urlString);
 
@@ -81,8 +96,8 @@ export default function normalizeUrl(urlString, options) {
 		return normalizeDataURL(urlString, options);
 	}
 
-	if (/^view-source:/i.test(urlString)) {
-		throw new Error('`view-source:` is not supported as it is a non-standard protocol');
+	if (hasCustomProtocol(urlString)) {
+		return urlString;
 	}
 
 	const hasRelativeProtocol = urlString.startsWith('//');

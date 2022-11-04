@@ -30,6 +30,8 @@ normalizeUrl('//www.sindresorhus.com:80/../baz?b=bar&a=foo');
 
 ### normalizeUrl(url, options?)
 
+URLs with custom protocols are not normalized and just passed through by default. Supported protocols are: `https`, `http`, `file`, and `data`.
+
 #### url
 
 Type: `string`

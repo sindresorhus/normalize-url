@@ -285,6 +285,8 @@ export interface Options {
 /**
 [Normalize](https://en.wikipedia.org/wiki/URL_normalization) a URL.
 
+URLs with custom protocols are not normalized and just passed through by default. Supported protocols are: `https`, `http`, `file`, and `data`.
+
 @param url - URL to normalize, including [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs).
 
 @example
