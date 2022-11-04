@@ -4,7 +4,7 @@ import normalizeUrl from './index.js';
 expectType<string>(normalizeUrl('sindresorhus.com'));
 expectType<string>(normalizeUrl('HTTP://xn--xample-hva.com:80/?b=bar&a=foo'));
 
-normalizeUrl('//sindresorhus.com:80/', {defaultProtocol: 'https:'});
+normalizeUrl('//sindresorhus.com:80/', {defaultProtocol: 'https'});
 normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false});
 normalizeUrl('https://sindresorhus.com:80/', {forceHttp: true});
 normalizeUrl('http://sindresorhus.com:80/', {forceHttps: true});

@@ -37,7 +37,7 @@ const normalizeDataURL = (urlString, {stripHash}) => {
 	}
 
 	// Lowercase MIME type
-	const mimeType = (mediaType.shift() || '').toLowerCase();
+	const mimeType = mediaType.shift()?.toLowerCase() ?? '';
 	const attributes = mediaType
 		.map(attribute => {
 			let [key, value = ''] = attribute.split('=').map(string => string.trim());
@@ -72,7 +72,7 @@ const normalizeDataURL = (urlString, {stripHash}) => {
 
 export default function normalizeUrl(urlString, options) {
 	options = {
-		defaultProtocol: 'http:',
+		defaultProtocol: 'http',
 		normalizeProtocol: true,
 		forceHttp: false,
 		forceHttps: false,
@@ -88,6 +88,11 @@ export default function normalizeUrl(urlString, options) {
 		sortQueryParameters: true,
 		...options,
 	};
+
+	// Legacy: Append `:` to the protocol if missing.
+	if (typeof options.defaultProtocol === 'string' && !options.defaultProtocol.endsWith(':')) {
+		options.defaultProtocol = `${options.defaultProtocol}:`;
+	}
 
 	urlString = urlString.trim();
 

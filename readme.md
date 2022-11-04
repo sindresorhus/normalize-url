@@ -45,8 +45,8 @@ Type: `object`
 ##### defaultProtocol
 
 Type: `string`\
-Default: `http:`\
-Values: `'https:' | 'http:'`
+Default: `'http'`\
+Values: `'https' | 'http'`
 
 ##### normalizeProtocol
 
@@ -68,7 +68,7 @@ normalizeUrl('//sindresorhus.com', {normalizeProtocol: false});
 Type: `boolean`\
 Default: `false`
 
-Normalize `https:` to `http:`.
+Normalize HTTPS to HTTP.
 
 ```js
 normalizeUrl('https://sindresorhus.com');
@@ -83,7 +83,7 @@ normalizeUrl('https://sindresorhus.com', {forceHttp: true});
 Type: `boolean`\
 Default: `false`
 
-Normalize `http:` to `https:`.
+Normalize HTTP to HTTPS.
 
 ```js
 normalizeUrl('http://sindresorhus.com');
@@ -93,7 +93,7 @@ normalizeUrl('http://sindresorhus.com', {forceHttps: true});
 //=> 'https://sindresorhus.com'
 ```
 
-This option can't be used with the `forceHttp` option at the same time.
+This option cannot be used with the `forceHttp` option at the same time.
 
 ##### stripAuthentication
 

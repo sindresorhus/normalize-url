@@ -1,10 +1,8 @@
 export type Options = {
 	/**
-	@default 'http:'
-
-	Values: `'https:' | 'http:'`
+	@default 'http'
 	*/
-	readonly defaultProtocol?: string; // TODO: Make this `'https:' | 'http:'` in the next major version.
+	readonly defaultProtocol?: 'https' | 'http';
 
 	/**
 	Prepends `defaultProtocol` to the URL if it's protocol-relative.
@@ -23,7 +21,7 @@ export type Options = {
 	readonly normalizeProtocol?: boolean;
 
 	/**
-	Normalizes `https:` URLs to `http:`.
+	Normalizes HTTPS URLs to HTTP.
 
 	@default false
 
@@ -39,9 +37,9 @@ export type Options = {
 	readonly forceHttp?: boolean;
 
 	/**
-	Normalizes `http:` URLs to `https:`.
+	Normalizes HTTP URLs to HTTPS.
 
-	This option can't be used with the `forceHttp` option at the same time.
+	This option cannot be used with the `forceHttp` option at the same time.
 
 	@default false
 

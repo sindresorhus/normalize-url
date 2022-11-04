@@ -6,7 +6,6 @@ test('main', t => {
 	t.is(normalizeUrl('sindresorhus.com '), 'http://sindresorhus.com');
 	t.is(normalizeUrl('sindresorhus.com.'), 'http://sindresorhus.com');
 	t.is(normalizeUrl('SindreSorhus.com'), 'http://sindresorhus.com');
-	t.is(normalizeUrl('sindresorhus.com', {defaultProtocol: 'https:'}), 'https://sindresorhus.com');
 	t.is(normalizeUrl('HTTP://sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(normalizeUrl('//sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(normalizeUrl('http://sindresorhus.com'), 'http://sindresorhus.com');
@@ -40,6 +39,15 @@ test('main', t => {
 	// t.is(normalizeUrl('sindre://www.sorhus.com/'), 'sindre://sorhus.com');
 	// t.is(normalizeUrl('sindre://www.sorhus.com/foo/bar'), 'sindre://sorhus.com/foo/bar');
 	t.is(normalizeUrl('https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png'), 'https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png');
+});
+
+test('defaultProtocol option', t => {
+	t.is(normalizeUrl('sindresorhus.com', {defaultProtocol: 'https'}), 'https://sindresorhus.com');
+	t.is(normalizeUrl('sindresorhus.com', {defaultProtocol: 'http'}), 'http://sindresorhus.com');
+
+	// Legacy
+	t.is(normalizeUrl('sindresorhus.com', {defaultProtocol: 'https:'}), 'https://sindresorhus.com');
+	t.is(normalizeUrl('sindresorhus.com', {defaultProtocol: 'http:'}), 'http://sindresorhus.com');
 });
 
 test('stripAuthentication option', t => {
@@ -365,7 +373,7 @@ test('data URL', t => {
 
 	// Options.
 	const options = {
-		defaultProtocol: 'http:',
+		defaultProtocol: 'http',
 		normalizeProtocol: true,
 		forceHttp: true,
 		stripHash: true,
