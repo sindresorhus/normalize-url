@@ -105,10 +105,10 @@ Default: `true`
 Strip the [authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) part of the URL.
 
 ```js
-normalizeUrl('user:password@sindresorhus.com');
+normalizeUrl('https://user:password@sindresorhus.com');
 //=> 'https://sindresorhus.com'
 
-normalizeUrl('user:password@sindresorhus.com', {stripAuthentication: false});
+normalizeUrl('https://user:password@sindresorhus.com', {stripAuthentication: false});
 //=> 'https://user:password@sindresorhus.com'
 ```
 

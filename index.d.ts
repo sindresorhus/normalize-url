@@ -61,10 +61,10 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('user:password@sindresorhus.com');
+	normalizeUrl('https://user:password@sindresorhus.com');
 	//=> 'https://sindresorhus.com'
 
-	normalizeUrl('user:password@sindresorhus.com', {stripAuthentication: false});
+	normalizeUrl('https://user:password@sindresorhus.com', {stripAuthentication: false});
 	//=> 'https://user:password@sindresorhus.com'
 	```
 	*/
