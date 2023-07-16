@@ -32,6 +32,8 @@ normalizeUrl('//www.sindresorhus.com:80/../baz?b=bar&a=foo');
 
 URLs with custom protocols are not normalized and just passed through by default. Supported protocols are: `https`, `http`, `file`, and `data`.
 
+Human-friendly URLs with basic auth (for example, `user:password@sindresorhus.com`) are not handled because basic auth conflicts with custom protocols. [Basic auth URLs are also deprecated.](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#access_using_credentials_in_the_url)
+
 #### url
 
 Type: `string`
