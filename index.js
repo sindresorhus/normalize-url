@@ -12,8 +12,10 @@ const supportedProtocols = new Set([
 
 const hasCustomProtocol = urlString => {
 	try {
+		const regex = /\./;
 		const {protocol} = new URL(urlString);
-		return protocol.endsWith(':') && !supportedProtocols.has(protocol);
+
+		return protocol.endsWith(':') && !regex.test(protocol) && !supportedProtocols.has(protocol);
 	} catch {
 		return false;
 	}

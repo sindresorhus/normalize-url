@@ -201,6 +201,7 @@ test('removeExplicitPort option', t => {
 	t.is(normalizeUrl('https://sindresorhus.com:123', options), 'https://sindresorhus.com');
 	t.is(normalizeUrl('http://sindresorhus.com:443', options), 'http://sindresorhus.com');
 	t.is(normalizeUrl('https://sindresorhus.com:80', options), 'https://sindresorhus.com');
+	t.is(normalizeUrl('sindresorhus.com:123', options), 'http://sindresorhus.com');
 });
 
 test('removeSingleSlash option', t => {
