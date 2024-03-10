@@ -39,6 +39,7 @@ test('main', t => {
 	// t.is(normalizeUrl('sindre://www.sorhus.com/'), 'sindre://sorhus.com');
 	// t.is(normalizeUrl('sindre://www.sorhus.com/foo/bar'), 'sindre://sorhus.com/foo/bar');
 	t.is(normalizeUrl('https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png'), 'https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png');
+	t.is(normalizeUrl('sindresorhus.com:123'), 'http://sindresorhus.com:123');
 });
 
 test('defaultProtocol option', t => {
