@@ -181,7 +181,10 @@ export default function normalizeUrl(urlString, options) {
 	// Decode URI octets
 	if (urlObject.pathname) {
 		try {
-			urlObject.pathname = decodeURI(urlObject.pathname);
+			urlObject.pathname = urlObject.pathname
+				.split('/')
+				.map((s) => encodeURIComponent(decodeURIComponent(s)))
+				.join('/');
 		} catch {}
 	}
 
