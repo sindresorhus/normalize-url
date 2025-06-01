@@ -41,6 +41,8 @@ test('main', t => {
 	t.is(normalizeUrl('https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png'), 'https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png');
 	t.is(normalizeUrl('sindresorhus.com:123'), 'http://sindresorhus.com:123');
 	t.is(normalizeUrl('https://foo.com/some%5Bthing%5Celse/that-is%40great@coding'), 'https://foo.com/some%5Bthing%5Celse/that-is%40great%40coding');
+	t.is(normalizeUrl('https://foo.com/something\\else/great'), 'https://foo.com/something/else/great');
+	t.is(normalizeUrl('https://foo.com/something%5Celse/great'), 'https://foo.com/something%5Celse/great');
 });
 
 test('defaultProtocol option', t => {
