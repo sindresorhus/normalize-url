@@ -40,9 +40,6 @@ test('main', t => {
 	// t.is(normalizeUrl('sindre://www.sorhus.com/foo/bar'), 'sindre://sorhus.com/foo/bar');
 	t.is(normalizeUrl('https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png'), 'https://i.vimeocdn.com/filter/overlay?src0=https://i.vimeocdn.com/video/598160082_1280x720.jpg&src1=https://f.vimeocdn.com/images_v6/share/play_icon_overlay.png');
 	t.is(normalizeUrl('sindresorhus.com:123'), 'http://sindresorhus.com:123');
-	t.is(normalizeUrl('https://foo.com/some%5Bthing%5Celse/that-is%40great@coding'), 'https://foo.com/some[thing%5Celse/that-is%40great@coding');
-	t.is(normalizeUrl('https://foo.com/something\\else/great'), 'https://foo.com/something/else/great');
-	t.is(normalizeUrl('https://foo.com/something%5Celse/great'), 'https://foo.com/something%5Celse/great');
 });
 
 test('defaultProtocol option', t => {
@@ -419,4 +416,12 @@ test('ignore custom schemes', t => {
 	t.is(normalizeUrl('mailto:office@foo.com'), 'mailto:office@foo.com');
 	t.is(normalizeUrl('sindre://www.sindresorhus.com'), 'sindre://www.sindresorhus.com');
 	t.is(normalizeUrl('foo:bar'), 'foo:bar');
+});
+
+test('encoded backslashes do not get decoded', t => {
+	t.is(normalizeUrl('https://foo.com/some%5Bthing%5Celse/that-is%40great@coding'), 'https://foo.com/some[thing%5Celse/that-is%40great@coding');
+	t.is(normalizeUrl('https://foo.com/something%5Celse/great'), 'https://foo.com/something%5Celse/great');
+
+	// Non-encoded backslashes should remain as-is.
+	t.is(normalizeUrl('https://foo.com/something\\else/great'), 'https://foo.com/something/else/great');
 });
