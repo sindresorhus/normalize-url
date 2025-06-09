@@ -417,3 +417,11 @@ test('ignore custom schemes', t => {
 	t.is(normalizeUrl('sindre://www.sindresorhus.com'), 'sindre://www.sindresorhus.com');
 	t.is(normalizeUrl('foo:bar'), 'foo:bar');
 });
+
+test('encoded backslashes do not get decoded', t => {
+	t.is(normalizeUrl('https://foo.com/some%5Bthing%5Celse/that-is%40great@coding'), 'https://foo.com/some[thing%5Celse/that-is%40great@coding');
+	t.is(normalizeUrl('https://foo.com/something%5Celse/great'), 'https://foo.com/something%5Celse/great');
+
+	// Non-encoded backslashes should remain as-is.
+	t.is(normalizeUrl('https://foo.com/something\\else/great'), 'https://foo.com/something/else/great');
+});

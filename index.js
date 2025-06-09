@@ -181,7 +181,7 @@ export default function normalizeUrl(urlString, options) {
 	// Decode URI octets
 	if (urlObject.pathname) {
 		try {
-			urlObject.pathname = decodeURI(urlObject.pathname);
+			urlObject.pathname = decodeURI(urlObject.pathname).replace(/\\/g, '%5C');
 		} catch {}
 	}
 
