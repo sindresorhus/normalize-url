@@ -1,12 +1,12 @@
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
 const DATA_URL_DEFAULT_MIME_TYPE = 'text/plain';
 const DATA_URL_DEFAULT_CHARSET = 'us-ascii';
-// A browser reads a media type that ends in `;base64` as the base64 marker, with zero or more spaces between the `;` and the word. The `;` is what makes it a parameter rather than a MIME type, so a media type of just `base64` is not the marker.
+// A browser reads a media type ending in `;base64` as the base64 marker, with any number of spaces after the `;`. A bare `base64` is not the marker.
 const base64MarkerAtEndPattern = /; *base64$/i;
 
 const encodedReservedCharactersPattern = '%(?:3A|2F|3F|23|5B|5D|40|21|24|26|27|28|29|2A|2B|2C|3B|3D)';
 const temporaryEncodedReservedTokenBase = '__normalize_url_encoded_reserved__';
-// The closing `__` is a lookahead rather than part of the match, so that a search which spells the base twice in a row still has both indexes found. Consuming it would take the opening `__` of the second one, and the index after it would look free when the search already contains it.
+// The closing `__` is a lookahead, so two tokens written back to back are both found.
 const temporaryEncodedReservedTokenPattern = /__normalize_url_encoded_reserved__(\d+)(?=__)/g;
 const hasEncodedReservedCharactersRegex = new RegExp(encodedReservedCharactersPattern, 'i');
 const encodedReservedCharactersRegex = new RegExp(encodedReservedCharactersPattern, 'gi');
@@ -17,24 +17,30 @@ The caller removes the structural `#`, so any `#` in the fragment is content and
 */
 const textFragmentPattern = /:~:text=[^]*$/i;
 
-// Canonicalizes the hexadecimal digits of the percent escapes, as RFC 3986 asks a normalizer to do, so that both spellings of an escape normalize to one. Scanning for something to rewrite first is what keeps an already canonical URL cheap, since the rewrite itself is costly when there are many escapes. The scan looks for a lowercase letter in either digit position, and all three ways that can happen are covered: a digit then a lowercase letter, a lowercase letter then anything, and an uppercase letter then a lowercase one, which is what `%Af` is.
+/*
+Uppercases the hexadecimal digits of percent escapes, as RFC 3986 recommends. The scan first keeps an already canonical URL cheap. It finds a lowercase letter in either digit position, including `%Af`.
+*/
 const lowercasePercentEscapeRegex = /%(?:\d[a-f]|[a-f][\dA-Fa-f]|[A-F][a-f])/;
 const percentEscapeRegex = /%[a-f\d]{2}/gi;
 
 const canonicalizePercentEscapes = text => lowercasePercentEscapeRegex.test(text) ? text.replaceAll(percentEscapeRegex, percentEscape => percentEscape.toUpperCase()) : text;
 
-// A URL parser strips leading and trailing C0 controls and spaces, and percent-encodes every other whitespace character rather than dropping it. `String.prototype.trim` strips the whole Unicode whitespace set, so a character like U+00A0 would go and the URL would address a different resource.
+// A URL parser strips only C0 controls and spaces from the ends. `String#trim` also strips characters like U+00A0, which a parser keeps.
 const isC0ControlOrSpace = characterCode => characterCode <= 0x20;
 
-// A MIME type is trimmed of HTTP whitespace, but a URL parser has already removed the tab, the carriage return and the line feed from anywhere in the input, and it writes the C0 controls that are left as escapes, so a space is the only one of the set that can still be there. Trimming one that is not would name a different parameter, and can leave a media type ending in the bare word `base64` that a browser reads as the marker, which changes what the data decodes to.
+/*
+A MIME type is trimmed of HTTP whitespace, but a URL parser has already removed tab, CR, and LF and escaped the other C0 controls, so a space is the only one left. Trimming anything else would rename a parameter or expose a bare `base64` marker.
+*/
 const isSpace = characterCode => characterCode === 0x20;
 
-// The ASCII whitespace of the infrastructure standard, which is what a forgiving base64 decode removes from its input: tab, line feed, form feed, carriage return and space. Spelled out one at a time, since the vertical tab sits between the line feed and the form feed and is a C0 control that is not one of them. Stripping it from base64 data would turn a URL a browser refuses into one it reads.
+/*
+The ASCII whitespace a forgiving base64 decode removes: tab, LF, FF, CR, and space. It is not a range, since the vertical tab is not one of them, and stripping it would turn a URL a browser refuses into one it reads.
+*/
 const ASCII_WHITESPACE = new Set([0x09, 0x0A, 0x0C, 0x0D, 0x20]);
 
 const isAsciiWhitespace = characterCode => ASCII_WHITESPACE.has(characterCode);
 
-// The runs are walked rather than matched, because a `+` over a set of them in a regex is quadratic: the engine tries every start position inside a run, and this runs on untrusted input. A 16 KB run of spaces is a fraction of a second this way and over a second with the regex.
+// The run is walked rather than matched, since a regex `+` over it is quadratic on untrusted input.
 const stripTrailingWhitespace = (text, isWhitespace) => {
 	let end = text.length;
 	while (end > 0 && isWhitespace(text.codePointAt(end - 1))) {
@@ -55,53 +61,32 @@ const stripLeadingWhitespace = (text, isWhitespace) => {
 
 const stripSurrounding = (text, isWhitespace) => stripTrailingWhitespace(stripLeadingWhitespace(text, isWhitespace), isWhitespace);
 
-// The other half of the URL parser's rule, for text that has to go back through a parser: a parser strips this whitespace from the end of what it reads, so a run of it written out has to be escaped to survive. The run is walked back rather than matched, for the same reason.
-const escapeTrailingAsciiWhitespace = text => {
+// A URL parser strips trailing C0 controls and spaces, so text that ends a URL has them escaped to survive the next pass.
+const escapeTrailingC0ControlOrSpace = text => {
 	const unescaped = stripTrailingWhitespace(text, isC0ControlOrSpace);
-	if (unescaped === text) {
-		return text;
-	}
-
-	let escaped = unescaped;
-	for (let index = unescaped.length; index < text.length; index++) {
-		escaped += encodeURIComponent(text[index]);
-	}
-
-	return escaped;
+	return unescaped + encodeURIComponent(text.slice(unescaped.length));
 };
 
-// A protocol lookalike in a pathname, whose two slashes the duplicate-slash removal deliberately keeps. A scheme is one letter followed by any number of them, so a single letter is a scheme too. The URL standard puts no length limit on a scheme, so the one here is only a guard against a long run of ordinary path text being read as one.
-const pathnameProtocolRegex = /\b[a-z][a-z\d+\-.]{0,50}:\/\//i;
+/*
+A protocol lookalike in a pathname, whose two slashes the duplicate-slash removal keeps. A single letter is a scheme too. The URL standard has no length limit on a scheme, so the one here only guards against reading a long run of path text as one.
+*/
+const pathnameProtocolRegex = /(\b[a-z][a-z\d+\-.]{0,50}:\/\/)/i;
 
-// The same, at the very end of a pathname, where a trailing slash must not be one of its two.
+// The same, at the end of a pathname, where a trailing slash must not be one of its two.
 const pathnameEndsWithProtocolRegex = /\b[a-z][a-z\d+\-.]{0,50}:\/\/$/i;
 
 // Removes duplicate slashes in a pathname, unless they are preceded by a protocol.
 // NOTE: This could be implemented using a single negative lookbehind regex, but we avoid that to maintain compatibility with older JS engines which do not have support for that feature.
 // TODO: Replace everything below with `pathname.replace(/(?<!\b[a-z][a-z\d+\-.]{0,50}:)\/{2,}/g, '/');` when Safari supports negative lookbehind.
-const removeDuplicatePathSlashes = pathname => {
-	// Split the string by occurrences of the protocol regex, and perform duplicate-slash replacement on the strings between those occurrences (if any). Scheme names are case-insensitive, so `HTTPS://` is a protocol just like `https://`.
-	const protocolRegex = new RegExp(pathnameProtocolRegex.source, 'gi');
+const removeDuplicatePathSlashes = pathname => pathname
+	.split(pathnameProtocolRegex)
+	// The split captures the protocols, so they are at the odd indexes and are kept as they are.
+	.map((part, index) => index % 2 === 0 ? part.replaceAll(/\/{2,}/g, '/') : part)
+	.join('');
 
-	let lastIndex = 0;
-	let result = '';
-	for (;;) {
-		const match = protocolRegex.exec(pathname);
-		if (!match) {
-			break;
-		}
-
-		const protocol = match[0];
-		const protocolAtIndex = match.index;
-		result += pathname.slice(lastIndex, protocolAtIndex).replaceAll(/\/{2,}/g, '/');
-		result += protocol;
-		lastIndex = protocolAtIndex + protocol.length;
-	}
-
-	return result + pathname.slice(lastIndex).replaceAll(/\/{2,}/g, '/');
-};
-
-// Splits on a delimiter, ignoring the ones inside a quoted string, since a quoted parameter value may contain either a `;` or a `,` and treating one as a delimiter would change the value. A MIME parameter value is a token or a quoted string, and the quotes are only transport syntax, so a value that is a token spelled inside them is the same value. It is written without them, since that is the shorter form and the one a parser reads back the same. A value that is not a token keeps them, since a `;` or a space written bare would end the parameter or the media type.
+/*
+A quoted MIME parameter value that is a token is the same value without the quotes, so it is written without them. A value that is not a token keeps them, since a bare `;` or space would end it.
+*/
 const mimeTokenRegex = /^[!#$%&'*+.^`|~\w-]+$/;
 const quotedPairRegex = /\\(.)/g;
 
@@ -114,6 +99,7 @@ const unquoteToken = value => {
 	return mimeTokenRegex.test(unquoted) ? unquoted : value;
 };
 
+// Splits on a delimiter outside quoted strings, since a quoted parameter value may contain a `;` or a `,`.
 const splitOutsideQuotes = (text, delimiter) => {
 	const parts = [];
 	let current = '';
@@ -134,7 +120,7 @@ const splitOutsideQuotes = (text, delimiter) => {
 				escaped = false;
 			}
 		} else if (character === '"' && afterEquals) {
-			// A quoted string is only recognised right after the parameter's `=`, and only a double quote, which is what a browser recognises. So an apostrophe in a bare value such as `title=It's` does not open one, and the `;` after it does separate.
+			// Only a double quote right after the `=` opens a quoted string, as in a browser, so the apostrophe in `title=It's` does not.
 			quote = character;
 			afterEquals = false;
 		} else if (character === delimiter) {
@@ -153,26 +139,26 @@ const splitOutsideQuotes = (text, delimiter) => {
 	return parts;
 };
 
-// Decodes the percent escapes of unreserved characters, and writes as `%25` a `%` that starts no escape but has something after it that could end up a hexadecimal digit right beside it. Without that, decoding the escape beside such a `%` joins the two into an escape the input never had, so the text comes out spelled one way on this pass and another on the next. The follower is a hexadecimal digit, or an escape that decodes to one, which is `0-9`, `A-F` and `a-f`. A `%` followed by anything else is left as it stands, since nothing can form an escape with it: `%zz` and a trailing `%` are what a URL parser writes, too. Only what has to change is matched, so the replacement runs once per escape that moves rather than once per escape of any kind, which is what keeps a long run of them linear. The two alternatives never match at one index, since the first fires only on a complete escape and the second only on a `%` that is not one. The scan continues after each replacement, so the `%25` just written is not read again, which is what makes `%2%45` come out as `%252E`, the spelling the URL standard decodes to the `%2E` the input decodes to.
+/*
+Decodes the percent escapes of unreserved characters. A `%` that starts no escape is written as `%25` when a hexadecimal digit, or an escape that decodes to one, follows it. Without that, decoding would join the two into a new escape, so `%%41` would come out as `%A`. Any other lone `%`, like `%zz` or a trailing one, is left as a URL parser writes it.
+
+Only what changes is matched, which keeps a long run of escapes linear. The scan resumes after each replacement, so `%2%45` becomes `%252E`, which decodes to the same `%2E` as the input.
+*/
 const unreservedPercentEscapeOrLonePercentRegex = /%(?:2d|2e|5f|7e|3\d|4[1-9a-f]|5[\da]|6[1-9a-f]|7[\da])|%(?![\da-f]{2})(?=[\da-f]|%(?:3\d|4[1-6]|6[1-6]))/gi;
 
 const decodeUnreservedPercentEscapes = text => text.replaceAll(unreservedPercentEscapeOrLonePercentRegex, match =>
-	// A reserved character is not matched at all, so it stays encoded and decoding it cannot change what the URL means.
+	// A reserved character is not matched, so it stays encoded and the meaning of the URL cannot change.
 	match.length === 3 ? String.fromCodePoint(Number.parseInt(match.slice(1), 16)) : '%25');
 
 // Doubles a percent sign so that decoding leaves the escape it belongs to untouched.
 const doubleEncodePercentSign = match => `%25${match.slice(1)}`;
 
-// Whether a URL parser domain-parses a host, which it does for a special scheme and not for the opaque host of any other one. A domain has its escapes read as the characters they stand for; an opaque host is left as it stands, with its case and its dots. The dot is the only difference the library relies on: a trailing one is the same name on a domain and a character of the name on an opaque host.
-const isDomainHost = (protocol, hostname) => {
-	try {
-		return new URL(`${protocol}//%7E${hostname}/`).hostname === `~${hostname}`;
-	} catch {
-		return false;
-	}
-};
+// A URL parser domain-parses the host of a special scheme, where a trailing dot names the same domain. The host of any other scheme is opaque, and a dot there is a character of the name.
+const specialProtocols = new Set(['ftp:', 'file:', 'http:', 'https:', 'ws:', 'wss:']);
 
-// Whether a URL parser reads a hostname back as the name it was given, under the URL's own protocol. A name of numbers comes back as the IPv4 address it spells, and a name that does not parse comes back as something else, or not at all. Only a name that reads back as itself can be written to a URL without changing the host. The protocol matters: an opaque host is read as it stands, with no IDNA and no lowercasing, so probing one with `http://` would ask a question the URL never does.
+/*
+Whether a URL parser reads a hostname back as itself under the URL's own protocol. A name of numbers comes back as an IPv4 address, and an invalid one does not come back at all. The protocol matters, since an opaque host gets no IDNA and no lowercasing.
+*/
 const isReadBackAsItself = (protocol, hostname) => {
 	try {
 		return new URL(`${protocol}//${hostname}/`).hostname === hostname;
@@ -181,10 +167,12 @@ const isReadBackAsItself = (protocol, hostname) => {
 	}
 };
 
-// Percent-encodings that must survive decoding the pathname. `%` is only valid as part of an escape, and a URL parser removes tab, carriage return, and line feed from the path it reads back.
+// Escapes that must survive decoding the pathname: `%25`, since a `%` only starts an escape, and tab, CR, and LF, which a URL parser removes.
 const protectedPathPercentEncodingsPattern = /%(?:09|0a|0d|25)/gi;
 
-// Percent-encodings that must survive decoding the search. On top of the pathname ones, these are the ones the serializer introduces, so decoding them would change the structure of the query. A reserved character that the serializer also encodes is left to the temporary token instead, which distinguishes it from the same character written literally.
+/*
+Escapes that must survive decoding the search: the pathname ones, plus the ones whose decoding would change the structure of the query. Other reserved characters are protected by the temporary token instead, which keeps them apart from the same character written literally.
+*/
 const protectedSearchPercentEncodingsPattern = /%(?:09|0a|0d|23|25|26|2b|3f)/gi;
 
 const testParameter = (name, filters) => Array.isArray(filters) && filters.some(filter => {
@@ -202,25 +190,26 @@ const testParameter = (name, filters) => Array.isArray(filters) && filters.some(
 const supportedProtocolNames = ['https', 'http', 'file'];
 const supportedProtocols = new Set(supportedProtocolNames.map(name => `${name}:`));
 
-// Matches a protocol-relative URL, or a URL that has no scheme. The URL parser accepts any number of slashes after a scheme, as in `http:/example.com`, so a scheme is only absent when there is none at all, or when the scheme-shaped prefix is followed by a port number and is really a host, as in `example.com:80`. A supported protocol is always a scheme, so `http:80` is a scheme and a host rather than a host called `http` and a port.
+/*
+Matches a protocol-relative URL, or a URL without a scheme. A URL parser accepts `http:/example.com`, so a scheme is only missing when there is none, or when the scheme-shaped prefix is really a host followed by a port, as in `example.com:80`. A supported protocol is always a scheme, so `http:80` is not a host.
+*/
 const missingProtocolPattern = new RegExp(String.raw`^\/\/|^(?!(?:${supportedProtocolNames.join('|')}):)(?![a-z][a-z\d+\-.]*:(?!\d+(?:[/?#]|$)))`, 'i');
 
-// A scheme is a letter followed by letters, digits, `+`, `-` and `.`, and nothing else. The URL standard puts no length limit on one.
+// A scheme is a letter followed by letters, digits, `+`, `-`, and `.`. The URL standard puts no length limit on one.
 const schemeRegex = /^[a-z][\da-z+\-.]*$/i;
 
-// The protocol a `customProtocols` entry or a `defaultProtocol` names, with the trailing `:` appended. A value that is not a scheme is not a protocol, so it is dropped: registered under a name no URL can have it would match nothing, and prepended as text the URL parser would reject the result. A value that is not a string is not one either, which is what makes `defaultProtocol: undefined` fall back to the documented default, since spreading the options replaces it when the key is present but unset.
+/*
+The protocol a `customProtocols` entry or `defaultProtocol` names, with a `:` appended, or `undefined` for a value that is not a scheme. That drops an invalid `customProtocols` entry, which would match nothing, and makes `defaultProtocol` fall back to its default rather than prepend text the URL parser rejects.
+*/
 const normalizeProtocolOption = protocol => {
 	if (typeof protocol !== 'string') {
 		return undefined;
 	}
 
-	// Trimmed and lowercased. A trailing colon is accepted however many there are, so that a value written `sindre:` or `sindre::` both name the protocol instead of quietly doing nothing.
+	// A trailing colon is accepted however many there are, so `sindre:` and `sindre::` both name the protocol.
 	const normalizedProtocol = protocol.trim().toLowerCase().replace(/:+$/, '');
 	return schemeRegex.test(normalizedProtocol) ? `${normalizedProtocol}:` : undefined;
 };
-
-// The protocol to prepend, with the documented default for a value that is not one.
-const normalizeDefaultProtocolOption = protocol => normalizeProtocolOption(protocol) ?? 'http:';
 
 const getCustomProtocol = (urlString, customProtocols) => {
 	try {
@@ -237,9 +226,7 @@ const getCustomProtocol = (urlString, customProtocols) => {
 			return undefined;
 		}
 
-		if (protocol.endsWith(':')
-			&& (!protocol.includes('.') || hasAuthority)
-			&& !supportedProtocols.has(protocol)) {
+		if ((!protocol.includes('.') || hasAuthority) && !supportedProtocols.has(protocol)) {
 			return protocol;
 		}
 	} catch {}
@@ -303,35 +290,6 @@ const getTemporaryEncodedReservedTokenPrefix = search => {
 	return `${temporaryEncodedReservedTokenBase}${tokenIndex}__`;
 };
 
-// Sorts by key in code unit order, leaving parameters that share a key in the order they were written in, since for a repeated key the order can be what the server reads. A key carrying a temporary token sorts on the character the token stands for, so an encoded reserved character sorts as the same character written literally does. `URLSearchParams#sort` is not used for this: the URL standard has it order by name alone without saying what happens to two names that are equal, so the order of a repeated key would be the engine's to decide. `Array#sort` is stable, so this one keeps them where the input wrote them.
-const sortSearchParameters = (searchParameters, encodedReservedTokenRegex) => {
-	const getSortableKey = key => encodedReservedTokenRegex ? key.replace(encodedReservedTokenRegex, (_, hexCode) => String.fromCodePoint(Number.parseInt(hexCode, 16))) : key;
-	const entries = [...searchParameters];
-	entries.sort(([leftKey], [rightKey]) => {
-		const left = getSortableKey(leftKey);
-		const right = getSortableKey(rightKey);
-		return left < right ? -1 : (left > right ? 1 : 0);
-	});
-
-	return new URLSearchParams(entries).toString();
-};
-
-// Drops the query parameters the filter matches and writes the rest back in one go. Deleting a key at a time re-serialises the whole query into the URL on every call, so a URL with many parameters takes quadratic time, and the search is written back through a parser below either way. Nothing is written when no parameter matches, since a rewrite would be a second one for nothing.
-const dropSearchParameters = (url, searchParameters, encodedReservedTokenRegex, isDropped) => {
-	if (![...searchParameters.keys()].some(key => isDropped(decodeReservedTokens(key, encodedReservedTokenRegex)))) {
-		return;
-	}
-
-	const kept = new URLSearchParams();
-	for (const [key, value] of searchParameters) {
-		if (!isDropped(decodeReservedTokens(key, encodedReservedTokenRegex))) {
-			kept.append(key, value);
-		}
-	}
-
-	url.search = kept.toString();
-};
-
 const decodeReservedTokens = (value, encodedReservedTokenRegex) => {
 	if (!encodedReservedTokenRegex) {
 		return value;
@@ -340,21 +298,11 @@ const decodeReservedTokens = (value, encodedReservedTokenRegex) => {
 	return value.replace(encodedReservedTokenRegex, (_, hexCode) => String.fromCodePoint(Number.parseInt(hexCode, 16)));
 };
 
-// The URL serializer always emits at least a `/` for the path, so a trailing slash sometimes has to be removed from the serialized string. Only the path may be touched: a `/` at the end of the search is part of the query and must be kept.
-const removeTrailingPathSlash = (urlString, search) => {
-	if (search.endsWith('/')) {
-		return urlString;
-	}
-
-	return urlString.replace(/\/$/, '');
-};
-
 const normalizeEmptyQueryParameters = (search, emptyQueryValue, originalSearch) => {
 	const isAlways = emptyQueryValue === 'always';
 	const isNever = emptyQueryValue === 'never';
 	const keysWithoutEquals = (isAlways || isNever) ? undefined : getKeysWithoutEquals(originalSearch);
 
-	const normalizeKey = key => key.replaceAll('+', '%20');
 	const formatEmptyValue = normalizedKey => {
 		if (isAlways) {
 			return `${normalizedKey}=`;
@@ -367,29 +315,19 @@ const normalizeEmptyQueryParameters = (search, emptyQueryValue, originalSearch) 
 		return keysWithoutEquals.has(decodeQueryKey(normalizedKey)) ? normalizedKey : `${normalizedKey}=`;
 	};
 
+	// The search was written back through `URLSearchParams`, which gives every parameter an `=`.
 	const normalizeParameter = parameter => {
 		const equalIndex = parameter.indexOf('=');
-
-		if (equalIndex === -1) {
-			// Normalize + to %20 (+ means space in query strings). The search is written back through `URLSearchParams` first, which gives every key an `=`, so this is a guard rather than a case.
-			return formatEmptyValue(normalizeKey(parameter));
-		}
-
-		const key = parameter.slice(0, equalIndex);
+		// Normalize + to %20 in key (+ means space in query strings).
+		const key = parameter.slice(0, equalIndex).replaceAll('+', '%20');
 		const value = parameter.slice(equalIndex + 1);
 
 		if (value === '') {
 			// An empty key with an empty value keeps its `=`, since `?` on its own would drop it.
-			if (key === '') {
-				return '=';
-			}
-
-			// Normalize + to %20 (+ means space in query strings)
-			return formatEmptyValue(normalizeKey(key));
+			return key === '' ? '=' : formatEmptyValue(key);
 		}
 
-		// Normalize + to %20 in key.
-		return `${normalizeKey(key)}=${value}`;
+		return `${key}=${value}`;
 	};
 
 	const parameters = search.slice(1).split('&').filter(Boolean);
@@ -397,14 +335,16 @@ const normalizeEmptyQueryParameters = (search, emptyQueryValue, originalSearch) 
 };
 
 const normalizeDataURL = (urlString, {stripHash, stripTextFragment}) => {
-	// The `data:` scheme is case-insensitive, so the prefix must be matched case-insensitively too. The comma is optional: a URL parser accepts a `data:` URL without one and reads the whole thing as the media type with empty data, and this library takes URLs from a URL parser. The fragment is matched with `[^]` rather than `.`, since a dot leaves out the line separators, which a URL parser keeps. With that the pattern matches every remainder of a `data:` URL, so there is no input it rejects: the `data:` scheme is the only thing the URL standard leaves to the media type.
+	// Matches every `data:` URL. The comma is optional, since a URL parser accepts a data URL without one, and `[^]` takes line separators, which a parser keeps.
 	const {typeAndData, hash} = /^data:(?<typeAndData>[^#]*)(?:#(?<hash>[^]*))?$/i.exec(urlString).groups;
 
-	// The data ends at the first comma, which a quoted value does not hide: that is what a browser reads, and it keeps a parameter written after a quoted comma in the data where it belongs. The data itself comes from the raw input, since it is the payload and a parser's spelling of it is not what a browser decodes.
+	/*
+	The data ends at the first comma, even one inside a quoted value, as in a browser. Both parts come from the raw input: a URL parser reads `data://host,` as an authority, and its spelling of the data is not what a browser decodes.
+	*/
 	const separatorIndex = typeAndData.indexOf(',');
 	const data = separatorIndex === -1 ? '' : typeAndData.slice(separatorIndex + 1);
-	// The media type comes from the raw input, since a parser reads `data://host,` as an authority and would hand back the wrong one. What a parser does first is remove a tab, a carriage return and a line feed from anywhere in the input, and write anything else that is not a URL code point as an escape, so by the time a browser reads the media type the only whitespace left in it is a space. That is what the trim below and the marker test may treat as whitespace, and taking a form feed or any other control for it would spell a marker a browser does not see there, and the data would come out decoded when it was not.
 	const type = separatorIndex === -1 ? typeAndData : typeAndData.slice(0, separatorIndex);
+
 	/*
 	The media type is not percent-decoded, since a browser does not decode it either, and decoding could turn a parameter into the marker, as in `;%62ase64`. Percent-looking text stays as spelled, apart from the lowercasing below. Only spaces are trimmed (see `isSpace`).
 
@@ -418,15 +358,17 @@ const normalizeDataURL = (urlString, {stripHash, stripTextFragment}) => {
 	// Lowercase MIME type
 	const mimeType = mediaType[0].toLowerCase();
 
-	// The parameters are parsed before the marker is looked for, so that the marker is only recognised when it is the last parameter that will actually be written out. An empty part or an empty name, which a trailing `;` or `=` leaves, is dropped below, and must not hide the marker, or the result would come out differently on the next pass.
+	// An empty part or an empty name, which a trailing `;` or `=` leaves, is dropped.
 	const attributes = mediaType.slice(1)
 		.filter(Boolean)
 		.map(attribute => {
 			// Only the first `=` separates the parameter name from its value; the value may contain more.
 			const equalsIndex = attribute.indexOf('=');
-			// Parameter names are case-insensitive, so lowercase them to normalize them. Only the leading whitespace of a name is stripped, since that is the separator whitespace a MIME parser skips over: a trailing one is part of the name, and trimming it would turn `charset ` into the `charset` parameter and then drop it as the redundant default.
+			// Parameter names are case-insensitive. Only leading spaces are stripped, since a trailing one is part of the name: `charset ` is not the `charset` parameter.
 			const key = stripLeadingWhitespace(equalsIndex === -1 ? attribute : attribute.slice(0, equalsIndex), isSpace).toLowerCase();
-			// A parameter with no `=` has no value at all, which is not the same as one with an empty value, so the two are kept apart with `null` for the first. Nothing is stripped from the value here: a MIME parser removes only trailing whitespace from one, and the part was trimmed above so there is none left, while a leading space is a character of the value that reading as whitespace would turn into a parameter that is not the default it looks like.
+			/*
+			A parameter without `=` has the value `null`, which is not the same as an empty value: `base64` is the marker and `base64=` is not. The value is not trimmed, since a leading space is part of it.
+			*/
 			let value = equalsIndex === -1 ? null : unquoteToken(attribute.slice(equalsIndex + 1));
 
 			// Lowercase `charset`
@@ -438,28 +380,24 @@ const normalizeDataURL = (urlString, {stripHash, stripTextFragment}) => {
 		})
 		.filter(([key]) => key !== '');
 
-	// A duplicate `charset` is not redundant, because the first one is the one that applies. Dropping the default charset there would silently promote the next one and change what the URL means.
-	const hasDuplicateCharset = attributes.filter(([key]) => key === 'charset').length > 1;
-	// Dropping the default charset must not leave the media type ending in the bare word `base64` either, which a browser reads as the marker: `;base64;charset=us-ascii` is not a marker and the same media type without the charset is, so that would change what the data decodes to. The last part that is not empty is the one the charset is, since a trailing `;` is dropped as an empty part. The parameters are compared as they were parsed rather than as they were written, or a quoted `charset="us-ascii"`, which is the same parameter, would not be seen and the one spelling of a URL would keep a charset that the other drops.
-	const exposesBase64Marker = !isBase64
-		&& attributes.at(-1)?.[0] === 'charset'
-		&& attributes.at(-1)[1] === DATA_URL_DEFAULT_CHARSET
-		&& attributes.at(-2)?.[0] === 'base64'
-		&& attributes.at(-2)[1] === null;
+	/*
+	The default charset is dropped only when it is redundant:
+	- The MIME type is `text/plain` (or empty, which means the same). A body of any other type is sniffed rather than read as US-ASCII.
+	- It is the only `charset`. The first one applies, so dropping it would promote the next.
+	- It does not leave a bare `base64` as the last parameter, which a browser reads as the marker: `;base64;charset=us-ascii`.
 
-	// The default charset is only the default for `text/plain` and nothing else, since a body of any other type is decoded by sniffing rather than as US-ASCII. Dropping it from another media type changes the encoding a consumer applies, so it is kept there. An empty media type is `text/plain`.
-	const isRedundantCharset = mimeType === '' || mimeType === DATA_URL_DEFAULT_MIME_TYPE;
+	The parsed values are compared, so a quoted `charset="us-ascii"` is the same parameter.
+	*/
+	const isDefaultCharset = attribute => attribute?.[0] === 'charset' && attribute[1] === DATA_URL_DEFAULT_CHARSET;
+	const exposesBase64Marker = !isBase64 && isDefaultCharset(attributes.at(-1)) && attributes.at(-2)?.[0] === 'base64' && attributes.at(-2)[1] === null;
+	const keepsDefaultCharset = (mimeType !== '' && mimeType !== DATA_URL_DEFAULT_MIME_TYPE)
+		|| attributes.filter(([key]) => key === 'charset').length > 1
+		|| exposesBase64Marker;
 
-	const normalizedAttributes = attributes
-		.map(([key, value]) => (
-			!hasDuplicateCharset && !exposesBase64Marker && isRedundantCharset && key === 'charset' && value === DATA_URL_DEFAULT_CHARSET
-				? ''
-				// A parameter written with an `=` keeps it, since dropping it turns an empty value into no value, and for `base64` that is the difference between a parameter and the marker.
-				: (value === null ? key : `${key}=${value}`)
-		))
-		.filter(Boolean);
-
-	const normalizedMediaType = [...normalizedAttributes];
+	const normalizedMediaType = attributes
+		.filter(attribute => keepsDefaultCharset || !isDefaultCharset(attribute))
+		// A parameter written with an `=` keeps it (see `null` above).
+		.map(([key, value]) => value === null ? key : `${key}=${value}`);
 
 	if (isBase64) {
 		normalizedMediaType.push('base64');
@@ -473,22 +411,32 @@ const normalizeDataURL = (urlString, {stripHash, stripTextFragment}) => {
 	const hashContent = stripHash ? '' : (hash ?? '');
 	const normalizedHash = stripTextFragment ? hashContent.replace(textFragmentPattern, '') : hashContent;
 
-	// The input is trimmed above, so whitespace at the end of the fragment would be put back here and taken away again on the next pass. It is escaped rather than trimmed, the same way as the data below, since a URL parser writes a space in a fragment as `%20` and it is a character the fragment has: dropping it would lose one, and the escape is a fixed point where a raw trailing space would be taken away again. A fragment left with nothing takes the hash with it, since a bare `#` is not a fixed point either.
-	const escapedHash = escapeTrailingAsciiWhitespace(canonicalizePercentEscapes(normalizedHash));
+	/*
+	The fragment ends the URL, so its trailing whitespace is escaped, or the input trim of the next pass would remove it. An empty fragment drops the `#`, since a bare `#` is not a fixed point either.
+	*/
+	const escapedHash = escapeTrailingC0ControlOrSpace(canonicalizePercentEscapes(normalizedHash));
 	const hashPart = escapedHash ? `#${escapedHash}` : '';
 
-	// The data is the path of the data URL, so an unreserved escape in it is decoded the same way. Whitespace is stripped from around base64 data, which a URL processor does, and what that leaves is escaped: a C0 control that is not one of the five is not whitespace to a processor either, so it is a character of the data and a parser writes it as an escape. Whitespace at the end of the rest is escaped rather than stripped, since a URL parser writes a space in a path as `%20` and it is a byte of the data: dropping a hash must not take one with it, and an escape is a fixed point where a trailing space would be taken away again on the next pass.
+	/*
+	The data is the path of the data URL, so its unreserved escapes are decoded the same way. Base64 data is stripped of the ASCII whitespace a decoder ignores. Any other C0 control left at its end, like U+001F, is data, so it is escaped. Other data is not stripped, since its whitespace is part of the payload, but it is escaped at the end of the URL.
+	*/
 	const normalizedData = canonicalizePercentEscapes(decodeUnreservedPercentEscapes(isBase64
-		? escapeTrailingAsciiWhitespace(stripSurrounding(data, isAsciiWhitespace))
-		: (hashPart ? data : escapeTrailingAsciiWhitespace(data))));
-	// The separator is written when the input had one, even with nothing after it to separate, since a URL parser reads a data URL with no comma as a failure and one with an empty data after it as a load. A data URL that came without a comma does not gain one, so that it does not change on every pass. A C0 control or a space at the end of the media type is written as an escape, the same as in the data below. The input trim takes one off either end of the URL, and a media type with no comma after it ends the URL, so written raw it would be taken by the next pass and the result would change. Only a space is gone by the time the media type is read, so this is the step that writes the rest.
-	const joinedType = normalizedMediaType.join(';');
-	const normalizedType = separatorIndex === -1 ? escapeTrailingAsciiWhitespace(joinedType) : joinedType;
+		? escapeTrailingC0ControlOrSpace(stripSurrounding(data, isAsciiWhitespace))
+		: (hashPart ? data : escapeTrailingC0ControlOrSpace(data))));
 
-	// A media type that ends in `;base64` is the marker to a browser, so a normalization that leaves it that way when the input did not is one that changes what the data decodes to. Trimming a space off the end or dropping the empty part a trailing `;` leaves can do that, and the `charset` drop above handles the case where it would expose a `base64` part, so this is the last repair.
+	// The media type ends the URL when there is no comma, so its trailing C0 controls and spaces are escaped too.
+	const joinedType = normalizedMediaType.join(';');
+	const normalizedType = separatorIndex === -1 ? escapeTrailingC0ControlOrSpace(joinedType) : joinedType;
+
+	/*
+	Trimming a trailing space or dropping an empty part can leave a media type that ends in `;base64` when the input did not, which a browser reads as the marker. A trailing `;` keeps it from being one.
+	*/
 	const joinedMediaType = !isBase64 && base64MarkerAtEndPattern.test(normalizedType) ? `${normalizedType};` : normalizedType;
-	// The separator is written when the input had one, even with nothing after it to separate, since a URL parser reads a data URL with no comma as a failure and one with an empty data after it as a load. A data URL that came without one does not gain one, so that it does not change on every pass; a media type that normalizes away entirely leaves nothing for one to separate, and then there is one to write, which `data:` on its own shows.
-	const separator = separatorIndex === -1 && normalizedData === '' && joinedMediaType !== '' ? '' : ',';
+
+	/*
+	The separator is written when the input had one, even with no data after it, since a URL parser reads a data URL without a comma as a failure. A URL without one does not gain one, or it would change on every pass, unless the media type normalizes away entirely, as in `data:`.
+	*/
+	const separator = separatorIndex === -1 && joinedMediaType !== '' ? '' : ',';
 	return `data:${joinedMediaType}${separator}${normalizedData}${hashPart}`;
 };
 
@@ -511,18 +459,18 @@ export default function normalizeUrl(urlString, options) {
 		removePath: false,
 		transformPath: false,
 		emptyQueryValue: 'preserve',
-		// An option explicitly set to `undefined` falls back to its default, so it behaves the same as not passing it at all. TypeScript allows that for an optional property, and spreading `options` as-is would otherwise let it silently switch off everything that is on by default.
+		// An option set to `undefined` falls back to its default, the same as leaving it out.
 		...Object.fromEntries(Object.entries(options ?? {}).filter(([, value]) => value !== undefined)),
 	};
 
-	const defaultProtocol = normalizeDefaultProtocolOption(options.defaultProtocol);
+	const defaultProtocol = normalizeProtocolOption(options.defaultProtocol) ?? 'http:';
 
 	// Checked before anything else, so the error does not depend on the URL or its protocol.
 	if (options.forceHttp && options.forceHttps) {
 		throw new Error('The `forceHttp` and `forceHttps` options cannot be used together');
 	}
 
-	// The URL parser removes ASCII tab, carriage return, and line feed from the input before parsing it, and strips leading and trailing C0 controls and spaces. Doing it up front keeps the protocol and data URL detection below in sync with the parser.
+	// A URL parser removes tab, CR, and LF from anywhere, and C0 controls and spaces from the ends. Doing it up front keeps the detection below in sync with it.
 	urlString = stripSurrounding(urlString.replaceAll(/[\t\r\n]/g, ''), isC0ControlOrSpace);
 
 	// Data URL
@@ -547,6 +495,9 @@ export default function normalizeUrl(urlString, options) {
 	if (!isRelativeUrl && !customProtocol) {
 		urlString = urlString.replace(missingProtocolPattern, defaultProtocol);
 	}
+
+	// The path as the input wrote it, for `removeSingleSlash` below.
+	const inputPath = urlString.split(/[?#]/)[0];
 
 	const urlObject = new URL(urlString);
 
@@ -578,10 +529,10 @@ export default function normalizeUrl(urlString, options) {
 		urlObject.hash = hash ? `#${hash}` : '';
 	}
 
-	// Canonicalize the percent escapes in the hash. Assigning an empty string to it clears the fragment, so an empty one is left as it is.
+	// Canonicalize the percent escapes in the hash, leaving an empty one as it is.
 	urlObject.hash &&= canonicalizePercentEscapes(urlObject.hash);
 
-	// Decode URI octets, one path segment at a time, so that a malformed escape in one segment does not stop the others from being decoded. Otherwise the path decodes on one pass and not the next.
+	// Decode URI octets one path segment at a time, so a malformed escape in one segment does not stop the others from being decoded.
 	if (urlObject.pathname) {
 		urlObject.pathname = urlObject.pathname
 			.split('/')
@@ -594,11 +545,13 @@ export default function normalizeUrl(urlString, options) {
 			})
 			.join('/');
 
-		// Decoding leaves the escapes for reserved characters alone, so their hexadecimal digits are canonicalized here, the same way as in the hash and the search.
+		// Decoding leaves the escapes of reserved characters alone, so their hexadecimal digits are canonicalized here.
 		urlObject.pathname = canonicalizePercentEscapes(urlObject.pathname);
 	}
 
-	// Remove duplicate slashes if not preceded by a protocol. The decoded path is the one that is read, so an escape that spells a lookalike is one, and the letters inside a percent escape are not. A segment that failed to decode keeps its escapes, and a URL parser hands the path back encoded, so the letters of a non-ASCII escape are read as a scheme all the same. That only ever keeps two slashes that could have gone.
+	/*
+	Remove duplicate slashes if not preceded by a protocol. The decoded path is read, so an escape that spells a protocol lookalike is one. A segment that failed to decode keeps its escapes, whose letters can read as a scheme, but that only keeps two slashes that could have gone.
+	*/
 	urlObject.pathname &&= removeDuplicatePathSlashes(urlObject.pathname);
 
 	// Remove directory index
@@ -606,56 +559,56 @@ export default function normalizeUrl(urlString, options) {
 		options.removeDirectoryIndex = [/^index\.[a-z]+$/];
 	}
 
-	// Remove path. It takes precedence over `transformPath`, so a transform cannot bring the path back. A transform is only called when the path starts with a `/`, which is where the segments a transform works on come from. It is the only one of the options that write the path which calls into caller code, so it is the only one where being ignored for the rest has to show.
+	// Remove path. It takes precedence over `transformPath`. A transform is only called for a path that starts with `/`, which is where its components come from.
 	if (options.removePath) {
 		urlObject.pathname = '/';
 	} else if (typeof options.transformPath === 'function' && urlObject.pathname.startsWith('/')) {
 		// Transform path components
 		const pathComponents = urlObject.pathname.split('/').filter(Boolean);
 		const newComponents = options.transformPath(pathComponents);
-		// Empty components are dropped on the way in, so they are dropped on the way out too. Otherwise a trailing one becomes a trailing slash that the next pass would remove.
+		// Empty components are dropped on the way out too, or a trailing one would become a trailing slash the next pass removes.
 		const keptComponents = newComponents?.filter(Boolean) ?? [];
-		// A trailing slash the input wrote is one that `removeTrailingSlash` is what keeps, so it is put back. Without that the transform would drop it even with the option off, and what the result is would depend on whether `removeDirectoryIndex` ran before it and left a slash of its own.
+		// A trailing slash the input wrote is put back when `removeTrailingSlash` keeps it.
 		const trailingSlash = !options.removeTrailingSlash && urlObject.pathname.endsWith('/') ? '/' : '';
 		// The new components get the same duplicate-slash removal as the rest of the pathname.
 		const newPathname = keptComponents.length > 0 ? `/${keptComponents.join('/')}${trailingSlash}` : '/';
 		urlObject.pathname = canonicalizePercentEscapes(removeDuplicatePathSlashes(newPathname));
 	}
 
-	// Remove directory index, after the transform, so that an index file the transform leaves as the last component is removed here rather than on the next pass.
+	// Remove directory index after the transform, so an index file the transform leaves at the end is removed now rather than on the next pass.
 	if (Array.isArray(options.removeDirectoryIndex) && options.removeDirectoryIndex.length > 0) {
 		const pathComponents = urlObject.pathname.split('/').filter(Boolean);
-		let removedCount = 0;
+		const {length} = pathComponents;
 
 		// A path can end in more than one index file, and removing them all keeps the result a fixed point.
 		while (pathComponents.length > 0 && testParameter(pathComponents.at(-1), options.removeDirectoryIndex)) {
 			pathComponents.pop();
-			removedCount++;
 		}
 
-		if (removedCount > 0) {
+		if (pathComponents.length < length) {
 			urlObject.pathname = pathComponents.length > 0 ? `/${pathComponents.join('/')}/` : '/';
 		}
 	}
 
 	if (urlObject.hostname) {
-		// Remove `www.` first, since a parser reads a host of numbers as an IPv4 address and the other labels decide whether it does, so the dots below depend on what is left here. Each label should be max 63 at length (min: 1). Source: https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names Each TLD should be up to 63 characters long (min: 2). It is technically possible to have a single character TLD, but none currently exist.
+		/*
+		Remove `www.` before the trailing dots, since whether a parser reads a host as an IPv4 address depends on its other labels. Each label should be max 63 at length (min: 1). Source: https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names Each TLD should be up to 63 characters long (min: 2). It is technically possible to have a single character TLD, but none currently exist. The name left is never one a parser reads differently, since a parser rejects a host like `www.1.23` in the first place.
+		*/
 		if (options.stripWWW && /^www\.(?!www\.)[a-z\-\d]{1,63}\.[a-z.\-\d]{2,63}$/.test(urlObject.hostname)) {
-			const withoutWww = urlObject.hostname.replace(/^www\./, '');
-			// A name a parser would read as something other than itself is not written, since that is the one thing a host must never do.
-			if (isReadBackAsItself(urlObject.protocol, withoutWww)) {
-				urlObject.hostname = withoutWww;
-			}
+			urlObject.hostname = urlObject.hostname.replace(/^www\./, '');
 		}
 
-		// Remove trailing dots. A hostname can end in several dots and they all mean the same name. A hostname of only dots is the root, so one dot is kept, since an empty hostname is not settable. Only a domain treats a trailing dot as the same name: the host of any other scheme is opaque, and there a dot is a character of the name, the way its case is.
+		/*
+		Remove trailing dots, which all name the same domain. A host of only dots keeps one, since an empty hostname cannot be set. A name a parser would read differently without them is left alone: `159.189.213..` would become an IPv4 address.
+		*/
 		const withoutTrailingDots = urlObject.hostname.replace(/\.+$/, '') || '.';
-		if (withoutTrailingDots === urlObject.hostname
-			|| (isDomainHost(urlObject.protocol, urlObject.hostname) && isReadBackAsItself(urlObject.protocol, withoutTrailingDots))) {
+		if (withoutTrailingDots !== urlObject.hostname
+			&& specialProtocols.has(urlObject.protocol)
+			&& isReadBackAsItself(urlObject.protocol, withoutTrailingDots)) {
 			urlObject.hostname = withoutTrailingDots;
 		}
 
-		// The hexadecimal digits of a percent escape are canonicalized here as they are everywhere else. A host of a special scheme has been decoded and punycoded by the parser already, so there is never an escape in one; a host of a non-special scheme is an opaque host, which the parser leaves as it stands, so its escapes would otherwise reach the output as they were written. Writing the name back is what canonicalizes it, and a parser reads a name it just wrote the same way, so this is a fixed point. A custom protocol the caller did not name is returned untouched long before here, so this is for the ones they did.
+		// The host of a special scheme never has escapes, but an opaque host keeps them as written, so their hexadecimal digits are canonicalized.
 		urlObject.hostname &&= canonicalizePercentEscapes(urlObject.hostname);
 	}
 
@@ -663,38 +616,40 @@ export default function normalizeUrl(urlString, options) {
 	const originalSearch = urlObject.search;
 	let encodedReservedTokenRegex;
 
-	// Encoded reserved characters are swapped for a temporary token so that the round trip below keeps them encoded instead of reading them as the character they escape. This is about preserving them, not about order, so it happens whether or not the parameters are sorted.
+	// Encoded reserved characters are swapped for a temporary token, so the round trip below keeps them encoded instead of reading them as the character they escape.
 	if (hasEncodedReservedCharactersRegex.test(originalSearch)) {
 		const encodedReservedTokenPrefix = getTemporaryEncodedReservedTokenPrefix(originalSearch);
 		urlObject.search = originalSearch.replaceAll(encodedReservedCharactersRegex, match => `${encodedReservedTokenPrefix}${match.slice(1).toUpperCase()}`);
 		encodedReservedTokenRegex = new RegExp(`${encodedReservedTokenPrefix}([0-9A-F]{2})`, 'g');
 	}
 
-	const hasKeepQueryParameters = Array.isArray(options.keepQueryParameters);
-	const {searchParams} = urlObject;
+	// The filters and the sort see a key as its encoded reserved characters decoded.
+	const getKey = ([key]) => decodeReservedTokens(key, encodedReservedTokenRegex);
+	let searchParameters = [...urlObject.searchParams];
 
-	// Remove query unwanted parameters
-	if (!hasKeepQueryParameters && Array.isArray(options.removeQueryParameters) && options.removeQueryParameters.length > 0) {
-		dropSearchParameters(urlObject, searchParams, encodedReservedTokenRegex, key => testParameter(key, options.removeQueryParameters));
+	if (Array.isArray(options.keepQueryParameters)) {
+		// Keep wanted query parameters. It overrides `removeQueryParameters`.
+		searchParameters = searchParameters.filter(parameter => testParameter(getKey(parameter), options.keepQueryParameters));
+	} else if (options.removeQueryParameters === true) {
+		searchParameters = [];
+	} else {
+		// Remove unwanted query parameters
+		searchParameters = searchParameters.filter(parameter => !testParameter(getKey(parameter), options.removeQueryParameters));
 	}
 
-	if (!hasKeepQueryParameters && options.removeQueryParameters === true) {
-		urlObject.search = '';
+	/*
+	Sort by key in code unit order. `Array#sort` is stable, so a repeated key keeps its input order, which a server may depend on. `URLSearchParams#sort` does not guarantee that, since the URL standard does not say how equal names are ordered.
+	*/
+	if (options.sortQueryParameters) {
+		searchParameters.sort((left, right) => {
+			const leftKey = getKey(left);
+			const rightKey = getKey(right);
+			return leftKey < rightKey ? -1 : (leftKey > rightKey ? 1 : 0);
+		});
 	}
 
-	// Keep wanted query parameters
-	if (hasKeepQueryParameters && options.keepQueryParameters.length > 0) {
-		dropSearchParameters(urlObject, searchParams, encodedReservedTokenRegex, key => !testParameter(key, options.keepQueryParameters));
-	} else if (hasKeepQueryParameters) {
-		urlObject.search = '';
-	}
-
-	// The search parameters are round-tripped through URLSearchParams, which encodes them, so they are decoded again below. The round trip happens whether or not they are sorted, since the option is about their order, not their encoding.
-	urlObject.search = options.sortQueryParameters
-		? sortSearchParameters(urlObject.searchParams, encodedReservedTokenRegex)
-		: new URLSearchParams(urlObject.searchParams).toString();
-
-	// Undo the encoding the round trip introduced, leaving the protected escapes alone.
+	// The parameters are written back through `URLSearchParams` whether or not they are sorted, which encodes them, so they are decoded again, leaving the protected escapes alone.
+	urlObject.search = new URLSearchParams(searchParameters).toString();
 	urlObject.search = decodeURIComponent(urlObject.search.replaceAll(protectedSearchPercentEncodingsPattern, doubleEncodePercentSign));
 
 	if (encodedReservedTokenRegex) {
@@ -704,7 +659,9 @@ export default function normalizeUrl(urlString, options) {
 	// Normalize empty query parameter values
 	urlObject.search = canonicalizePercentEscapes(normalizeEmptyQueryParameters(urlObject.search, options.emptyQueryValue, originalSearch));
 
-	// A trailing slash that is one of a protocol lookalike's two slashes is kept, since removing it would take one away on this pass and the other on the next. A root path is left alone as well. It is the sole `/`, which the `removeSingleSlash` option decides on below, and a pathname setter for a non-special scheme, such as a custom protocol, accepts an empty one, so removing the slash here would take that decision away from it.
+	/*
+	A trailing slash that belongs to a protocol lookalike is kept, or the next pass would remove its other slash. The root path is left to `removeSingleSlash` below, since a non-special scheme accepts an empty pathname.
+	*/
 	if (options.removeTrailingSlash && urlObject.pathname !== '/' && !pathnameEndsWithProtocolRegex.test(urlObject.pathname)) {
 		urlObject.pathname = urlObject.pathname.replace(/\/$/, '');
 	}
@@ -714,38 +671,39 @@ export default function normalizeUrl(urlString, options) {
 		urlObject.port = '';
 	}
 
-	const oldUrlString = urlString;
-
-	// Whether the input itself wrote a trailing slash on the path, ignoring any query or hash after it. A `\` is a `/` to a parser in the path of a special scheme, so an input ending in one wrote a trailing slash even though the character is not one, and the parser's own path is what says so.
-	const inputPath = oldUrlString.split(/[?#]/)[0];
-	const oldPathEndsWithSlash = inputPath.endsWith('/') || (inputPath.endsWith('\\') && urlObject.pathname.endsWith('/'));
+	// Whether the input wrote a trailing slash on its path. A `\` counts only where a URL parser reads it as `/`, which the parsed path shows.
+	const inputPathEndsWithSlash = inputPath.endsWith('/') || (inputPath.endsWith('\\') && urlObject.pathname.endsWith('/'));
 
 	// Take advantage of many of the Node `url` normalizations
 	urlString = urlObject.toString();
 
-	// A root path is its own `/` when there is no host, since there is then no authority to restore the slashes of a relative protocol around, and the parser writes a `/` for it either way.
+	// Without a host there is no authority, so the `/` is the path itself and there are no slashes of a relative protocol to restore.
 	const hasHost = urlObject.host !== '';
 
-	// Remove the sole `/` of a root path. A path other than the root one has already been handled above, on the pathname itself, so this is only for the root `/` that the serializer emits whether or not the pathname is empty. With `removeSingleSlash: false`, a `/` that the input wrote is kept, so only an implicit one goes.
-	if (urlObject.pathname === '/' && hasHost && urlObject.hash === '' && (options.removeSingleSlash || !oldPathEndsWithSlash)) {
-		urlString = removeTrailingPathSlash(urlString, urlObject.search);
+	/*
+	Remove the `/` of a root path, which the serializer writes even for an empty pathname. With `removeSingleSlash: false`, a `/` the input wrote is kept. A search ending in `/` keeps its own, and an empty `#` is left as it is.
+	*/
+	if (urlObject.pathname === '/'
+		&& hasHost
+		&& urlObject.search === ''
+		&& urlObject.hash === ''
+		&& (options.removeSingleSlash || !inputPathEndsWithSlash)) {
+		urlString = urlString.replace(/\/$/, '');
 	}
 
-	// A URL parser will not let the path of a URL without an authority be changed, so the parts that the pathname setter and the duplicate slash removal would have handled are done on the path itself. Such a URL is only the protocol, the path, the search and the hash, so rebuilding it loses nothing. An empty path or one that starts with `/` went through the pathname above and is left alone, and `removeSingleSlash` does not apply, since this path is not the root.
+	/*
+	A URL parser does not let the opaque path of a URL without an authority be changed, so it is normalized as a string and the URL is rebuilt, which loses nothing. Duplicate slashes go whatever `removeTrailingSlash` says. The rebuilt URL is read back through a parser, so the path is encoded the same way, and its trailing whitespace is escaped so the next pass does not strip it. Its escapes are canonicalized but not decoded.
+	*/
 	if (urlObject.pathname !== '' && !urlObject.pathname.startsWith('/')) {
-		// The duplicate slashes go whatever `removeTrailingSlash` says, since that option is about a slash at the end of the path and not about the ones in the middle of it.
 		const path = removeDuplicatePathSlashes(urlObject.pathname);
-		// A trailing slash that is one of a protocol lookalike's two is kept, as it is for a normal path. The search is not consulted here: it is not part of what is being stripped, and the search keeps a `/` of its own either way.
 		const normalizedPath = options.removeTrailingSlash && !pathnameEndsWithProtocolRegex.test(path) ? path.replace(/\/$/, '') : path;
-		// Read back through a parser, which encodes the path the same way it would have encoded it in place, so a character like a space does not come out spelled two different ways. A parser also strips the ASCII whitespace at the end of what it reads, so whitespace the path is left with, which removing a trailing slash can do, is written as an escape or the next pass takes it away and what comes out is a different URL. The fragment goes along, since a fragment does not stop a path from being normalized. The hexadecimal digits are canonicalized here as they are everywhere else, since the rebuild writes the path out itself and a URL parser leaves an opaque one as it stands. The escape is not decoded, which the readme documents as left to the parser, and the parser does not decode it. A custom protocol the caller did not name is returned untouched long before here, so this is for the ones they did.
-		const encodedPath = escapeTrailingAsciiWhitespace(canonicalizePercentEscapes(normalizedPath));
+		const encodedPath = escapeTrailingC0ControlOrSpace(canonicalizePercentEscapes(normalizedPath));
 		urlString = new URL(`${urlObject.protocol}${encodedPath}${urlObject.search}${urlObject.hash}`).href;
 	}
 
-	// Restore relative protocol, if applicable. The protocol can differ from the prepended one, for example with `forceHttps`. The string is the serialization of the same object, so it starts with the authority, and the guard on the slice is there for a protocol the parser spelled differently rather than for a case.
+	// Restore relative protocol, if applicable. The protocol can differ from the prepended one, for example with `forceHttps`.
 	if (hasRelativeProtocol && !options.normalizeProtocol && hasHost) {
-		const authorityPrefix = `${urlObject.protocol}//`;
-		urlString = urlString.startsWith(authorityPrefix) ? `//${urlString.slice(authorityPrefix.length)}` : urlString;
+		urlString = urlString.slice(urlObject.protocol.length);
 	}
 
 	// Remove http/https

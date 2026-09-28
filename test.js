@@ -2,7 +2,9 @@ import fs from 'node:fs';
 import test from 'ava';
 import normalizeUrl from './index.js';
 
-// What a browser makes of a data URL: the media type it reports and the body it decodes. `fetch` runs the same `data:` URL processor a browser does, so it is the oracle for whether normalizing a data URL changed what it addresses. A URL no browser reads throws, and that is a URL the library rejects rather than one it changed, so it comes back as `undefined` and there is nothing to compare.
+/*
+What a browser makes of a data URL. `fetch` runs the browser `data:` URL processor, so it is the oracle. A URL it rejects gives `undefined`, as there is nothing to compare.
+*/
 const readDataURL = async url => {
 	try {
 		const response = await fetch(url);
@@ -16,7 +18,9 @@ const readDataURL = async url => {
 	}
 };
 
-// The WHATWG percent-decode, so that a component compares as a browser reads it rather than as it is spelled. A `%` that starts no escape is a character of its own and is encoded as itself.
+/*
+The WHATWG percent-decode, so a component compares as a browser reads it. A `%` that starts no escape is a literal character.
+*/
 const percentDecode = input => {
 	const bytes = [];
 	for (let index = 0; index < input.length; index++) {
@@ -32,6 +36,21 @@ const percentDecode = input => {
 	}
 
 	return new TextDecoder().decode(new Uint8Array(bytes));
+};
+
+/*
+The best of three timed calls, each after a warmup, since the first call pays for compilation and a garbage collection pause can cost hundreds of milliseconds on a shared machine.
+*/
+const timeBestOfThree = body => {
+	let best = Infinity;
+	for (let run = 0; run < 3; run++) {
+		body();
+		const start = Date.now();
+		body();
+		best = Math.min(best, Date.now() - start);
+	}
+
+	return best;
 };
 
 test('fragment escapes do not become text directives', t => {
@@ -306,7 +325,9 @@ test('defaultProtocol option', t => {
 	t.is(normalizeUrl('sindresorhus.com', {defaultProtocol: 'https:'}), 'https://sindresorhus.com');
 	t.is(normalizeUrl('sindresorhus.com', {defaultProtocol: 'http:'}), 'http://sindresorhus.com');
 
-	// A value that is not a protocol falls back to the default, rather than being prepended as text. A scheme starts with a letter, so a string that does not is not one either, and it must not reach the URL parser or the replacement, where a `$` in it would be a substitution pattern.
+	/*
+	A value that is not a scheme, which starts with a letter, falls back to the default. It must not reach the replacement, where a `$` is a substitution pattern.
+	*/
 	for (const defaultProtocol of [undefined, null, '', 123, [], '1http', 'ht tp', 'a b', '-', '.', '/x', 'a%20b', 'http::', 'x$\'y', '$&y', 'a$$b', ':']) {
 		t.is(normalizeUrl('sindresorhus.com', {defaultProtocol}), 'http://sindresorhus.com');
 		t.is(normalizeUrl('//sindresorhus.com', {defaultProtocol}), 'http://sindresorhus.com');
@@ -408,7 +429,9 @@ test('stripTextFragment option', t => {
 });
 
 test('a parameter value keeps the whitespace a MIME parser keeps', t => {
-	// A MIME parser removes trailing HTTP whitespace from a parameter value and no leading whitespace, so a value with a leading space is not the one the name says it is. Dropping `charset= us-ascii` as the redundant default replaced a charset a browser reads as something else with the default one.
+	/*
+	A MIME parser strips only trailing whitespace from a parameter value, so `charset= us-ascii` is not the default charset and must stay.
+	*/
 	for (const [input, output] of [
 		['data:text/plain;charset= us-ascii,x', 'data:text/plain;charset= us-ascii,x'],
 		['data:text/plain;charset=  us-ascii  ,x', 'data:text/plain;charset=  us-ascii,x'],
@@ -423,7 +446,9 @@ test('a parameter value keeps the whitespace a MIME parser keeps', t => {
 });
 
 test('base64 data is stripped of ASCII whitespace only', async t => {
-	// A forgiving base64 decode removes ASCII whitespace, which is tab, line feed, form feed, carriage return and space, and no other C0 control. Stripping one that is not in that set turned a URL a browser refuses into one it reads, so the library was making content out of an error.
+	/*
+	A forgiving base64 decode strips only tab, line feed, form feed, carriage return and space. Stripping another C0 control made a URL a browser refuses readable.
+	*/
 	for (const [name, character] of [
 		['tab', '\u0009'],
 		['line feed', '\u000A'],
@@ -454,7 +479,9 @@ test('base64 data is stripped of ASCII whitespace only', async t => {
 });
 
 test('a form feed in a data URL media type is not whitespace the marker can be spelled with', async t => {
-	// A URL parser removes a tab, a carriage return and a line feed from anywhere in the input, and writes every other character that is not a URL code point as an escape, so a form feed is the escape `%0C` to a browser and not whitespace. Trimming it out of the media type spells the base64 marker a browser does not see there, and the data comes out decoded when it was not.
+	/*
+	A URL parser escapes a form feed as `%0C` rather than removing it, so it is not whitespace to a browser. Trimming it can spell a base64 marker a browser does not see.
+	*/
 	for (const [input, output] of [
 		['data:;base64\f,SGk=', 'data:;base64\f,SGk='],
 		['data:text/plain;base64\f,SGVsbG8=', 'data:text/plain;base64\f,SGVsbG8='],
@@ -496,13 +523,17 @@ test('a control at the end of a data URL media type is written as an escape', t 
 });
 
 test('a data URL media type is trimmed of the whitespace a parser leaves in it', t => {
-	// A URL parser removes a tab, a carriage return and a line feed from anywhere in the input, and writes every other character that is not a URL code point as an escape. So a space is the only whitespace of the HTTP set that can still be in a media type, and trimming one that is not would spell a base64 marker a browser does not see there.
+	/*
+	A space is the only HTTP whitespace a URL parser leaves in a media type. Trimming anything else could spell a base64 marker a browser does not see.
+	*/
 	const mediaTypeOf = url => {
 		const {pathname} = new URL(url);
 		return pathname.slice(0, pathname.indexOf(','));
 	};
 
-	// A control is not whitespace, so it stays a character of the value and does not spell the marker. A URL parser writes it as an escape, which is the same character, so the meaning is the same either way.
+	/*
+	A control is not whitespace, so it stays in the value and does not spell the marker. Its escape reads the same.
+	*/
 	for (const [name, character] of [
 		['form feed', '\u000C'],
 		['vertical tab', '\u000B'],
@@ -522,7 +553,9 @@ test('a data URL media type is trimmed of the whitespace a parser leaves in it',
 		t.is(mediaTypeOf(normalizeUrl(`data:image/png;${character}base64,QUJD`)), 'image/png;base64', `as a marker: ${character}`);
 	}
 
-	// A space is the one of the set a parser leaves, and a MIME parser strips the trailing whitespace of a parameter value and not the leading, which is what the two halves here pin.
+	/*
+	A space is the one a URL parser keeps, and a MIME parser strips only trailing parameter whitespace, which the two halves pin.
+	*/
 	t.is(normalizeUrl('data:image/png;a=x ,QUJD'), 'data:image/png;a=x,QUJD');
 	t.is(normalizeUrl('data:image/png;a= x,QUJD'), 'data:image/png;a= x,QUJD');
 	t.is(normalizeUrl('data:image/png;a=x ,QUJD'), 'data:image/png;a=x,QUJD');
@@ -531,7 +564,9 @@ test('a data URL media type is trimmed of the whitespace a parser leaves in it',
 });
 
 test('a space of another kind is a character of the URL', t => {
-	// Only the whitespace a URL parser removes is stripped. Anything else is content: it is percent-encoded in the path, the query and the fragment, and the data of a data URL is written as it stands.
+	/*
+	Only the whitespace a URL parser removes is stripped. Anything else is content, escaped or kept as written.
+	*/
 	for (const character of ['\u00A0', '\uFEFF', '\u200B', '\u3000']) {
 		t.is(normalizeUrl(`http://sindresorhus.com/a${character}b`), `http://sindresorhus.com/a${encodeURIComponent(character)}b`, `${character}`);
 		t.is(normalizeUrl(`http://sindresorhus.com/?a=${character}`), `http://sindresorhus.com/?a=${encodeURIComponent(character)}`, `${character}`);
@@ -548,13 +583,17 @@ test('a space of another kind is a character of the URL', t => {
 		normalizeUrl('\u00A0sindresorhus.com/a');
 	}, {message: /^Invalid URL/});
 
-	// A format character is one the parser can absorb rather than reject, so the URL that comes out is of the input's prefix. A limitation of not sanitizing rather than a normalisation.
+	/*
+	The parser absorbs a format character, so the output is of the input prefix. A limitation of not sanitizing, not a normalisation.
+	*/
 	t.is(normalizeUrl('\uFEFFhttp://sindresorhus.com/a'), 'http://http/sindresorhus.com/a');
 	t.is(normalizeUrl('\uFEFFsindresorhus.com/a'), 'http://sindresorhus.com/a');
 });
 
 test('a dotted scheme with an authority is a custom protocol', t => {
-	// A scheme with a dot in it followed by `//` names a protocol, so the URL is passed through and nothing in it is normalized. Without the `//` the same text is a host and gets the default protocol prepended, which is what makes a scheme and a host impossible to tell apart here.
+	/*
+	A dotted scheme followed by `//` is a protocol, so the URL passes through untouched. Without the `//` it is a host, so the two cannot be told apart.
+	*/
 	t.is(normalizeUrl('example.com/path'), 'http://example.com/path');
 	t.is(normalizeUrl('example.com://host/path'), 'example.com://host/path');
 	t.is(normalizeUrl('example.com://host/www.x.com/a/../b?x=1'), 'example.com://host/www.x.com/a/../b?x=1');
@@ -567,7 +606,9 @@ test('a dotted scheme with an authority is a custom protocol', t => {
 });
 
 test('a backslash the parser reads as a slash is one it wrote', t => {
-	// A backslash is a slash to a parser in the path of a special scheme, so an input that ends in one wrote a trailing slash even though the character is not one, and the root slash has to be kept. A template literal cannot end in a backslash, so the character is a value of its own.
+	/*
+	A backslash is a slash in the path of a special scheme, so the root slash stays. A template literal cannot end in a backslash, hence the variable.
+	*/
 	const slash = '\\';
 	const options = {removeTrailingSlash: false, removeSingleSlash: false};
 
@@ -593,7 +634,9 @@ test('a backslash the parser reads as a slash is one it wrote', t => {
 });
 
 test('a hostname has its percent escapes canonicalized', t => {
-	// A host of a special scheme has been decoded and punycoded by the URL parser, so there is never an escape left in one. A host of a non-special scheme is an opaque host, which the parser leaves as it stands, so its escapes reach the output and the hexadecimal digits have to be canonicalized there as they are in every other component.
+	/*
+	The parser decodes the host of a special scheme, so it has no escapes. An opaque host keeps them, so its hexadecimal digits are canonicalized like any other component.
+	*/
 	const options = {customProtocols: ['sindre']};
 	for (const [spelling, canonical] of [
 		['%4a', '%4A'],
@@ -621,7 +664,9 @@ test('a hostname has its percent escapes canonicalized', t => {
 });
 
 test('the www and the trailing dot rules compose in one pass', t => {
-	// A parser reads a host of numbers as an IPv4 address, so whether the dots can come off depends on the other labels, and `www.` is one of them. Removing the dots first and then the `www.` left a name whose dots could then come off, so the result changed on the next pass.
+	/*
+	Whether a host of numbers reads as an IPv4 address depends on every label, `www.` included, so removing the dots before the `www.` was not a fixed point.
+	*/
 	for (const [url, output] of [
 		['http://www.127.0.0.1..', 'http://127.0.0.1'],
 		['http://www.8080...', 'http://8080...'],
@@ -636,7 +681,9 @@ test('the www and the trailing dot rules compose in one pass', t => {
 });
 
 test('a trailing dot comes off a domain and not off an opaque host', t => {
-	// A URL parser does an IDNA mapping for the host of a special scheme, and that is where a trailing dot is the same name. The host of any other scheme is opaque: it is not domain-parsed, its case is kept, and its trailing dot is a character of the name, so removing it changes the host.
+	/*
+	Only the host of a special scheme is IDNA mapped, where a trailing dot is the same name. An opaque host keeps its case and trailing dot.
+	*/
 	t.is(normalizeUrl('http://sindresorhus.com./a'), 'http://sindresorhus.com/a');
 	t.is(normalizeUrl('https://sindresorhus.com../a'), 'https://sindresorhus.com/a');
 	t.is(normalizeUrl('file://sindresorhus.com./a'), 'file://sindresorhus.com/a');
@@ -654,7 +701,9 @@ test('a trailing dot comes off a domain and not off an opaque host', t => {
 });
 
 test('a hostname a URL parser reads back as another one is left alone', t => {
-	// A name of numbers is read as an IPv4 address, so stripping the trailing dots off one can turn it into a different address entirely, and a name that no longer parses is not settable at all. Either way the trailing dots stay, since keeping them cannot change which host the URL addresses. The dots stay and the `www.` still goes, since that is a separate rule and the name it leaves reads back as itself.
+	/*
+	Stripping the trailing dots off a name of numbers can change or break the IPv4 address, so they stay. The `www.` still goes, as a separate rule.
+	*/
 	t.is(normalizeUrl('https://www.159.189.213..'), 'https://159.189.213..');
 	t.is(normalizeUrl('https://159.189.213..'), 'https://159.189.213..');
 	// The `www.` still goes, and the dots stay, which is the same split the opaque host gets.
@@ -805,7 +854,9 @@ test('forceHttp option', t => {
 });
 
 test('changing the scheme with an option drops the port that was the default one', t => {
-	// A URL parser re-reads the port against the new scheme, so the port that was the default for the old one goes. A port that is a default for neither is kept.
+	/*
+	The port is read again against the new scheme, so the old default goes and any other port stays.
+	*/
 	t.is(normalizeUrl('https://sindresorhus.com:443/a', {forceHttp: true}), 'http://sindresorhus.com/a');
 	t.is(normalizeUrl('https://sindresorhus.com:8080/a', {forceHttp: true}), 'http://sindresorhus.com:8080/a');
 	t.is(normalizeUrl('http://sindresorhus.com:80/a', {forceHttps: true}), 'https://sindresorhus.com/a');
@@ -901,7 +952,9 @@ test('removeSingleSlash option', t => {
 	t.is(normalizeUrl('sindre://sindresorhus.com/?a=1', {...options, customProtocols: ['sindre']}), 'sindre://sindresorhus.com/?a=1');
 	t.is(normalizeUrl('sindre://sindresorhus.com/redirect/', {...options, customProtocols: ['sindre']}), 'sindre://sindresorhus.com/redirect');
 
-	// A limitation: the slash is read off the input as it was written, so one that belongs to a dot segment the parser resolves away still counts. `a/../` and `a/..` are the same path and the same URL, but only the first keeps the root slash.
+	/*
+	A limitation: the slash is read off the input as written, so `a/../` keeps the root slash while the same URL `a/..` does not.
+	*/
 	t.is(normalizeUrl('https://sindresorhus.com/a/../', options), 'https://sindresorhus.com/');
 	t.is(normalizeUrl('https://sindresorhus.com/a/..', options), 'https://sindresorhus.com');
 	t.is(normalizeUrl('https://sindresorhus.com/a/b/..', options), 'https://sindresorhus.com/a');
@@ -1014,7 +1067,9 @@ test('sortQueryParameters option', t => {
 });
 
 test('only the whitespace a URL parser strips is stripped', t => {
-	// A URL parser strips leading and trailing C0 controls and spaces, and percent-encodes every other whitespace character, so dropping one of those changes which resource the URL addresses.
+	/*
+	A URL parser strips only leading and trailing C0 controls and spaces and escapes other whitespace, so dropping that changes the URL.
+	*/
 	const characters = ['\u00A0', '\u1680', '\u2000', '\u2028', '\u2029', '\u202F', '\u205F', '\u3000', '\uFEFF'];
 	for (const character of characters) {
 		t.is(normalizeUrl(`http://example.com/${character}`), `http://example.com/${encodeURIComponent(character)}`, `${character}`);
@@ -1026,7 +1081,9 @@ test('only the whitespace a URL parser strips is stripped', t => {
 		t.is(normalizeUrl(`sindre://example.com/${character}`, {customProtocols: ['sindre']}), `sindre://example.com/${encodeURIComponent(character)}`, `${character}`);
 	}
 
-	// The ones a parser does strip are still stripped, and a tab, a carriage return and a line feed go from anywhere in the input rather than only from its ends.
+	/*
+	Those a parser strips still go, and tab, carriage return and line feed go from anywhere.
+	*/
 	t.is(normalizeUrl('  http://example.com  '), 'http://example.com');
 	t.is(normalizeUrl('\u0000http://example.com\u0001'), 'http://example.com');
 	t.is(normalizeUrl('\u001Fhttp://example.com/a\u001F'), 'http://example.com/a');
@@ -1056,7 +1113,9 @@ test('invalid urls', t => {
 });
 
 test('a path rebuilt from its components keeps a protocol lookalike only as far as it can', t => {
-	// Both options rebuild the path by joining its components, and a component list has no way to spell the empty one between a lookalike's two slashes, so one of them goes. A limitation rather than a bug: the result is still a fixed point and points at the same resource.
+	/*
+	A limitation: a path rebuilt from components cannot keep the empty one between the two slashes of a lookalike. The result is still a fixed point for the same resource.
+	*/
 	t.is(normalizeUrl('http://sindresorhus.com/ab://'), 'http://sindresorhus.com/ab://');
 	t.is(normalizeUrl('http://sindresorhus.com/ab://x'), 'http://sindresorhus.com/ab://x');
 	t.is(normalizeUrl('http://sindresorhus.com/ab://', {transformPath: pathComponents => pathComponents}), 'http://sindresorhus.com/ab:');
@@ -1103,12 +1162,16 @@ test('remove duplicate pathname slashes', t => {
 	t.is(normalizeUrl('http://sindresorhus.com/a://sindresorhus.com//foo'), 'http://sindresorhus.com/a://sindresorhus.com/foo');
 	t.is(normalizeUrl('http://sindresorhus.com/a://'), 'http://sindresorhus.com/a://');
 
-	// The path is the decoded one the heuristic reads, so an escape that spells a lookalike is one, and the letters of a percent escape are not mistaken for a scheme.
+	/*
+	The heuristic reads the decoded path, so an escape can spell a lookalike, and escape letters are not a scheme.
+	*/
 	t.is(normalizeUrl('http://sindresorhus.com/%61://sindresorhus.com//foo'), 'http://sindresorhus.com/a://sindresorhus.com/foo');
 	t.is(normalizeUrl('http://sindresorhus.com/%41://sindresorhus.com//foo'), 'http://sindresorhus.com/A://sindresorhus.com/foo');
 	t.is(normalizeUrl('http://sindresorhus.com/%7A%39://'), 'http://sindresorhus.com/z9://');
 	t.is(normalizeUrl('http://sindresorhus.com/a%2Db://sindresorhus.com//foo'), 'http://sindresorhus.com/a-b://sindresorhus.com/foo');
-	// A URL parser hands the path back encoded, so the letters of a percent escape that are not ASCII are still there to be read as a scheme once the path has been decoded. That is a limitation of reading the encoded path, and it only ever keeps two slashes that could have gone.
+	/*
+	A limitation: the parser returns the path encoded, so the escape letters of a character that is not ASCII can read as a scheme, which only keeps two slashes that could have gone.
+	*/
 	t.is(normalizeUrl('http://sindresorhus.com/%C3%A9://foo//bar'), 'http://sindresorhus.com/%C3%A9://foo/bar');
 	t.is(normalizeUrl('http://sindresorhus.com/%A9://foo//bar'), 'http://sindresorhus.com/%A9://foo/bar');
 
@@ -1171,7 +1234,9 @@ test('data URL', t => {
 	t.is(normalizeUrl('data:,foo#bar:~:text=hi'), 'data:,foo#bar');
 	t.is(normalizeUrl('data:,foo#:~:text=hi', {stripTextFragment: false}), 'data:,foo#:~:text=hi');
 
-	// A text fragment strip that leaves the fragment ending in whitespace writes that whitespace as an escape, the same way a regular URL does, since a URL parser writes a space in a fragment as `%20` and it is a character of the fragment. Trimming it instead would lose one.
+	/*
+	A parser writes a space in a fragment as `%20`, so whitespace left at the end by a text fragment strip is escaped, not trimmed.
+	*/
 	t.is(normalizeUrl('data:,foo#a :~:text=x'), 'data:,foo#a%20');
 	t.is(normalizeUrl('data:,foo#a b :~:text=x'), 'data:,foo#a b%20');
 	t.is(normalizeUrl('data:,foo#a #h', {stripTextFragment: false}), 'data:,foo#a #h');
@@ -1189,7 +1254,9 @@ test('data URL', t => {
 	t.is(normalizeUrl('data:,foo#bar'), 'data:,foo#bar');
 	t.is(normalizeUrl('data:,foo#'), 'data:,foo');
 
-	// A space in the path is a byte of the data, which a URL parser writes as `%20`, so dropping a hash leaves it behind as the escape rather than trimming it away, and the output is stable.
+	/*
+	A space in the path is a data byte, so dropping a hash leaves it as `%20` rather than trimming it.
+	*/
 	t.is(normalizeUrl('data:,foo #'), 'data:,foo%20');
 	t.is(normalizeUrl('data:,foo #:~:text=x'), 'data:,foo%20');
 	t.is(normalizeUrl('data:,  foo #'), 'data:,  foo%20');
@@ -1229,7 +1296,9 @@ test('data URL', t => {
 	t.is(normalizeUrl('data:text/html;charset=%55TF-8,x'), 'data:text/html;charset=%55tf-8,x');
 	t.is(normalizeUrl('data:%zzext/plain,x'), 'data:%zzext/plain,x');
 
-	// The marker is the last parameter written as the bare word `base64`, which is what a browser looks for at the end of the media type. Anything else is a parameter, so `base64=a` keeps its value and the data still decodes as it was written.
+	/*
+	The marker is a last parameter of the bare word `base64`, so `base64=a` is an ordinary parameter and the data decodes as written.
+	*/
 	t.is(normalizeUrl('data:text/plain;base64=a,Zm9v'), 'data:text/plain;base64=a,Zm9v');
 	t.is(normalizeUrl('data:text/plain;base64=,foo'), 'data:text/plain;base64=,foo');
 	t.is(normalizeUrl('data:;base64=,Zm9v'), 'data:;base64=,Zm9v');
@@ -1240,11 +1309,15 @@ test('data URL', t => {
 	t.is(normalizeUrl('data:;base64;QUJD'), 'data:;base64;qujd');
 	t.is(normalizeUrl('data:;a=b;base64,QUJD'), 'data:;a=b;base64,QUJD');
 
-	// An empty part or an empty name, which a trailing `;` or `=` leaves, is dropped, and dropping one must not leave the media type ending in the bare word `base64` that the marker is.
+	/*
+	An empty part or name, from a trailing `;` or `=`, is dropped, unless that leaves the bare `base64` marker at the end.
+	*/
 	t.is(normalizeUrl('data:text/plain;a=1;,x'), 'data:text/plain;a=1,x');
 	t.is(normalizeUrl('data:text/plain;;base64,Zm9v'), 'data:text/plain;base64,Zm9v');
 	t.is(normalizeUrl('data:text/plain;=;base64,Zm9v'), 'data:text/plain;base64,Zm9v');
-	// The trailing `;` stays, since a media type ending in `;` is not the marker and dropping the empty part would make it one, which would change what the data decodes to.
+	/*
+	The trailing `;` stays, since dropping the empty part would make the marker.
+	*/
 	t.is(normalizeUrl('data:text/plain;base64;,Zm9v'), 'data:text/plain;base64;,Zm9v');
 	t.is(normalizeUrl('data:text/plain;base64 ;,Zm9v'), 'data:text/plain;base64;,Zm9v');
 	t.is(normalizeUrl('data:;base64;,Zm9v'), 'data:;base64;,Zm9v');
@@ -1281,21 +1354,27 @@ test('data URL', t => {
 	// Strip empty hash.
 	t.is(normalizeUrl('data:,foo# '), 'data:,foo');
 
-	// A text fragment strip that leaves only whitespace writes it as an escape, since a bare `#` is not a fixed point and the space is a character of the fragment a browser would have kept.
+	/*
+	Whitespace alone after a text fragment strip is escaped, since a bare `#` is not a fixed point and a browser keeps the space.
+	*/
 	t.is(normalizeUrl('data:,a# :~:text=x'), 'data:,a#%20');
 	t.is(normalizeUrl('data:,a # :~:text=x'), 'data:,a #%20');
 	t.is(normalizeUrl('data:,a#\u00A0:~:text=x'), 'data:,a#\u00A0');
 	t.is(normalizeUrl('data:,a# :~:text=x', {stripTextFragment: false}), 'data:,a# :~:text=x');
 	t.is(normalizeUrl('data:,a# '), 'data:,a');
 
-	// A line separator is not a line terminator, so a regex `.` still has to reach it. A URL parser keeps the character, so the input is one it accepts and normalizing it must not throw. One on its own is a fragment, not an empty one, since only ASCII whitespace is stripped.
+	/*
+	A regex `.` does not match a line separator, but the parser accepts one, so normalizing must not throw. Alone it is still a fragment, as only ASCII whitespace is stripped.
+	*/
 	t.is(normalizeUrl('data:,x#\u2028'), 'data:,x#\u2028');
 	t.is(normalizeUrl('data:,x#a\u2028b'), 'data:,x#a\u2028b');
 	t.is(normalizeUrl('data:,x#a\u2029b'), 'data:,x#a\u2029b');
 	t.is(normalizeUrl('data:,x#a\u2028b', {stripHash: true}), 'data:,x');
 	t.is(normalizeUrl('data:,a\u2028b'), 'data:,a\u2028b');
 
-	// Key only mediaType attribute. The separator stays, since the input wrote one.
+	/*
+	Key only mediaType attribute. The separator stays, since the input wrote one.
+	*/
 	t.is(normalizeUrl('data:;foo=;bar,'), 'data:;foo=;bar,');
 
 	// Only the first `=` separates a media type parameter name from its value.
@@ -1306,7 +1385,9 @@ test('data URL', t => {
 	// Lowercase the charset.
 	t.is(normalizeUrl('data:;charset=UTF-8,foo'), 'data:;charset=utf-8,foo');
 
-	// Media type parameter names are case-insensitive, so they are lowercased too. `us-ascii` is the default charset of `text/plain` and of nothing else, so it is only dropped from that.
+	/*
+	Parameter names are case-insensitive, so they are lowercased. `us-ascii` is the default charset only of `text/plain`.
+	*/
 	t.is(normalizeUrl('data:text/html;CHARSET=US-ASCII,foo'), 'data:text/html;charset=us-ascii,foo');
 	t.is(normalizeUrl('data:text/plain;CHARSET=US-ASCII,foo'), 'data:,foo');
 	t.is(normalizeUrl('data:;CHARSET=US-ASCII,foo'), 'data:,foo');
@@ -1325,7 +1406,9 @@ test('data URL', t => {
 	t.is(normalizeUrl('data:;a="b;FOO ;C",d'), 'data:;a="b;FOO ;C",d');
 	t.is(normalizeUrl(String.raw`data:;a="b\";c",d`), String.raw`data:;a="b\";c",d`);
 
-	// A quoted string is only recognised right after the `=` and only a double quote opens one, which is what a browser recognises, so a quote anywhere else is just a character in the value.
+	/*
+	Like in a browser, a quoted string opens only with a double quote right after the `=`.
+	*/
 	t.is(normalizeUrl('data:text/html;title=It\'s;charset=us-ascii,foo'), 'data:text/html;title=It\'s;charset=us-ascii,foo');
 	t.is(normalizeUrl('data:;a=b";charset=us-ascii,c'), 'data:;a=b",c');
 	t.is(normalizeUrl('data:;a=b";c,d'), 'data:;a=b";c,d');
@@ -1336,11 +1419,15 @@ test('data URL', t => {
 	t.is(normalizeUrl('data:;a="b;charset=us-ascii;c",d'), 'data:;a="b;charset=us-ascii;c",d');
 	t.is(normalizeUrl('data:text/html;title=A;charset=us-ascii,d'), 'data:text/html;title=A;charset=us-ascii,d');
 
-	// The media type ends at the first comma even inside a quoted value, so what follows it is data and round-trips untouched, while a `;` inside the value still does not separate.
+	/*
+	The media type ends at the first comma even inside quotes, but a `;` inside quotes does not separate.
+	*/
 	t.is(normalizeUrl('data:text/html;title="A,B";charset=us-ascii,d'), 'data:text/html;title="A,B";charset=us-ascii,d');
 	t.is(normalizeUrl('data:text/html;title="A;B";charset=us-ascii,d'), 'data:text/html;title="A;B";charset=us-ascii,d');
 	t.is(normalizeUrl('data:;a=\'x,y\''), 'data:;a=\'x,y\'');
-	// The separator is only written when there is data for it to separate, so a data URL that had no comma does not gain one on every pass. One that had a comma keeps it, since a URL parser reads a data URL with no comma as a failure and one with an empty data after it as a load.
+	/*
+	The separator is only written when there is data, so no comma is added on each pass. An existing one stays, since a parser fails on a data URL without it.
+	*/
 	t.is(normalizeUrl('data:text/html,'), 'data:text/html,');
 	t.is(normalizeUrl('data:image/png,'), 'data:image/png,');
 	t.is(normalizeUrl('data:;base64,'), 'data:;base64,');
@@ -1419,21 +1506,10 @@ test('prevents homograph attack', t => {
 });
 
 test('does not have quadratic performance for the query parameter filters', t => {
-	// Filtering a key at a time re-serialises the whole query on every call, so a URL with many parameters took quadratic time: 8000 of them was over half a minute. The inputs are big enough that the work dwarfs the noise, so a single wall clock says something.
+	/*
+	Filtering a key at a time serialised the query again per call: 8000 parameters took over half a minute. The inputs are big enough for one wall clock timing.
+	*/
 	const url = `http://example.com/?${Array.from({length: 8000}, (value, index) => `k${String(index).padStart(6, '0')}=1`).join('&')}`;
-
-	// The best of three, since a garbage collection pause on a large allocation is worth hundreds of milliseconds on a shared machine and says nothing about the shape of the work.
-	const time = options => {
-		let best = Infinity;
-		for (let run = 0; run < 3; run++) {
-			normalizeUrl(url, options);
-			const start = Date.now();
-			normalizeUrl(url, options);
-			best = Math.min(best, Date.now() - start);
-		}
-
-		return best;
-	};
 
 	for (const [label, options] of [
 		['removeQueryParameters matching every key', {removeQueryParameters: [/.*/]}],
@@ -1442,13 +1518,17 @@ test('does not have quadratic performance for the query parameter filters', t =>
 		['keepQueryParameters keeping nothing', {keepQueryParameters: [/^zzz/]}],
 		['keepQueryParameters keeping everything', {keepQueryParameters: [/./]}],
 	]) {
-		const difference = time(options);
+		const difference = timeBestOfThree(() => {
+			normalizeUrl(url, options);
+		});
 		t.true(difference < 1000, `${label} (${url.length} bytes) took ${difference}ms`);
 	}
 });
 
 test('does not have quadratic performance for runs of whitespace or escapes', t => {
-	// A run of these is what a regex with a `+` over the set is quadratic on, since the engine tries every start position inside it. The input is untrusted and a 50 KB run of spaces is a fraction of a payload. The inputs are big enough that the work dwarfs the noise, so a single wall clock says something: a garbage collection pause on a large allocation is worth hundreds of milliseconds, and the budget is well above that while far below what a curve through these lengths would cost.
+	/*
+	A regex with a `+` over the set is quadratic on a run of these, and a 50 KB run of spaces is a small untrusted payload. The budget is well above a garbage collection pause and far below a quadratic cost.
+	*/
 	const runs = [
 		length => `http://example.com/a b${' '.repeat(length)}c`,
 		length => `http://example.com/a${'\u0001'.repeat(length)}c`,
@@ -1476,22 +1556,14 @@ test('does not have quadratic performance for runs of whitespace or escapes', t 
 });
 
 test('does not have exponential performance for data URLs', t => {
-	// A URL that throws is a URL the library rejects, which is a failure here rather than a fast pass: an empty catch would record zero milliseconds and let a regression that makes everything throw pass as the fastest case of all. The best of three after a warmup call, since the first call of a test pays for compiling the code it runs and a garbage collection pause is worth hundreds of milliseconds on a shared machine.
-	const time = url => {
-		let best = Infinity;
-		for (let run = 0; run < 3; run++) {
-			normalizeUrl(url);
-			const start = Date.now();
-			normalizeUrl(url);
-			best = Math.min(best, Date.now() - start);
-		}
-
-		return best;
-	};
-
+	/*
+	A throw is a failure here, or a regression that makes everything throw would pass as the fastest case.
+	*/
 	for (let index = 0; index < 1000; index += 50) {
 		const url = 'data:' + Array.from({length: index}).fill(',#').join('') + '\ra';
-		const difference = time(url);
+		const difference = timeBestOfThree(() => {
+			normalizeUrl(url);
+		});
 		t.true(difference < 100, `${url.length} bytes: ${difference}ms`);
 	}
 });
@@ -1610,7 +1682,9 @@ test('customProtocols option', t => {
 	t.is(normalizeUrl('sindre:/', options), 'sindre:/');
 	t.is(normalizeUrl('sindre://h/', options), 'sindre://h');
 
-	// An opaque path cannot be set through the pathname, so its trailing slash is removed on the string. The duplicate slash removal is a no-op there too, so that is done there as well.
+	/*
+	An opaque path cannot be set through the pathname, so the trailing and duplicate slash removal happens on the string.
+	*/
 	t.is(normalizeUrl('sindre:x/a/', options), 'sindre:x/a');
 	t.is(normalizeUrl('sindre:x/', options), 'sindre:x');
 	t.is(normalizeUrl('sindre:x/a/', {...options, removeTrailingSlash: false}), 'sindre:x/a/');
@@ -1628,7 +1702,9 @@ test('customProtocols option', t => {
 	t.is(normalizeUrl('sindre:x//a#h', options), 'sindre:x/a#h');
 	t.is(normalizeUrl('sindre:x/a//#h', options), 'sindre:x/a#h');
 	t.is(normalizeUrl('sindre:x/a/?q=1#h', options), 'sindre:x/a?q=1#h');
-	// A URL parser strips the ASCII whitespace at the end of what it reads, so whitespace the path is left with, which removing a trailing slash can do, is written as an escape. Without that the path loses it, and what comes out is a different URL: `x:8080` is a host and a port, not a scheme.
+	/*
+	A parser strips trailing ASCII whitespace, so whitespace left at the end of the path is escaped. Otherwise the URL changes, since `x:8080` is a host and a port, not a scheme.
+	*/
 	t.is(normalizeUrl('sindresorhus.com:8080 /', {customProtocols: ['sindresorhus.com']}), 'sindresorhus.com:8080%20');
 	// Only a run at the end is at risk, since a parser keeps whitespace in the middle of a path as it is.
 	t.is(normalizeUrl('sindresorhus.com:8080 /a ', {customProtocols: ['sindresorhus.com']}), 'sindresorhus.com:8080 /a');
@@ -1700,7 +1776,9 @@ test('removePath option', t => {
 });
 
 test('transformPath option and a trailing slash', t => {
-	// The transform rebuilds the path from its components, so a trailing slash the input wrote is one it has to put back. With `removeTrailingSlash` off the option is what keeps it, and the result cannot depend on what ran before the transform either.
+	/*
+	The transform rebuilds the path, so it must put back a trailing slash the input wrote when `removeTrailingSlash` is off.
+	*/
 	const options = {removeTrailingSlash: false, transformPath: pathComponents => pathComponents};
 	t.is(normalizeUrl('http://sindresorhus.com/a/', options), 'http://sindresorhus.com/a/');
 	t.is(normalizeUrl('http://sindresorhus.com/a/b/', options), 'http://sindresorhus.com/a/b/');
@@ -1716,7 +1794,9 @@ test('transformPath option and a trailing slash', t => {
 });
 
 test('transformPath is not called for a path it cannot rewrite', t => {
-	// The options that rewrite a path only apply when the path starts with a `/`, since a URL parser will not let the library change an opaque one. `transformPath` is the only one of them that calls into caller code, so it is the only one where being ignored has to be visible.
+	/*
+	Path options only apply to a path that starts with `/`, as an opaque one cannot be changed. `transformPath` runs caller code, so being ignored must be visible.
+	*/
 	let calls = 0;
 	const spy = pathComponents => {
 		calls++;
@@ -1749,7 +1829,9 @@ test('transformPath is not called for a path it cannot rewrite', t => {
 });
 
 test('transformPath is given the percent-decoded path components', t => {
-	// A component is decoded before the function sees it, so an unreserved escape has already become the character it stands for, and one the function returns is not decoded again.
+	/*
+	The function gets decoded components, and what it returns is not decoded again.
+	*/
 	const seen = [];
 	const output = normalizeUrl('http://example.com/a%7Eb/%41c/d%2Fe/%C3%A9', {
 		transformPath(pathComponents) {
@@ -1870,7 +1952,9 @@ test('path-like query strings without equals signs are preserved', t => {
 });
 
 test('a host and a port are told from a scheme by what follows the port', t => {
-	// `localhost:9802` is a host and a port, so what comes after the digits decides it: a slash, a question mark, a hash, or nothing. An authority or a letter instead makes it a scheme.
+	/*
+	`localhost:9802` is a host and a port when a slash, `?`, `#` or nothing follows the digits, and a scheme otherwise.
+	*/
 	t.is(normalizeUrl('localhost:9802'), 'http://localhost:9802');
 	t.is(normalizeUrl('localhost:9802/'), 'http://localhost:9802');
 	t.is(normalizeUrl('localhost:9802/a'), 'http://localhost:9802/a');
@@ -1903,7 +1987,9 @@ test('a run of whitespace at the end is stripped whole', t => {
 });
 
 test('a filter is matched against the percent-decoded name', t => {
-	// A key and a path component reach a filter the way `URLSearchParams` reads one, so `+` is a space and `%2F` is a slash. A filter written with the escape therefore matches nothing.
+	/*
+	A filter sees keys and path components as `URLSearchParams` reads them, so `+` is a space and `%2F` is a slash.
+	*/
 	t.is(normalizeUrl('http://example.com/?a%2Fb=1&c=2', {removeQueryParameters: ['a/b']}), 'http://example.com/?c=2');
 	t.is(normalizeUrl('http://example.com/?a%2Fb=1&c=2', {removeQueryParameters: ['a%2Fb']}), 'http://example.com/?a%2Fb=1&c=2');
 	t.is(normalizeUrl('http://example.com/?a%7Eb=1&c=2', {removeQueryParameters: ['a~b']}), 'http://example.com/?c=2');
@@ -1921,7 +2007,9 @@ test('a filter is matched against the percent-decoded name', t => {
 });
 
 test('the query parameter filters keep the order and the spelling of what they keep', t => {
-	// The filters write the parameters they keep back in one go, so that a key at a time does not re-serialise the whole query. Everything a filter does not match has to come out exactly as it went in, which is what this checks.
+	/*
+	The filters write the kept parameters back in one go, so everything they do not match must come out unchanged.
+	*/
 	const url = 'http://example.com/?z=1&a=%2F&b=a+b&c=&a=2&utm_source=x&d=%3A&a%2Db=e&e';
 	const sorted = 'http://example.com/?a=%2F&a=2&a-b=e&b=a+b&c=&d=%3A&e&utm_source=x&z=1';
 	t.is(normalizeUrl(url, {removeQueryParameters: [/^nope$/]}), sorted);
@@ -1951,7 +2039,9 @@ test('sortQueryParameters should preserve encoded reserved characters in query v
 	t.is(normalizeUrl('https://example.com/?token=a%2Fb%2Fc'), 'https://example.com/?token=a%2Fb%2Fc');
 	t.is(normalizeUrl('https://example.com/?token=a%2fb%2fc'), 'https://example.com/?token=a%2Fb%2Fc');
 
-	// The token that keeps an encoded reserved character encoded is picked whichever way the option is set, so a search that already contains token-shaped text still cannot collide with it. The base twice in a row, where the closing `__` of one match is the opening `__` of the next, so the index after it would not be seen as taken and the prefix would collide with the text itself.
+	/*
+	The token for an encoded reserved character must not collide with token-shaped text in the search, whichever way the option is set. `doubled` shares a `__` between two matches, which once hid that the next index was taken.
+	*/
 	const doubled = '__normalize_url_encoded_reserved__0__normalize_url_encoded_reserved__1__';
 	for (const taken of ['', '0', '1', '9', '10', '007', '0__', '__', '2F__', '-1__', '0__0__', doubled]) {
 		const literal = `literal=__normalize_url_encoded_reserved__${taken}__`;
@@ -1965,7 +2055,9 @@ test('sortQueryParameters should preserve encoded reserved characters in query v
 		t.is(normalizeUrl(unsortedKey, {sortQueryParameters: false}), unsortedKey);
 	}
 
-	// The option is about the order of the parameters, not how they are encoded, so both modes have to agree. `#` and `&` have no literal form in a query, since they end it and split it.
+	/*
+	The option is about order, not encoding, so both modes agree. `#` and `&` have no literal form in a query.
+	*/
 	const unsorted = {sortQueryParameters: false};
 	for (const query of ['a=%2F', 'a=/', 'a=%3A', 'a=:', 'a=%2B', 'a=+', 'a=%3F', 'a=?', 'a=%3D', 'a=;', 'a=%40', 'a=%2C', 'a=%23', 'a=%26', 'b=%2Fy%3Az&c=1']) {
 		t.is(
@@ -2234,7 +2326,9 @@ test('emptyQueryValue option', t => {
 	t.is(normalizeUrl('https://example.com?b=3&a=2&a=1'), 'https://example.com/?a=2&a=1&b=3');
 });
 
-// A generated corpus for the property tests below, so they cover a wide space rather than only the cases that happened to be found. The seed is fixed, so a failure names a reproducible input.
+/*
+A generated corpus for the property tests below. The seed is fixed, so a failure names a reproducible input.
+*/
 const buildCorpus = () => {
 	let seed = 20_260_927;
 	const random = () => {
@@ -2439,7 +2533,9 @@ const buildCorpus = () => {
 const CORPUS = buildCorpus();
 
 test('the output is already the spelling a URL parser writes', t => {
-	// A normalizer whose output a parser would rewrite has not finished: another pass, or any other tool built on the parser, would produce a different string for the same URL. Every custom protocol is named here, since one the caller did not name is returned as it was written and there is nothing for the library to canonicalize.
+	/*
+	An output that a parser would rewrite is not finished. Every custom protocol is named, since an unnamed one is returned as written.
+	*/
 	const named = ['s3', 'sindre', 'a'];
 
 	// A small generator with a fixed seed, so a failure names a reproducible input.
@@ -2558,7 +2654,9 @@ test('the output is already the spelling a URL parser writes', t => {
 });
 
 test('normalizing an already normalized URL is a no-op', t => {
-	// A normalizer has to be a fixed point on its own output, otherwise it cannot be used to compare or deduplicate URLs. This is a regression guard for the whole option matrix at once.
+	/*
+	A normalizer must be a fixed point, or it cannot compare or deduplicate URLs. This covers the whole option matrix.
+	*/
 	const urls = [
 		'http://sindresorhus.com',
 		'http://sindresorhus.com/a/b?a=1&b=2#c',
@@ -2616,7 +2714,9 @@ test('normalizing an already normalized URL is a no-op', t => {
 });
 
 test('normalizing a URL leaves the parts a browser reads alone', t => {
-	// A normalizer may re-spell a URL but must not change which resource it addresses. The options that are off here are the ones that remove a part on purpose, so with them off every other part has to read the same before and after, which is what the URL standard says a browser sees.
+	/*
+	A normalizer may re-spell a URL but not change what it addresses. With the removal options off, every part must read the same to a browser.
+	*/
 	const read = (text, plusIsSpace) => percentDecode(plusIsSpace ? text.replaceAll('+', '%20') : text);
 	const parameters = url => [...url.searchParams]
 		.map(([key, value]) => `${read(key, false)}=${read(value, true)}`)
@@ -2680,11 +2780,15 @@ test('normalizing a URL leaves the parts a browser reads alone', t => {
 
 			const label = `${url} with ${JSON.stringify(variant)} -> ${output}`;
 			t.is(after.protocol, before.protocol, `protocol of ${label}`);
-			// A trailing dot on a host is removed, since they all mean the same name, but only when the name still reads as itself: a name of numbers is read as an IPv4 address, and `159.189.213` is not the one `159.189.213..` means. So the host is either stripped or exactly what it was.
+			/*
+			A trailing dot is removed only when the name still reads as itself: `159.189.213` parses as an IPv4 address, which is not the host `159.189.213..` names.
+			*/
 			const strippedHost = before.host.replace(/\.+$/, '') || '.';
 			t.true(after.host === strippedHost || after.host === before.host, `host of ${label}: ${after.host} is neither ${strippedHost} nor ${before.host}`);
 			t.is(after.port, before.port, `port of ${label}`);
-			// A duplicate slash is not a segment, and which of them a path keeps is the deliberate protocol-lookalike rule, so the segments are compared rather than the spelling.
+			/*
+			Which duplicate slash a path keeps is the protocol-lookalike rule, so segments are compared, not spelling.
+			*/
 			t.deepEqual(
 				read(after.pathname, false).split('/').filter(Boolean),
 				read(before.pathname, false).split('/').filter(Boolean),
@@ -2697,7 +2801,9 @@ test('normalizing a URL leaves the parts a browser reads alone', t => {
 });
 
 test('a search that spells the token base twice keeps its value', t => {
-	// The prefix the round trip writes has to be one the search does not contain, or the substitution rewrites a run of the value into a percent escape and a next pass decodes it.
+	/*
+	The round trip prefix must not occur in the search, or part of the value becomes an escape that the next pass decodes.
+	*/
 	const doubled = '__normalize_url_encoded_reserved__0__normalize_url_encoded_reserved__1__';
 	t.is(normalizeUrl(`https://example.com/?q=a%2Fb&k=${doubled}2F`), `https://example.com/?k=${doubled}2F&q=a%2Fb`);
 	t.is(normalizeUrl(`https://example.com/?q=a%2Fb&k=${doubled}2F`, {removeQueryParameters: false}), `https://example.com/?k=${doubled}2F&q=a%2Fb`);
@@ -2712,7 +2818,9 @@ test('a search that spells the token base twice keeps its value', t => {
 });
 
 test('a pair of options only changes what each of them documents', t => {
-	// The library's own defaults rewrite a URL, so what a pair of options must not do is change a part that neither of them is documented to change. Every pair is covered over a fixed corpus, which random sampling of option sets does not reach.
+	/*
+	A pair of options must only change the parts they are documented to change. Every pair runs over a fixed corpus, which random sampling does not reach.
+	*/
 	const PARTS = {
 		defaultProtocol: ['protocol', 'host', 'port'],
 		normalizeProtocol: ['protocol'],
@@ -2864,7 +2972,9 @@ test('a pair of options only changes what each of them documents', t => {
 });
 
 test('a data URL keeps the bytes it decodes to', async t => {
-	// `fetch` runs the same `data:` URL processor a browser does, so it is the oracle for whether normalizing a data URL changed what it addresses. The body is the content of the URL and has to survive byte for byte. The reported media type is allowed to change in the documented ways: the default `text/plain` and a default `charset` are dropped and a `charset` is lowercased.
+	/*
+	`fetch` runs the browser `data:` URL processor, so it is the oracle. The body must survive byte for byte, and the media type may only lose a default `text/plain` or `charset` and have its `charset` lowercased.
+	*/
 	const TYPES = [
 		'',
 		'text/plain',
@@ -2899,7 +3009,9 @@ test('a data URL keeps the bytes it decodes to', async t => {
 		';a=%zz',
 		';a=%2%45',
 	];
-	// A narrow payload and fragment grid, which keeps the `fetch` comparison to a few hundred URLs and the suite quick. The media type grid above is where the wide coverage is.
+	/*
+	A narrow payload and fragment grid keeps the `fetch` comparison quick. The media type grid above is the wide one.
+	*/
 	const DATA = ['', 'x', 'QUJD', 'a b', 'a,b', 'a;b', 'a#b', 'a=b', '~', 'é', ' Zm9v ', '%41', '%25', '%zz', '%', 'AA=='];
 	const FRAGMENTS = ['', '#h', '#a b', '#a#b', '#a%2Fb', '#%zz', '#\u2028', '#é', '#:~:text=a', '###:~:text=a', '#%3A~%3Atext=a'];
 
@@ -2920,8 +3032,9 @@ test('a data URL keeps the bytes it decodes to', async t => {
 					}
 
 					checked++;
-					// Only the body is compared. The reported media type is expected to change in the
-					// documented ways, which the two data URL tests above cover.
+					/*
+					Only the body is compared, since the tests above cover the documented media type changes.
+					*/
 					// eslint-disable-next-line no-await-in-loop -- As above.
 					const after = await readDataURL(output);
 					t.is(after?.body, before.body, `the bytes of ${url} should survive as ${output}`);
@@ -2934,17 +3047,23 @@ test('a data URL keeps the bytes it decodes to', async t => {
 });
 
 test('the documented examples match what the library does', t => {
-	// The readme and the type definitions carry a lot of examples. This keeps them honest, which is where three wrong outputs were hiding before.
+	/*
+	The readme and the type definitions have many examples, and three had wrong outputs before this.
+	*/
 	const readme = fs.readFileSync(new URL('readme.md', import.meta.url), 'utf8');
 	const typeDefinitions = fs.readFileSync(new URL('index.d.ts', import.meta.url), 'utf8');
 
-	// `normalizeUrl(<arguments>);` followed by a `//=> '<expected>'` line, with the arguments allowed to span lines. The call has to start a line, or the first match starts at the signature in the readme, swallows a block of prose, and takes the first real example with it.
+	/*
+	`normalizeUrl(<arguments>);` then a `//=> '<expected>'` line. The call must start a line, or the first match starts at the readme signature and swallows the first example.
+	*/
 	const examplePattern = /^[ \t]*normalizeUrl\(([^]*?)\);?[ \t]*\n[ \t]*(?:\*\/[ \t]*)?\/\/=> '([^'\n]*)'/gm;
 
 	for (const [name, text] of [['readme.md', readme], ['index.d.ts', typeDefinitions]]) {
 		let match;
 		let checked = 0;
-		// Every `//=>` line in the file is an example, so the number of them is the number the test has to reach. Comparing against it is what makes a lost example a failure rather than a quiet gap.
+		/*
+		Every `//=>` line is an example, so their count makes a lost example a failure.
+		*/
 		const documented = text.split('\n').filter(line => line.includes('//=>')).length;
 		while ((match = examplePattern.exec(text)) !== null) {
 			const [, rawArguments, expected] = match;
@@ -2965,7 +3084,9 @@ test('the documented examples match what the library does', t => {
 });
 
 test('a filter is never left in a state that changes the next call', t => {
-	// A global or sticky regex carries `lastIndex`, so it must be used without disturbing it, and the same options object must give the same answer every time.
+	/*
+	A global or sticky regex carries `lastIndex`, so repeated calls with the same options must agree.
+	*/
 	const globalFilter = /^utm_/g;
 	const stickyFilter = /utm_/y;
 	stickyFilter.lastIndex = 3;
@@ -2989,7 +3110,9 @@ test('a filter is never left in a state that changes the next call', t => {
 });
 
 test('stripping the hash of a data URL keeps the data a browser reads', t => {
-	// A URL parser writes a space in the path as `%20`, so the trailing space of `data:,foo #bar` is a byte of the data and not whitespace to be taken off. Writing it as an escape keeps the data and is a fixed point, where trimming it would drop a byte the next pass could not bring back.
+	/*
+	The trailing space of `data:,foo #bar` is a data byte, so it is written as `%20`, which is a fixed point, rather than trimmed.
+	*/
 	t.is(normalizeUrl('data:,foo #bar', {stripHash: true}), 'data:,foo%20');
 	t.is(normalizeUrl('data:,a #b', {stripHash: true}), 'data:,a%20');
 	t.is(normalizeUrl('data:text/html,x #y', {stripHash: true}), 'data:text/html,x%20');
@@ -3006,7 +3129,9 @@ test('stripping the hash of a data URL keeps the data a browser reads', t => {
 });
 
 test('a text fragment strip reaches a line separator inside the fragment', t => {
-	// The pattern takes the rest of the fragment with a `.`, which leaves out the line separators, so a fragment with one after the directive could not be matched and kept a directive that the option is there to remove. A regular URL percent-encodes them, so it is the data URL path that reaches this.
+	/*
+	The pattern uses `.`, which does not match line separators, so a directive followed by one was kept. Only a data URL reaches this, as a regular URL escapes them.
+	*/
 	const lineSeparator = '\u2028';
 	const paragraphSeparator = '\u2029';
 
@@ -3025,7 +3150,9 @@ test('a text fragment strip reaches a line separator inside the fragment', t => 
 });
 
 test('a quoted MIME parameter value that is a token is written without its quotes', t => {
-	// A parameter value is a token or a quoted string, and the quotes are only transport syntax, so `charset="us-ascii"` and `charset=us-ascii` are the same value and the same resource. It is written without them, since that is the form a parser reads back the same.
+	/*
+	Quotes are transport syntax, so `charset="us-ascii"` is `charset=us-ascii`, which is the form written since it reads back the same.
+	*/
 	t.is(normalizeUrl('data:text/plain;charset="us-ascii",x'), 'data:,x');
 	t.is(normalizeUrl('data:text/plain;charset="US-ASCII",x'), 'data:,x');
 	t.is(normalizeUrl('data:text/plain;charset="utf-8",x'), 'data:text/plain;charset=utf-8,x');
@@ -3059,7 +3186,9 @@ test('a quoted MIME parameter value that is a token is written without its quote
 });
 
 test('every spelling of a percent escape canonicalizes to one', t => {
-	// A normalizer has to re-spell every escape the same way, or two spellings of one URL are two canonical forms. The scan asks whether either hexadecimal digit is a lowercase letter, and all three ways that can happen have to be covered: a digit then a letter, a letter then anything, and an uppercase letter then a lowercase one.
+	/*
+	Every escape must be spelled the same way. The scan checks for a lowercase hexadecimal digit, so a digit then a letter, a letter then anything, and an uppercase then a lowercase letter are all covered.
+	*/
 	const letters = 'ABCDEF';
 	for (const first of ['0', '1', '9', 'a', 'f', 'A', 'F', ...letters]) {
 		for (const second of ['0', '9', 'a', 'f', 'A', 'F', ...letters]) {
@@ -3079,7 +3208,9 @@ test('every spelling of a percent escape canonicalizes to one', t => {
 });
 
 test('an unterminated quoted value does not hide the base64 marker', t => {
-	// A browser tests whether the media type as a whole ends in `;base64`, and does not look at quoting at all, so a `;` inside an unterminated quoted value does not stop it being the marker. Deciding the marker from a parameter parse instead made the library call these non-base64, and the data came out as the literal base64 text rather than the bytes it decodes to.
+	/*
+	A browser checks if the whole media type ends in `;base64`, ignoring quotes. A parameter parse called these not base64 and output the base64 text instead of its bytes.
+	*/
 	for (const [mediaType, expected] of [
 		['text/plain;a=";base64', 'text/plain;a=";base64'],
 		['text/plain;a="x;base64', 'text/plain;a="x;base64'],
@@ -3135,7 +3266,9 @@ test('an opaque path has its percent escapes canonicalized', t => {
 });
 
 test('a protocol option is read however it is written', t => {
-	// A value that is not a scheme is not a protocol, so it is ignored rather than registered under a name no URL can ever have. A trailing colon is accepted however many there are, so that a value written with one too many still names the protocol instead of silently doing nothing.
+	/*
+	A value that is not a scheme is ignored. Any number of trailing colons is accepted, so one too many does not silently do nothing.
+	*/
 	for (const entry of ['sindre', 'sindre:', 'sindre::', 'sindre:::', 'SINDRE', ' sindre ']) {
 		t.is(normalizeUrl('sindre://www.sindresorhus.com/a/', {customProtocols: [entry]}), 'sindre://sindresorhus.com/a', `${entry}`);
 		t.is(normalizeUrl('sindresorhus.com/a', {defaultProtocol: entry}), `${entry.trim().toLowerCase().replace(/:+$/, '')}:sindresorhus.com/a`, `${entry}`);
@@ -3148,7 +3281,9 @@ test('a protocol option is read however it is written', t => {
 });
 
 test('every documented option changes the output for some input', t => {
-	// A documented option that changes nothing is silently ignored, which is a bug in itself. Each entry is a URL and the values to compare it under, so every documented value of an option gets a turn.
+	/*
+	A documented option that changes nothing is a bug, so every documented value of each option is tried.
+	*/
 	const probes = {
 		defaultProtocol: [
 			['//sindresorhus.com/a', 'http', 'https'],
@@ -3196,7 +3331,9 @@ test('every documented option changes the output for some input', t => {
 		],
 	};
 
-	// The probe list has to cover every option the documentation declares, or one added to the docs would go unchecked. The readme heads each option and the type definitions declare each one, so both are read and the two lists have to agree with the probes.
+	/*
+	The probes must cover every option the readme and the type definitions declare, or a new one goes unchecked.
+	*/
 	const readme = fs.readFileSync(new URL('readme.md', import.meta.url), 'utf8');
 	const typeDefinitions = fs.readFileSync(new URL('index.d.ts', import.meta.url), 'utf8');
 	const readmeOptions = readme.split('\n').filter(line => line.startsWith('##### ')).map(line => line.slice(6).trim());
@@ -3318,7 +3455,9 @@ test('decoding a percent escape cannot join into a new one', t => {
 		t.is(normalizeUrl(normalizeUrl(url)), normalizeUrl(url), `a fixed point: ${url}`);
 	}
 
-	// The rule over every byte value, so the boundaries of the unreserved range are pinned rather than picked: `-`, `.`, `_` and `~` are unreserved and are not hexadecimal digits, so a `%` beside one of them is left alone, and so are the reserved neighbours `@`, `[`, a backtick and `{`.
+	/*
+	Every byte value, so the edges are pinned: a `%` beside `-`, `.`, `_`, `~`, `@`, `[`, a backtick or `{` is left alone.
+	*/
 	for (let value = 0; value < 256; value++) {
 		const escape = `%${value.toString(16).toUpperCase().padStart(2, '0')}`;
 		const isUnreservedHexDigit = (value >= 0x30 && value <= 0x39) || (value >= 0x41 && value <= 0x46) || (value >= 0x61 && value <= 0x66);
@@ -3327,7 +3466,9 @@ test('decoding a percent escape cannot join into a new one', t => {
 });
 
 test('base64 data that ends in a control is written as an escape', t => {
-	// A URL processor strips ASCII whitespace from base64 data, which is tab, line feed, form feed, carriage return and space. A C0 control that is not one of the five is not whitespace to a processor either, so it is a character of the data and a URL parser writes it as an escape. That is also what keeps the result a fixed point: written raw, the input trim takes it off on the next pass, which both changes the URL and can turn one a browser refuses into one it reads.
+	/*
+	A URL processor strips only tab, line feed, form feed, carriage return and space from base64 data, so another C0 control is data and is escaped. Raw, the input trim would take it off on the next pass.
+	*/
 	for (const [name, character, escape] of [
 		['null', '\u0000', '%00'],
 		['start of heading', '\u0001', '%01'],
@@ -3338,7 +3479,9 @@ test('base64 data that ends in a control is written as an escape', t => {
 		t.is(normalizeUrl(`data:text/plain;base64,QUJD${character}#`), `data:text/plain;base64,QUJD${escape}`, `a named media type: ${name}`);
 	}
 
-	// A base64 payload goes through a forgiving decode, so one that is not valid base64 stays not valid rather than being repaired into something a browser will read.
+	/*
+	A forgiving decode must leave invalid base64 invalid rather than repair it into something a browser reads.
+	*/
 	for (const character of ['\u0000', '\u0001', '\u001F']) {
 		const input = `data:;base64,ab${character}#`;
 		const output = normalizeUrl(input);
@@ -3346,13 +3489,17 @@ test('base64 data that ends in a control is written as an escape', t => {
 		t.regex(output, /%[\dA-F]{2}$/, `written as an escape: ${input}`);
 	}
 
-	// The non-base64 case already wrote one as an escape, since a URL parser writes a control in a path that way. This is the base64 case the same rule was missing from.
+	/*
+	The non-base64 case already escaped a control. This is the base64 case that missed the rule.
+	*/
 	t.is(normalizeUrl('data:,ab\u001F#'), 'data:,ab%1F');
 	t.is(normalizeUrl('data:;base64,QUJD\u001F'), 'data:;base64,QUJD');
 });
 
 test('a quoted charset in front of a base64 parameter is not dropped', t => {
-	// `charset="us-ascii"` and `charset=us-ascii` are the same parameter, since the quotes are transport syntax. Dropping the default charset must not leave the media type ending in the bare word `base64`, which a browser reads as the marker and would decode the data as, so the parameter is kept. The comparison is over the parsed parameters, or the quoted spelling is not seen and one URL keeps a charset that the other spelling of it drops.
+	/*
+	Dropping the default charset must not leave the bare `base64` marker at the end, so it is kept. The comparison is over parsed parameters, or `charset="us-ascii"` would be missed.
+	*/
 	for (const [input, output] of [
 		['data:text/plain;base64;charset="us-ascii",aGVsbG8=', 'data:text/plain;base64;charset=us-ascii,aGVsbG8='],
 		['data:text/plain;base64;charset="US-ASCII",aGVsbG8=', 'data:text/plain;base64;charset=us-ascii,aGVsbG8='],
@@ -3363,25 +3510,33 @@ test('a quoted charset in front of a base64 parameter is not dropped', t => {
 		t.is(normalizeUrl(output), output, `a fixed point: ${input}`);
 	}
 
-	// A value that is not the default is not this at all. A quoted token is written without its quotes the same way, but one that is not a token keeps them, since a leading space is a character of the value rather than whitespace around it and writing it bare would name a different parameter.
+	/*
+	A value that is not the default is left alone. A quoted token loses its quotes, but a quoted value with a leading space is not a token and keeps them.
+	*/
 	t.is(normalizeUrl('data:text/plain;base64;charset="utf-8",aGVsbG8='), 'data:text/plain;base64;charset=utf-8,aGVsbG8=');
 	t.is(normalizeUrl('data:text/plain;base64;charset=" us-ascii",aGVsbG8='), 'data:text/plain;base64;charset=" us-ascii",aGVsbG8=');
 
-	// A `base64` with a value is an ordinary parameter, so dropping the charset exposes no bare word at the end and nothing is invented. The charset is dropped, as it is for `text/plain` anywhere else.
+	/*
+	A `base64` with a value is an ordinary parameter, so the charset is dropped as usual.
+	*/
 	t.is(normalizeUrl('data:text/plain;base64=,aGVsbG8='), 'data:text/plain;base64=,aGVsbG8=');
 	t.is(normalizeUrl('data:text/plain;base64=1;charset=us-ascii,aGVsbG8='), 'data:text/plain;base64=1,aGVsbG8=');
 	t.is(normalizeUrl('data:text/html;base64=1;charset=us-ascii,aGVsbG8='), 'data:text/html;base64=1;charset=us-ascii,aGVsbG8=');
 });
 
 test('a repeated query key keeps its order whatever else is in the search', t => {
-	// The order of a repeated key can be what the server reads, so `?a=1&a=2` and `?a=2&a=1` are not the same URL. The URL standard has `URLSearchParams#sort` order by name alone without saying what happens to two names that are equal, so the library sorts by name itself. An encoded reserved character in the search is what used to put the sort on a different code path, so the order has to be the same either way.
+	/*
+	The order of a repeated key can matter, so `?a=1&a=2` and `?a=2&a=1` differ, and the library sorts by name itself, since `URLSearchParams#sort` leaves the order of equal names undefined. An encoded reserved character once took another code path, so the order must not depend on it.
+	*/
 	t.is(normalizeUrl('http://x.com/?a=2&a=1'), 'http://x.com/?a=2&a=1');
 	t.is(normalizeUrl('http://x.com/?b=2&a=2&a=1'), 'http://x.com/?a=2&a=1&b=2');
 	t.is(normalizeUrl('http://x.com/?a=2&a=1&z=%2F'), 'http://x.com/?a=2&a=1&z=%2F');
 	t.is(normalizeUrl('http://x.com/?a=2&a=1&z=%3A'), 'http://x.com/?a=2&a=1&z=%3A');
 	t.is(normalizeUrl('http://x.com/?a=2&a=1&z=1'), 'http://x.com/?a=2&a=1&z=1');
 
-	// The key the sort reads is the decoded one, so an encoded reserved character in a key sorts as the character it stands for, and `:` is below `a` in code unit order.
+	/*
+	The sort reads the decoded key, so an encoded reserved character sorts as itself, and `:` is below `a`.
+	*/
 	t.is(normalizeUrl('http://x.com/?%3A=1&a=2'), 'http://x.com/?%3A=1&a=2');
 	t.is(normalizeUrl('http://x.com/?%3A=1&a=2&z=%2F'), 'http://x.com/?%3A=1&a=2&z=%2F');
 
@@ -3391,7 +3546,9 @@ test('a repeated query key keeps its order whatever else is in the search', t =>
 });
 
 test('a text fragment strip leaves the hashes the fragment has', t => {
-	// Only a `#` at the start of the fragment is part of the delimiter, since that is the only place a URL writes one. A `#` further along is content, so `#a#:~:text=x` keeps it and `#a` would not.
+	/*
+	Only a `#` at the start of the fragment is part of the delimiter, so `#a#:~:text=x` keeps its second `#`.
+	*/
 	t.is(normalizeUrl('http://sindresorhus.com/about#a#:~:text=hello'), 'http://sindresorhus.com/about#a#');
 	t.is(normalizeUrl('http://sindresorhus.com/about#a#:~:text=hello', {stripTextFragment: false}), 'http://sindresorhus.com/about#a#:~:text=hello');
 	t.is(normalizeUrl('data:,foo#a#:~:text=x'), 'data:,foo#a#');
