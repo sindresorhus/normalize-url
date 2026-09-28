@@ -3317,6 +3317,13 @@ test('decoding a percent escape cannot join into a new one', t => {
 	for (const url of ['http://x.com/p#%%41', 'http://x.com/p#%%41B', 'http://x.com/p#%%4F', 'http://x.com/p#%%3d', 'http://x.com/p#%%2F', 'data:,a%%41b', 'data:,a#b%%41c']) {
 		t.is(normalizeUrl(normalizeUrl(url)), normalizeUrl(url), `a fixed point: ${url}`);
 	}
+
+	// The rule over every byte value, so the boundaries of the unreserved range are pinned rather than picked: `-`, `.`, `_` and `~` are unreserved and are not hexadecimal digits, so a `%` beside one of them is left alone, and so are the reserved neighbours `@`, `[`, a backtick and `{`.
+	for (let value = 0; value < 256; value++) {
+		const escape = `%${value.toString(16).toUpperCase().padStart(2, '0')}`;
+		const isUnreservedHexDigit = (value >= 0x30 && value <= 0x39) || (value >= 0x41 && value <= 0x46) || (value >= 0x61 && value <= 0x66);
+		t.is(normalizeUrl(`data:,%${escape}`).startsWith('data:,%25'), isUnreservedHexDigit, `0x${value.toString(16).toUpperCase().padStart(2, '0')}`);
+	}
 });
 
 test('base64 data that ends in a control is written as an escape', t => {
