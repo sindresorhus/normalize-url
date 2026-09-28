@@ -35,10 +35,7 @@ URLs with custom protocols are not normalized and just passed through by default
 
 Human-friendly URLs with basic auth (for example, `user:password@sindresorhus.com`) are not handled because basic auth conflicts with custom protocols. [Basic auth URLs are also deprecated.](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#access_using_credentials_in_the_url)
 
-__Note:__ a scheme with a dot in it followed by `//` is a custom protocol, so it is passed through as
-well and nothing in the URL is normalized. `example.com/path` is a host and gets `http:` prepended, but
-`example.com://host/path` is a scheme named `example.com` and is left alone. Use the
-[`customProtocols`](#customprotocols) option to normalize one on purpose.
+__Note:__ a scheme with a dot in it followed by `//` is a custom protocol, so it is passed through as well and nothing in the URL is normalized. `example.com/path` is a host and gets `http:` prepended, but `example.com://host/path` is a scheme named `example.com` and is left alone. Use the [`customProtocols`](#customprotocols) option to normalize one on purpose.
 
 #### url
 
@@ -69,17 +66,11 @@ Useful for HTTP-like custom protocols such as Electron schemes or app-specific p
 
 The protocols should be specified without `:`, though a trailing one is accepted however many there are, and the name is matched without regard to case.
 
-__Note:__ Options that rewrite the path (`removePath`, `transformPath`, `removeDirectoryIndex`, and the
-percent-decoding of the path) only apply when the path starts with a `/`, as in `sindre://host/a/b` and
-`sindre:/a/b`. A URL whose path is opaque, such as `sindre:a/b`, has no segments for those options to work
-on, and a URL parser does not let the library change it, so they are silently ignored for it.
+__Note:__ Options that rewrite the path (`removePath`, `transformPath`, `removeDirectoryIndex`, and the percent-decoding of the path) only apply when the path starts with a `/`, as in `sindre://host/a/b` and `sindre:/a/b`. A URL whose path is opaque, such as `sindre:a/b`, has no segments for those options to work on, and a URL parser does not let the library change it, so they are silently ignored for it.
 
-__Note:__ `transformPath` and `removeDirectoryIndex` rebuild the path from its components, which cannot
-spell the two slashes of a protocol lookalike such as `sindre://host/a/s3://b/index.html`. One of them is
-dropped for those two options, while the library keeps both everywhere else.
+__Note:__ `transformPath` and `removeDirectoryIndex` rebuild the path from its components, which cannot spell the two slashes of a protocol lookalike such as `sindre://host/a/s3://b/index.html`. One of them is dropped for those two options, while the library keeps both everywhere else.
 
-__Note:__ a duplicate slash in a path is removed whatever `removeTrailingSlash` says, since that option is
-about a slash at the end of the path and not about the ones in the middle of it.
+__Note:__ a duplicate slash in a path is removed whatever `removeTrailingSlash` says, since that option is about a slash at the end of the path and not about the ones in the middle of it.
 
 ```js
 normalizeUrl('sindre://www.sorhus.com', {customProtocols: ['sindre']});
@@ -111,10 +102,7 @@ Default: `false`
 
 Normalize HTTPS to HTTP.
 
-__Note:__ changing the scheme drops the port that was the default one for the old scheme, so
-`forceHttp` turns `https://example.com:443` into `http://example.com` and `forceHttps` turns
-`http://example.com:80` into `https://example.com`. A port that is not a default for either scheme is
-kept.
+__Note:__ changing the scheme drops the port that was the default one for the old scheme, so `forceHttp` turns `https://example.com:443` into `http://example.com` and `forceHttps` turns `http://example.com:80` into `https://example.com`. A port that is not a default for either scheme is kept.
 
 ```js
 normalizeUrl('https://sindresorhus.com');
@@ -131,10 +119,7 @@ Default: `false`
 
 Normalize HTTP to HTTPS.
 
-__Note:__ changing the scheme drops the port that was the default one for the old scheme, so
-`forceHttp` turns `https://example.com:443` into `http://example.com` and `forceHttps` turns
-`http://example.com:80` into `https://example.com`. A port that is not a default for either scheme is
-kept.
+__Note:__ changing the scheme drops the port that was the default one for the old scheme, so `forceHttp` turns `https://example.com:443` into `http://example.com` and `forceHttps` turns `http://example.com:80` into `https://example.com`. A port that is not a default for either scheme is kept.
 
 ```js
 normalizeUrl('http://sindresorhus.com');
@@ -277,8 +262,7 @@ normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
 Type: `Array<RegExp | string>`\
 Default: `undefined`
 
-Keeps only query parameters that matches any of the provided strings or regexes. The match is against the percent-decoded key, the same as `removeQueryParameters`. An empty array
-matches nothing, so it removes every parameter, the same as the `true` of `removeQueryParameters`.
+Keeps only query parameters that matches any of the provided strings or regexes. The match is against the percent-decoded key, the same as `removeQueryParameters`. An empty array matches nothing, so it removes every parameter, the same as the `true` of `removeQueryParameters`.
 
 **Note:** It overrides the `removeQueryParameters` option.
 
@@ -298,12 +282,9 @@ Default: `true`
 
 Remove trailing slash.
 
-**Note:** the sole `/` of a root path is removed too, unless the `removeSingleSlash` option is set to
-`false` **and** the input wrote that slash itself.
+**Note:** the sole `/` of a root path is removed too, unless the `removeSingleSlash` option is set to `false` **and** the input wrote that slash itself.
 
-__Note:__ `removeSingleSlash: false` reads the trailing slash off the input as it was written, so a slash
-that belongs to a dot segment a URL parser resolves away still counts. `https://example.com/a/../` and
-`https://example.com/a/..` are the same URL, but only the first keeps the root slash.
+__Note:__ `removeSingleSlash: false` reads the trailing slash off the input as it was written, so a slash that belongs to a dot segment a URL parser resolves away still counts. `https://example.com/a/../` and `https://example.com/a/..` are the same URL, but only the first keeps the root slash.
 
 ```js
 normalizeUrl('http://sindresorhus.com/redirect/');
@@ -340,9 +321,7 @@ Removes the default directory index file from path that matches any of the provi
 
 When `true`, the regex `/^index\.[a-z]+$/` is used.
 
-__Note:__ removing the index leaves a trailing slash on what is left, whether or not the input wrote one,
-so `http://example.com/foo/index.html` becomes `http://example.com/foo/` and then `http://example.com/foo`.
-The `removeTrailingSlash` option decides whether that slash stays.
+__Note:__ removing the index leaves a trailing slash on what is left, whether or not the input wrote one, so `http://example.com/foo/index.html` becomes `http://example.com/foo/` and then `http://example.com/foo`. The `removeTrailingSlash` option decides whether that slash stays.
 
 Global and sticky regex flags are stripped.
 
@@ -378,8 +357,7 @@ Sorts the query parameters by key, in code unit order, so an uppercase letter so
 one and a digit before a letter. Parameters that share a key keep the order they were written in, since
 for a repeated key the order can be what the server reads.
 
-__Note:__ The option only changes the order. The parameters are still normalized, the same as when the
-option is on, so a space in a value is written as `+`, a space in a key as `%20`, and a lone `%` as `%25`.
+__Note:__ The option only changes the order. The parameters are still normalized, the same as when the option is on, so a space in a value is written as `+`, a space in a key as `%20`, and a lone `%` as `%25`.
 
 ```js
 normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {

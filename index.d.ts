@@ -14,27 +14,21 @@ export type Options = {
 
 	The protocols should be specified without `:`, though a trailing one is accepted however many there are, and the name is matched without regard to case.
 
-	__Note:__ Options that rewrite the path (`removePath`, `transformPath`, `removeDirectoryIndex`, and the
-	percent-decoding of the path) only apply when the path starts with a `/`, as in `sindre://host/a/b` and
-	`sindre:/a/b`. A URL whose path is opaque, such as `sindre:a/b`, has no segments for those options to work
-	on, and a URL parser does not let the library change it, so they are silently ignored for it.
+	__Note:__ Options that rewrite the path (`removePath`, `transformPath`, `removeDirectoryIndex`, and the percent-decoding of the path) only apply when the path starts with a `/`, as in `sindre://host/a/b` and `sindre:/a/b`. A URL whose path is opaque, such as `sindre:a/b`, has no segments for those options to work on, and a URL parser does not let the library change it, so they are silently ignored for it.
 
-	__Note:__ `transformPath` and `removeDirectoryIndex` rebuild the path from its components, which cannot
-	spell the two slashes of a protocol lookalike such as `sindre://host/a/s3://b/index.html`. One of them is
-	dropped for those two options, while the library keeps both everywhere else.
+	__Note:__ `transformPath` and `removeDirectoryIndex` rebuild the path from its components, which cannot spell the two slashes of a protocol lookalike such as `sindre://host/a/s3://b/index.html`. One of them is dropped for those two options, while the library keeps both everywhere else.
 
-	__Note:__ a duplicate slash in a path is removed whatever `removeTrailingSlash` says, since that option is
-	about a slash at the end of the path and not about the ones in the middle of it.
+	__Note:__ a duplicate slash in a path is removed whatever `removeTrailingSlash` says, since that option is about a slash at the end of the path and not about the ones in the middle of it.
 
 	@default undefined
 
 	@example
 	```
-	normalizeUrl('sindre://www.sorhus.com', {customProtocols: ['sindre']});
-	//=> 'sindre://sorhus.com'
+		normalizeUrl('sindre://www.sorhus.com', {customProtocols: ['sindre']});
+		//=> 'sindre://sorhus.com'
 
-	normalizeUrl('sindre://www.sorhus.com/foo/', {customProtocols: ['sindre']});
-	//=> 'sindre://sorhus.com/foo'
+		normalizeUrl('sindre://www.sorhus.com/foo/', {customProtocols: ['sindre']});
+		//=> 'sindre://sorhus.com/foo'
 	```
 	*/
 	readonly customProtocols?: readonly string[];
@@ -46,11 +40,11 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('//sindresorhus.com');
-	//=> 'http://sindresorhus.com'
+		normalizeUrl('//sindresorhus.com');
+		//=> 'http://sindresorhus.com'
 
-	normalizeUrl('//sindresorhus.com', {normalizeProtocol: false});
-	//=> '//sindresorhus.com'
+		normalizeUrl('//sindresorhus.com', {normalizeProtocol: false});
+		//=> '//sindresorhus.com'
 	```
 	*/
 	readonly normalizeProtocol?: boolean;
@@ -60,18 +54,15 @@ export type Options = {
 
 	@default false
 
-	__Note:__ changing the scheme drops the port that was the default one for the old scheme, so
-	`forceHttp` turns `https://example.com:443` into `http://example.com` and `forceHttps` turns
-	`http://example.com:80` into `https://example.com`. A port that is not a default for either scheme is
-	kept.
+	__Note:__ changing the scheme drops the port that was the default one for the old scheme, so `forceHttp` turns `https://example.com:443` into `http://example.com` and `forceHttps` turns `http://example.com:80` into `https://example.com`. A port that is not a default for either scheme is kept.
 
 	@example
 	```
-	normalizeUrl('https://sindresorhus.com');
-	//=> 'https://sindresorhus.com'
+		normalizeUrl('https://sindresorhus.com');
+		//=> 'https://sindresorhus.com'
 
-	normalizeUrl('https://sindresorhus.com', {forceHttp: true});
-	//=> 'http://sindresorhus.com'
+		normalizeUrl('https://sindresorhus.com', {forceHttp: true});
+		//=> 'http://sindresorhus.com'
 	```
 	*/
 	readonly forceHttp?: boolean;
@@ -83,18 +74,15 @@ export type Options = {
 
 	@default false
 
-	__Note:__ changing the scheme drops the port that was the default one for the old scheme, so
-	`forceHttp` turns `https://example.com:443` into `http://example.com` and `forceHttps` turns
-	`http://example.com:80` into `https://example.com`. A port that is not a default for either scheme is
-	kept.
+	__Note:__ changing the scheme drops the port that was the default one for the old scheme, so `forceHttp` turns `https://example.com:443` into `http://example.com` and `forceHttps` turns `http://example.com:80` into `https://example.com`. A port that is not a default for either scheme is kept.
 
 	@example
 	```
-	normalizeUrl('http://sindresorhus.com');
-	//=> 'http://sindresorhus.com'
+		normalizeUrl('http://sindresorhus.com');
+		//=> 'http://sindresorhus.com'
 
-	normalizeUrl('http://sindresorhus.com', {forceHttps: true});
-	//=> 'https://sindresorhus.com'
+		normalizeUrl('http://sindresorhus.com', {forceHttps: true});
+		//=> 'https://sindresorhus.com'
 	```
 	*/
 	readonly forceHttps?: boolean;
@@ -106,11 +94,11 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('https://user:password@sindresorhus.com');
-	//=> 'https://sindresorhus.com'
+		normalizeUrl('https://user:password@sindresorhus.com');
+		//=> 'https://sindresorhus.com'
 
-	normalizeUrl('https://user:password@sindresorhus.com', {stripAuthentication: false});
-	//=> 'https://user:password@sindresorhus.com'
+		normalizeUrl('https://user:password@sindresorhus.com', {stripAuthentication: false});
+		//=> 'https://user:password@sindresorhus.com'
 	```
 	*/
 	readonly stripAuthentication?: boolean;
@@ -122,11 +110,11 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('sindresorhus.com/about.html#contact');
-	//=> 'http://sindresorhus.com/about.html#contact'
+		normalizeUrl('sindresorhus.com/about.html#contact');
+		//=> 'http://sindresorhus.com/about.html#contact'
 
-	normalizeUrl('sindresorhus.com/about.html#contact', {stripHash: true});
-	//=> 'http://sindresorhus.com/about.html'
+		normalizeUrl('sindresorhus.com/about.html#contact', {stripHash: true});
+		//=> 'http://sindresorhus.com/about.html'
 	```
 	*/
 	readonly stripHash?: boolean;
@@ -142,11 +130,11 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('https://sindresorhus.com');
-	//=> 'https://sindresorhus.com'
+		normalizeUrl('https://sindresorhus.com');
+		//=> 'https://sindresorhus.com'
 
-	normalizeUrl('https://sindresorhus.com', {stripProtocol: true});
-	//=> 'sindresorhus.com'
+		normalizeUrl('https://sindresorhus.com', {stripProtocol: true});
+		//=> 'sindresorhus.com'
 	```
 	*/
 	readonly stripProtocol?: boolean;
@@ -160,17 +148,17 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('http://sindresorhus.com/about.html#:~:text=hello');
-	//=> 'http://sindresorhus.com/about.html'
+		normalizeUrl('http://sindresorhus.com/about.html#:~:text=hello');
+		//=> 'http://sindresorhus.com/about.html'
 
-	normalizeUrl('http://sindresorhus.com/about.html#section:~:text=hello');
-	//=> 'http://sindresorhus.com/about.html#section'
+		normalizeUrl('http://sindresorhus.com/about.html#section:~:text=hello');
+		//=> 'http://sindresorhus.com/about.html#section'
 
-	normalizeUrl('http://sindresorhus.com/about.html#:~:text=hello', {stripTextFragment: false});
-	//=> 'http://sindresorhus.com/about.html#:~:text=hello'
+		normalizeUrl('http://sindresorhus.com/about.html#:~:text=hello', {stripTextFragment: false});
+		//=> 'http://sindresorhus.com/about.html#:~:text=hello'
 
-	normalizeUrl('http://sindresorhus.com/about.html#section:~:text=hello', {stripTextFragment: false});
-	//=> 'http://sindresorhus.com/about.html#section:~:text=hello'
+		normalizeUrl('http://sindresorhus.com/about.html#section:~:text=hello', {stripTextFragment: false});
+		//=> 'http://sindresorhus.com/about.html#section:~:text=hello'
 	```
 	*/
 	readonly stripTextFragment?: boolean;
@@ -187,11 +175,11 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('http://www.sindresorhus.com');
-	//=> 'http://sindresorhus.com'
+		normalizeUrl('http://www.sindresorhus.com');
+		//=> 'http://sindresorhus.com'
 
-	normalizeUrl('http://www.sindresorhus.com', {stripWWW: false});
-	//=> 'http://www.sindresorhus.com'
+		normalizeUrl('http://www.sindresorhus.com', {stripWWW: false});
+		//=> 'http://www.sindresorhus.com'
 	```
 	*/
 	readonly stripWWW?: boolean;
@@ -205,28 +193,28 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
-		removeQueryParameters: ['ref']
-	});
-	//=> 'http://sindresorhus.com/?foo=bar'
+		normalizeUrl('www.sindresorhus.com?foo=bar&ref=test_ref', {
+			removeQueryParameters: ['ref']
+		});
+		//=> 'http://sindresorhus.com/?foo=bar'
 	```
 
 	If a boolean is provided, `true` will remove all the query parameters.
 
 	```
-	normalizeUrl('www.sindresorhus.com?foo=bar', {
-		removeQueryParameters: true
-	});
-	//=> 'http://sindresorhus.com'
+		normalizeUrl('www.sindresorhus.com?foo=bar', {
+			removeQueryParameters: true
+		});
+		//=> 'http://sindresorhus.com'
 	```
 
 	`false` will not remove any query parameter.
 
 	```
-	normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
-		removeQueryParameters: false
-	});
-	//=> 'http://sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test'
+		normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
+			removeQueryParameters: false
+		});
+		//=> 'http://sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test'
 	```
 	*/
 	readonly removeQueryParameters?: ReadonlyArray<RegExp | string> | boolean;
@@ -242,10 +230,10 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('https://sindresorhus.com?foo=bar&ref=unicorn', {
-		keepQueryParameters: ['ref']
-	});
-	//=> 'https://sindresorhus.com/?ref=unicorn'
+		normalizeUrl('https://sindresorhus.com?foo=bar&ref=unicorn', {
+			keepQueryParameters: ['ref']
+		});
+		//=> 'https://sindresorhus.com/?ref=unicorn'
 	```
 	*/
 	readonly keepQueryParameters?: ReadonlyArray<RegExp | string>;
@@ -259,14 +247,14 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('http://sindresorhus.com/redirect/');
-	//=> 'http://sindresorhus.com/redirect'
+		normalizeUrl('http://sindresorhus.com/redirect/');
+		//=> 'http://sindresorhus.com/redirect'
 
-	normalizeUrl('http://sindresorhus.com/redirect/', {removeTrailingSlash: false});
-	//=> 'http://sindresorhus.com/redirect/'
+		normalizeUrl('http://sindresorhus.com/redirect/', {removeTrailingSlash: false});
+		//=> 'http://sindresorhus.com/redirect/'
 
-	normalizeUrl('http://sindresorhus.com/', {removeTrailingSlash: false});
-	//=> 'http://sindresorhus.com'
+		normalizeUrl('http://sindresorhus.com/', {removeTrailingSlash: false});
+		//=> 'http://sindresorhus.com'
 	```
 	*/
 	readonly removeTrailingSlash?: boolean;
@@ -278,11 +266,11 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('https://sindresorhus.com/');
-	//=> 'https://sindresorhus.com'
+		normalizeUrl('https://sindresorhus.com/');
+		//=> 'https://sindresorhus.com'
 
-	normalizeUrl('https://sindresorhus.com/', {removeSingleSlash: false});
-	//=> 'https://sindresorhus.com/'
+		normalizeUrl('https://sindresorhus.com/', {removeSingleSlash: false});
+		//=> 'https://sindresorhus.com/'
 	```
 	*/
 	readonly removeSingleSlash?: boolean;
@@ -298,10 +286,10 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('www.sindresorhus.com/foo/default.php', {
-		removeDirectoryIndex: [/^default\.[a-z]+$/]
-	});
-	//=> 'http://sindresorhus.com/foo'
+		normalizeUrl('www.sindresorhus.com/foo/default.php', {
+			removeDirectoryIndex: [/^default\.[a-z]+$/]
+		});
+		//=> 'http://sindresorhus.com/foo'
 	```
 	*/
 	readonly removeDirectoryIndex?: boolean | ReadonlyArray<RegExp | string>;
@@ -315,10 +303,10 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('sindresorhus.com:123', {
-		removeExplicitPort: true
-	});
-	//=> 'http://sindresorhus.com'
+		normalizeUrl('sindresorhus.com:123', {
+			removeExplicitPort: true
+		});
+		//=> 'http://sindresorhus.com'
 	```
 	*/
 	readonly removeExplicitPort?: boolean;
@@ -328,17 +316,16 @@ export type Options = {
 	one and a digit before a letter. Parameters that share a key keep the order they were written in, since
 	for a repeated key the order can be what the server reads.
 
-	__Note:__ The option only changes the order. The parameters are still normalized, the same as when the
-	option is on, so a space in a value is written as `+`, a space in a key as `%20`, and a lone `%` as `%25`.
+	__Note:__ The option only changes the order. The parameters are still normalized, the same as when the option is on, so a space in a value is written as `+`, a space in a key as `%20`, and a lone `%` as `%25`.
 
 	@default true
 
 	@example
 	```
-	normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {
-		sortQueryParameters: false
-	});
-	//=> 'http://sindresorhus.com/?b=two&a=one&c=three'
+		normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {
+			sortQueryParameters: false
+		});
+		//=> 'http://sindresorhus.com/?b=two&a=one&c=three'
 	```
 	*/
 	readonly sortQueryParameters?: boolean;
@@ -346,9 +333,7 @@ export type Options = {
 	/**
 	Controls how query parameters with empty values are formatted.
 
-	- `'preserve'` - Keep the original format (`?key` stays `?key`, `?key=` stays `?key=`). If the same key appears with both formats (`?a&a=`), all instances will use the format without `=`.
-	- `'always'` - Always include `=` for empty values (`?key` becomes `?key=`)
-	- `'never'` - Never include `=` for empty values (`?key=` becomes `?key`)
+	- `'preserve'` - Keep the original format (`?key` stays `?key`, `?key=` stays `?key=`). If the same key appears with both formats (`?a&a=`), all instances will use the format without `=`. - `'always'` - Always include `=` for empty values (`?key` becomes `?key=`) - `'never'` - Never include `=` for empty values (`?key=` becomes `?key`)
 
 	A value outside the three behaves as `'preserve'`.
 
@@ -356,11 +341,11 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('www.sindresorhus.com?a&b=', {emptyQueryValue: 'always'});
-	//=> 'http://sindresorhus.com/?a=&b='
+		normalizeUrl('www.sindresorhus.com?a&b=', {emptyQueryValue: 'always'});
+		//=> 'http://sindresorhus.com/?a=&b='
 
-	normalizeUrl('www.sindresorhus.com?a&b=', {emptyQueryValue: 'never'});
-	//=> 'http://sindresorhus.com/?a&b'
+		normalizeUrl('www.sindresorhus.com?a&b=', {emptyQueryValue: 'never'});
+		//=> 'http://sindresorhus.com/?a&b'
 	```
 	*/
 	readonly emptyQueryValue?: 'preserve' | 'always' | 'never';
@@ -372,10 +357,10 @@ export type Options = {
 
 	@example
 	```
-	normalizeUrl('https://example.com/path/to/page', {
-		removePath: true
-	});
-	//=> 'https://example.com'
+		normalizeUrl('https://example.com/path/to/page', {
+			removePath: true
+		});
+		//=> 'https://example.com'
 	```
 	*/
 	readonly removePath?: boolean;
@@ -389,17 +374,17 @@ export type Options = {
 
 	@example
 	```
-	// Keep only the first path component
-	normalizeUrl('https://example.com/api/v1/users', {
-		transformPath: (pathComponents) => pathComponents.slice(0, 1)
-	});
-	//=> 'https://example.com/api'
+		// Keep only the first path component
+		normalizeUrl('https://example.com/api/v1/users', {
+			transformPath: (pathComponents) => pathComponents.slice(0, 1)
+		});
+		//=> 'https://example.com/api'
 
-	// Remove specific components
-	normalizeUrl('https://example.com/admin/users', {
-		transformPath: (pathComponents) => pathComponents.filter(c => c !== 'admin')
-	});
-	//=> 'https://example.com/users'
+		// Remove specific components
+		normalizeUrl('https://example.com/admin/users', {
+			transformPath: (pathComponents) => pathComponents.filter(c => c !== 'admin')
+		});
+		//=> 'https://example.com/users'
 	```
 	*/
 	readonly transformPath?: ((pathComponents: string[]) => readonly string[] | undefined) | false;
