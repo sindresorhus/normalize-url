@@ -7,8 +7,6 @@ Useful when you need to display, store, deduplicate, sort, compare, etc, URLs.
 > [!NOTE]
 > This package does **not** do URL sanitization. [Garbage in, garbage out.](https://en.wikipedia.org/wiki/Garbage_in,_garbage_out) If you use this in a server context and accept URLs as user input, it's up to you to protect against invalid URLs, [path traversal attacks](https://owasp.org/www-community/attacks/Path_Traversal), etc.
 
-Tab, carriage return, and line feed are removed from anywhere, the way a URL parser removes them. Whitespace and C0 controls are removed from the ends, including characters like U+00A0 and a byte order mark that are often left over from copying a URL. Other whitespace inside the URL is part of it.
-
 ## Install
 
 ```sh
@@ -36,6 +34,16 @@ URLs with custom protocols are not normalized and just passed through by default
 Human-friendly URLs with basic auth (for example, `user:password@sindresorhus.com`) are not handled because basic auth conflicts with custom protocols. [Basic auth URLs are also deprecated.](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#access_using_credentials_in_the_url)
 
 __Note:__ a scheme with a dot in it followed by `//` is a custom protocol, so it is passed through as well and nothing in the URL is normalized. `example.com/path` is a host and gets `http:` prepended, but `example.com://host/path` is a scheme named `example.com` and is left alone. Use the [`customProtocols`](#customprotocols) option to normalize one on purpose.
+
+Whatever the options, a normalized URL also gets these changes:
+
+- Tab, carriage return, and line feed are removed from anywhere, as a URL parser does. Whitespace and C0 controls are removed from the ends, including U+00A0 and a byte order mark, which are often left over from copying a URL. Other whitespace inside the URL is kept, and escaped where a URL parser escapes it.
+- A URL parser lowercases the protocol. For a built-in protocol, it also lowercases the host, converts an internationalized host to Punycode, resolves `.` and `..` path segments, and removes a default port.
+- Trailing dots are removed from a domain host, unless that changes the name: `159.189.213..` keeps them, since `159.189.213` is the IPv4 address `159.189.0.213`. The host of a custom protocol is opaque, so its dots are kept.
+- Duplicate slashes in the path are removed, except the two of a protocol-like segment such as `/https://`.
+- Percent escapes are uppercased (`%2f` → `%2F`), except in the media type of a data URL, where percent-looking text is literal MIME content. Escapes of unreserved characters (letters, digits, `-`, `.`, `_`, `~`) are decoded (`%7E` → `~`), except in a fragment, the media type of a data URL, the host of a custom protocol, and a path that does not start with `/`. Fragment escapes stay encoded so they cannot become text directives. The path and the query also decode other escapes where the character means the same unescaped, as in `%5B` → `[`. Escapes that would change the structure, like `%2F`, `%3F`, `%23`, and `%26`, stay escaped, so `%2F` and `/` stay different.
+- The query is written the way `URLSearchParams` writes it: a space in a value is `+`, a space in a key is `%20`, a `?` is `%3F`, and a `%` that starts no escape is `%25`. Empty parameters, as in `?a=1&&b=2`, are removed.
+- A data URL gets its MIME type and `charset` value lowercased. `text/plain` is removed when nothing follows it, and so is `charset=us-ascii` on `text/plain`. Quotes are removed from a parameter value that does not need them, and whitespace is removed from the ends of base64 data.
 
 #### url
 
@@ -69,8 +77,6 @@ __Note:__ Options that rewrite the path (`removePath`, `transformPath`, `removeD
 
 __Note:__ `transformPath` and `removeDirectoryIndex` rebuild the path from its components, which cannot spell the two slashes of a protocol lookalike such as `sindre://host/a/s3://b/index.html`. One of them is dropped for those two options, while the library keeps both everywhere else.
 
-__Note:__ a duplicate slash in a path is removed whatever `removeTrailingSlash` says, since that option is about a slash at the end of the path and not about the ones in the middle of it.
-
 ```js
 normalizeUrl('sindre://www.sorhus.com', {customProtocols: ['sindre']});
 //=> 'sindre://sorhus.com'
@@ -85,6 +91,8 @@ Type: `boolean`\
 Default: `true`
 
 Prepend `defaultProtocol` to the URL if it's protocol-relative.
+
+With `false`, a protocol-relative URL stays protocol-relative, even with `defaultProtocol` or `forceHttps` set.
 
 ```js
 normalizeUrl('//sindresorhus.com');
@@ -209,8 +217,6 @@ Default: `true`
 
 Remove `www.` from the URL.
 
-__Note:__ Trailing dots on a domain hostname are always removed, whatever this option says, unless doing so would change the name: `159.189.213..` keeps them, since `159.189.213` is the IPv4 address `159.189.0.213`. The host of a custom protocol is opaque, so a dot there is part of the name and is kept.
-
 __Note:__ A `www.` that is not followed by a proper domain is left alone, so `www.com` and `www.a.b` are not changed.
 
 ```js
@@ -302,6 +308,8 @@ Default: `true`
 
 Remove a sole `/` pathname in the output. This option is independent of `removeTrailingSlash`.
 
+The `/` is kept when a query or a hash follows it, as in `https://sindresorhus.com/?a=1`.
+
 ```js
 normalizeUrl('https://sindresorhus.com/');
 //=> 'https://sindresorhus.com'
@@ -353,7 +361,7 @@ Default: `true`
 
 Sorts the query parameters by key, in code unit order, so an uppercase letter sorts before a lowercase one and a digit before a letter. Parameters that share a key keep the order they were written in, since for a repeated key the order can be what the server reads. The library does that sort itself rather than through `URLSearchParams#sort`, which the URL standard has order by name alone without saying what happens to two names that are equal.
 
-__Note:__ The option only changes the order. The parameters are still normalized, the same as when the option is on, so a space in a value is written as `+`, a space in a key as `%20`, and a lone `%` as `%25`.
+__Note:__ The option only changes the order. The query is written the same way either way (see [`normalizeUrl`](#normalizeurlurl-options)).
 
 ```js
 normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {

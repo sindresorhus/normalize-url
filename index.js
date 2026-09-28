@@ -549,7 +549,7 @@ export default function normalizeUrl(urlString, options) {
 			})
 			.join('/');
 
-		// Decoding leaves the escapes of reserved characters alone, so their hexadecimal digits are canonicalized here.
+		// `decodeURI` leaves the escapes of `;/?:@&=+$,#` alone, so their hexadecimal digits are canonicalized here. Other reserved escapes, like `%5B`, are decoded, since the path reads them the same.
 		urlObject.pathname = canonicalizePercentEscapes(urlObject.pathname);
 	}
 
@@ -652,7 +652,7 @@ export default function normalizeUrl(urlString, options) {
 		});
 	}
 
-	// The parameters are written back through `URLSearchParams` whether or not they are sorted, which encodes them, so they are decoded again, leaving the protected escapes alone.
+	// The parameters are always written back through `URLSearchParams`, so the spelling of the query does not depend on whether it was sorted or a parameter was removed. That encodes them, so they are decoded again, leaving the protected escapes alone.
 	urlObject.search = new URLSearchParams(searchParameters).toString();
 	urlObject.search = decodeURIComponent(urlObject.search.replaceAll(protectedSearchPercentEncodingsPattern, doubleEncodePercentSign));
 
