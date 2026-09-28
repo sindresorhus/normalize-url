@@ -25,8 +25,8 @@ const percentEscapeRegex = /%[a-f\d]{2}/gi;
 
 const canonicalizePercentEscapes = text => lowercasePercentEscapeRegex.test(text) ? text.replaceAll(percentEscapeRegex, percentEscape => percentEscape.toUpperCase()) : text;
 
-// A URL parser strips only C0 controls and spaces from the ends. `String#trim` also strips characters like U+00A0, which a parser keeps.
-const isC0ControlOrSpace = characterCode => characterCode <= 0x20;
+// A URL parser strips C0 controls and spaces from the ends. Other whitespace, like U+00A0 or a byte order mark, is stripped too, since at the ends of a URL it is almost always left over from copying it.
+const isC0ControlOrWhitespace = characterCode => characterCode <= 0x20 || /\s/.test(String.fromCodePoint(characterCode));
 
 /*
 A MIME type is trimmed of HTTP whitespace, but a URL parser has already removed tab, CR, and LF and escaped the other C0 controls, so a space is the only one left. Trimming anything else would rename a parameter or expose a bare `base64` marker.
@@ -61,9 +61,9 @@ const stripLeadingWhitespace = (text, isWhitespace) => {
 
 const stripSurrounding = (text, isWhitespace) => stripTrailingWhitespace(stripLeadingWhitespace(text, isWhitespace), isWhitespace);
 
-// A URL parser strips trailing C0 controls and spaces, so text that ends a URL has them escaped to survive the next pass.
-const escapeTrailingC0ControlOrSpace = text => {
-	const unescaped = stripTrailingWhitespace(text, isC0ControlOrSpace);
+// The input is stripped of trailing C0 controls and whitespace, so text that ends a URL has them escaped to survive the next pass.
+const escapeTrailingC0ControlOrWhitespace = text => {
+	const unescaped = stripTrailingWhitespace(text, isC0ControlOrWhitespace);
 	return unescaped + encodeURIComponent(text.slice(unescaped.length));
 };
 
@@ -414,19 +414,19 @@ const normalizeDataURL = (urlString, {stripHash, stripTextFragment}) => {
 	/*
 	The fragment ends the URL, so its trailing whitespace is escaped, or the input trim of the next pass would remove it. An empty fragment drops the `#`, since a bare `#` is not a fixed point either.
 	*/
-	const escapedHash = escapeTrailingC0ControlOrSpace(canonicalizePercentEscapes(normalizedHash));
+	const escapedHash = escapeTrailingC0ControlOrWhitespace(canonicalizePercentEscapes(normalizedHash));
 	const hashPart = escapedHash ? `#${escapedHash}` : '';
 
 	/*
-	The data is the path of the data URL, so its unreserved escapes are decoded the same way. Base64 data is stripped of the ASCII whitespace a decoder ignores. Any other C0 control left at its end, like U+001F, is data, so it is escaped. Other data is not stripped, since its whitespace is part of the payload, but it is escaped at the end of the URL.
+	The data is the path of the data URL, so its unreserved escapes are decoded the same way. Base64 data is stripped at its ends of the ASCII whitespace a decoder ignores, and whitespace inside it is kept. Any other C0 control left at its end, like U+001F, is data, so it is escaped. Other data is not stripped, since its whitespace is part of the payload, but it is escaped at the end of the URL.
 	*/
 	const normalizedData = canonicalizePercentEscapes(decodeUnreservedPercentEscapes(isBase64
-		? escapeTrailingC0ControlOrSpace(stripSurrounding(data, isAsciiWhitespace))
-		: (hashPart ? data : escapeTrailingC0ControlOrSpace(data))));
+		? escapeTrailingC0ControlOrWhitespace(stripSurrounding(data, isAsciiWhitespace))
+		: (hashPart ? data : escapeTrailingC0ControlOrWhitespace(data))));
 
-	// The media type ends the URL when there is no comma, so its trailing C0 controls and spaces are escaped too.
+	// The media type ends the URL when there is no comma, so only then are its trailing C0 controls and whitespace escaped. Before a comma they are part of a parameter value.
 	const joinedType = normalizedMediaType.join(';');
-	const normalizedType = separatorIndex === -1 ? escapeTrailingC0ControlOrSpace(joinedType) : joinedType;
+	const normalizedType = separatorIndex === -1 ? escapeTrailingC0ControlOrWhitespace(joinedType) : joinedType;
 
 	/*
 	Trimming a trailing space or dropping an empty part can leave a media type that ends in `;base64` when the input did not, which a browser reads as the marker. A trailing `;` keeps it from being one.
@@ -474,8 +474,8 @@ export default function normalizeUrl(urlString, options) {
 		throw new Error('The `forceHttp` and `forceHttps` options cannot be used together');
 	}
 
-	// A URL parser removes tab, CR, and LF from anywhere, and C0 controls and spaces from the ends. Doing it up front keeps the detection below in sync with it.
-	urlString = stripSurrounding(urlString.replaceAll(/[\t\r\n]/g, ''), isC0ControlOrSpace);
+	// A URL parser removes tab, CR, and LF from anywhere, and C0 controls and spaces from the ends. Doing it up front, together with other whitespace at the ends (see `isC0ControlOrWhitespace`), keeps the detection below in sync with it.
+	urlString = stripSurrounding(urlString.replaceAll(/[\t\r\n]/g, ''), isC0ControlOrWhitespace);
 
 	// Data URL
 	if (/^data:/i.test(urlString)) {
@@ -701,7 +701,7 @@ export default function normalizeUrl(urlString, options) {
 	if (urlObject.pathname !== '' && !urlObject.pathname.startsWith('/')) {
 		const path = removeDuplicatePathSlashes(urlObject.pathname);
 		const normalizedPath = options.removeTrailingSlash && !pathnameEndsWithProtocolRegex.test(path) ? path.replace(/\/$/, '') : path;
-		const encodedPath = escapeTrailingC0ControlOrSpace(canonicalizePercentEscapes(normalizedPath));
+		const encodedPath = escapeTrailingC0ControlOrWhitespace(canonicalizePercentEscapes(normalizedPath));
 		urlString = new URL(`${urlObject.protocol}${encodedPath}${urlObject.search}${urlObject.hash}`).href;
 	}
 

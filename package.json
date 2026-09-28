@@ -47,7 +47,7 @@
 		"xo": "^1.2.3"
 	},
 	"ava": {
-		"timeout": "5m"
+		"timeout": "1m"
 	},
 	"c8": {
 		"reporter": [

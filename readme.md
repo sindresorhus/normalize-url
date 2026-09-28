@@ -7,7 +7,7 @@ Useful when you need to display, store, deduplicate, sort, compare, etc, URLs.
 > [!NOTE]
 > This package does **not** do URL sanitization. [Garbage in, garbage out.](https://en.wikipedia.org/wiki/Garbage_in,_garbage_out) If you use this in a server context and accept URLs as user input, it's up to you to protect against invalid URLs, [path traversal attacks](https://owasp.org/www-community/attacks/Path_Traversal), etc.
 
-Whitespace is removed the way a URL parser removes it: tab, carriage return, and line feed from anywhere, and C0 controls and spaces from the ends. Other whitespace, such as U+00A0, is part of the URL.
+Tab, carriage return, and line feed are removed from anywhere, the way a URL parser removes them. Whitespace and C0 controls are removed from the ends, including characters like U+00A0 and a byte order mark that are often left over from copying a URL. Other whitespace inside the URL is part of it.
 
 ## Install
 

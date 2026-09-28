@@ -502,7 +502,7 @@ test('a form feed in a data URL media type is not whitespace the marker can be s
 	}
 
 	// And the bytes a browser decodes are the same before and after, which is the whole point.
-	const inputs = ['data:;base64\f,SGk=', 'data:text/plain;base64\f,SGVsbG8=', 'data:image/png;a=\fx,QUJD'];
+	const inputs = ['data:;base64\f,SGk=', 'data:text/plain;base64\f,SGVsbG8=', 'data:image/png;a=\fx,QUJD', 'data:text/plain;a= \u00A0,QUJD', 'data:text/plain;a= \u001F,QUJD'];
 	for (const input of inputs) {
 		// eslint-disable-next-line no-await-in-loop -- One at a time, so a failure names its input.
 		t.deepEqual(await readDataURL(normalizeUrl(input)), await readDataURL(input), `the bytes of ${input}`);
@@ -570,31 +570,31 @@ test('a data URL media type is trimmed of the whitespace a parser leaves in it',
 	t.is(normalizeUrl('data:image/png;a =x,QUJD'), 'data:image/png;a =x,QUJD');
 });
 
-test('a space of another kind is a character of the URL', t => {
+test('a space of another kind is a character of the URL, except at the ends', t => {
 	/*
-	Only the whitespace a URL parser removes is stripped. Anything else is content, escaped or kept as written.
+	Inside the URL, whitespace a URL parser does not remove is content, escaped or kept as written. A zero width space is not whitespace, so it is content at the ends too.
 	*/
 	for (const character of ['\u00A0', '\uFEFF', '\u200B', '\u3000']) {
 		t.is(normalizeUrl(`http://sindresorhus.com/a${character}b`), `http://sindresorhus.com/a${encodeURIComponent(character)}b`, `${character}`);
-		t.is(normalizeUrl(`http://sindresorhus.com/?a=${character}`), `http://sindresorhus.com/?a=${encodeURIComponent(character)}`, `${character}`);
-		t.is(normalizeUrl(`http://sindresorhus.com/#${character}`), `http://sindresorhus.com/#${encodeURIComponent(character)}`, `${character}`);
-		t.is(normalizeUrl(`data:text/plain,${character}`), `data:,${character}`, `${character}`);
+		t.is(normalizeUrl(`http://sindresorhus.com/?a=${character}b`), `http://sindresorhus.com/?a=${encodeURIComponent(character)}b`, `${character}`);
+		t.is(normalizeUrl(`http://sindresorhus.com/#${character}b`), `http://sindresorhus.com/#${encodeURIComponent(character)}b`, `${character}`);
+		t.is(normalizeUrl(`data:text/plain,${character}b`), `data:,${character}b`, `${character}`);
 		t.is(normalizeUrl('  http://sindresorhus.com/a  '), 'http://sindresorhus.com/a', 'and a real space still goes');
 	}
 
-	// At the very front the character is one the parser cannot start a URL with, so the library rejects it as the parser does.
-	t.throws(() => {
-		normalizeUrl('\u00A0http://sindresorhus.com/a');
-	}, {message: /^Invalid URL/});
-	t.throws(() => {
-		normalizeUrl('\u00A0sindresorhus.com/a');
-	}, {message: /^Invalid URL/});
-
 	/*
-	The parser absorbs a format character, so the output is of the input prefix. A limitation of not sanitizing, not a normalisation.
+	At the ends it is almost always left over from copying the URL, as `String#trim` sees it, so it goes. Kept, it would make the URL invalid at the front, or a different URL at the end.
 	*/
-	t.is(normalizeUrl('\uFEFFhttp://sindresorhus.com/a'), 'http://http/sindresorhus.com/a');
-	t.is(normalizeUrl('\uFEFFsindresorhus.com/a'), 'http://sindresorhus.com/a');
+	for (const character of ['\u00A0', '\uFEFF', '\u2028', '\u3000']) {
+		t.is(normalizeUrl(`${character}http://sindresorhus.com/a`), 'http://sindresorhus.com/a', `${character}`);
+		t.is(normalizeUrl(`${character}sindresorhus.com/a`), 'http://sindresorhus.com/a', `${character}`);
+		t.is(normalizeUrl(`http://sindresorhus.com/a${character}`), 'http://sindresorhus.com/a', `${character}`);
+		t.is(normalizeUrl(`sindresorhus.com${character}`), 'http://sindresorhus.com', `${character}`);
+		t.is(normalizeUrl(`http://sindresorhus.com/?a=1${character}`), 'http://sindresorhus.com/?a=1', `${character}`);
+		t.is(normalizeUrl(`${character} sindre://sindresorhus.com/a ${character}`), 'sindre://sindresorhus.com/a', `${character}`);
+	}
+
+	t.is(normalizeUrl('http://sindresorhus.com/a\u200B'), 'http://sindresorhus.com/a%E2%80%8B');
 });
 
 test('a dotted scheme with an authority is a custom protocol', t => {
@@ -1073,19 +1073,26 @@ test('sortQueryParameters option', t => {
 	t.is(normalizeUrl('http://sindresorhus.com/?a=/path', options1), normalizeUrl('http://sindresorhus.com/?a=/path', options2));
 });
 
-test('only the whitespace a URL parser strips is stripped', t => {
+test('whitespace other than tab, CR and LF is stripped only from the ends', t => {
 	/*
-	A URL parser strips only leading and trailing C0 controls and spaces and escapes other whitespace, so dropping that changes the URL.
+	A URL parser escapes whitespace that is not at the ends, so dropping that would change the URL. At the ends it goes, the same as `String#trim` takes it.
 	*/
 	const characters = ['\u00A0', '\u1680', '\u2000', '\u2028', '\u2029', '\u202F', '\u205F', '\u3000', '\uFEFF'];
 	for (const character of characters) {
-		t.is(normalizeUrl(`http://example.com/${character}`), `http://example.com/${encodeURIComponent(character)}`, `${character}`);
+		t.is(normalizeUrl(`http://example.com/${character}`), 'http://example.com', `${character}`);
+		t.is(normalizeUrl(`http://example.com/${character}/`), `http://example.com/${encodeURIComponent(character)}`, `${character}`);
 		t.is(normalizeUrl(`http://example.com/a${character}b`), `http://example.com/a${encodeURIComponent(character)}b`, `${character}`);
-		t.is(normalizeUrl(`http://example.com/?a=${character}`, {removeQueryParameters: false}), `http://example.com/?a=${encodeURIComponent(character)}`, `${character}`);
-		t.is(normalizeUrl(`http://example.com/#${character}`), `http://example.com/#${encodeURIComponent(character)}`, `${character}`);
+		t.is(normalizeUrl(`http://example.com/?a=${character}&b`, {removeQueryParameters: false}), `http://example.com/?a=${encodeURIComponent(character)}&b`, `${character}`);
+		t.is(normalizeUrl(`http://example.com/#${character}b`), `http://example.com/#${encodeURIComponent(character)}b`, `${character}`);
 		// The data of a data URL is written as it stands, so a kept character is not percent-encoded.
-		t.is(normalizeUrl(`data:text/plain,${character}`), `data:,${character}`, `${character}`);
-		t.is(normalizeUrl(`sindre://example.com/${character}`, {customProtocols: ['sindre']}), `sindre://example.com/${encodeURIComponent(character)}`, `${character}`);
+		t.is(normalizeUrl(`data:text/plain,${character}b`), `data:,${character}b`, `${character}`);
+		t.is(normalizeUrl(`sindre://example.com/${character}b`, {customProtocols: ['sindre']}), `sindre://example.com/${encodeURIComponent(character)}b`, `${character}`);
+		// A data URL whose text would otherwise end in it escapes it, so the next pass does not strip it.
+		t.is(normalizeUrl(`data:,a${character}#b`, {stripHash: true}), `data:,a${encodeURIComponent(character)}`, `${character}`);
+		t.is(normalizeUrl(`data:;base64,QUJD${character}#b`, {stripHash: true}), `data:;base64,QUJD${encodeURIComponent(character)}`, `${character}`);
+		t.is(normalizeUrl(`data:text/plain;a=b${character};`), `data:text/plain;a=b${encodeURIComponent(character)}`, `${character}`);
+		// Before a comma the media type does not end the URL, so the character stays part of the value.
+		t.is(normalizeUrl(`data:text/plain;a=b${character},z`), `data:text/plain;a=b${character},z`, `${character}`);
 	}
 
 	/*
@@ -1366,14 +1373,14 @@ test('data URL', t => {
 	*/
 	t.is(normalizeUrl('data:,a# :~:text=x'), 'data:,a#%20');
 	t.is(normalizeUrl('data:,a # :~:text=x'), 'data:,a #%20');
-	t.is(normalizeUrl('data:,a#\u00A0:~:text=x'), 'data:,a#\u00A0');
+	t.is(normalizeUrl('data:,a#\u00A0:~:text=x'), 'data:,a#%C2%A0');
 	t.is(normalizeUrl('data:,a# :~:text=x', {stripTextFragment: false}), 'data:,a# :~:text=x');
 	t.is(normalizeUrl('data:,a# '), 'data:,a');
 
 	/*
-	A regex `.` does not match a line separator, but the parser accepts one, so normalizing must not throw. Alone it is still a fragment, as only ASCII whitespace is stripped.
+	A regex `.` does not match a line separator, but the parser accepts one, so normalizing must not throw. Alone at the end it is stripped, like any whitespace at the ends.
 	*/
-	t.is(normalizeUrl('data:,x#\u2028'), 'data:,x#\u2028');
+	t.is(normalizeUrl('data:,x#\u2028'), 'data:,x');
 	t.is(normalizeUrl('data:,x#a\u2028b'), 'data:,x#a\u2028b');
 	t.is(normalizeUrl('data:,x#a\u2029b'), 'data:,x#a\u2029b');
 	t.is(normalizeUrl('data:,x#a\u2028b', {stripHash: true}), 'data:,x');
@@ -1546,18 +1553,15 @@ test('does not have quadratic performance for runs of whitespace or escapes', t 
 		length => `data:,${' '.repeat(length)}b#${' '.repeat(length)}c`,
 		length => `http://example.com/a/${'%20'.repeat(length)}b`,
 		length => `http://example.com/a/${'x'.repeat(length)}/../b`,
+		length => `${'\u00A0'.repeat(length)}http://example.com/a${'\u00A0'.repeat(length)}`,
+		length => `http://example.com/a${'\u00A0'.repeat(length)}b`,
 	];
 
 	for (const build of runs) {
 		const url = build(50_000);
-		let difference = Infinity;
-		for (let run = 0; run < 3; run++) {
+		const difference = timeBestOfThree(() => {
 			normalizeUrl(url);
-			const start = Date.now();
-			normalizeUrl(url);
-			difference = Math.min(difference, Date.now() - start);
-		}
-
+		});
 		t.true(difference < 1000, `${url.slice(0, 40)} (${url.length} bytes) took ${difference}ms`);
 	}
 });
@@ -2049,6 +2053,8 @@ test('sortQueryParameters should preserve encoded reserved characters in query v
 	/*
 	The token for an encoded reserved character must not collide with token-shaped text in the search, whichever way the option is set. `doubled` shares a `__` between two matches, which once hid that the next index was taken.
 	*/
+	// The inputs spell the library's internal token, so a rename must fail here rather than leave them testing nothing.
+	t.true(fs.readFileSync(new URL('index.js', import.meta.url), 'utf8').includes('\'__normalize_url_encoded_reserved__\''));
 	const doubled = '__normalize_url_encoded_reserved__0__normalize_url_encoded_reserved__1__';
 	for (const taken of ['', '0', '1', '9', '10', '007', '0__', '__', '2F__', '-1__', '0__0__', doubled]) {
 		const literal = `literal=__normalize_url_encoded_reserved__${taken}__`;
@@ -2333,10 +2339,8 @@ test('emptyQueryValue option', t => {
 	t.is(normalizeUrl('https://example.com?b=3&a=2&a=1'), 'https://example.com/?a=2&a=1&b=3');
 });
 
-/*
-A generated corpus for the property tests below. The seed is fixed, so a failure names a reproducible input.
-*/
-const buildCorpus = () => {
+// A small generator with a fixed seed, so a failure names a reproducible input.
+const createSeededRandom = () => {
 	let seed = 20_260_927;
 	const random = () => {
 		seed = ((seed * 1_103_515_245) + 12_345) % 2_147_483_648;
@@ -2344,14 +2348,13 @@ const buildCorpus = () => {
 	};
 
 	const pick = list => list[Math.floor(random() * list.length)];
-	const take = (list, count) => {
-		const result = [];
-		for (let index = 0; index < count; index++) {
-			result.push(pick(list));
-		}
+	const take = (list, count) => Array.from({length: count}, () => pick(list));
+	return {random, pick, take};
+};
 
-		return result;
-	};
+// A generated corpus for the property tests below.
+const buildCorpus = () => {
+	const {random, pick, take} = createSeededRandom();
 
 	const SCHEMES = ['http://', 'https://', 'HTTP://', '//', 'sindre://', 'a://', 'x.y://', 'file://'];
 	const HOSTS = ['sindresorhus.com',
@@ -2512,10 +2515,7 @@ const buildCorpus = () => {
 			continue;
 		}
 
-		const parts = [pick(SCHEMES)];
-		if (parts[0] !== '//') {
-			parts.push(pick(HOSTS));
-		}
+		const parts = [pick(SCHEMES), pick(HOSTS)];
 
 		parts.push('/', take(SEGMENTS, 1 + Math.floor(random() * 4)).join('/'));
 		if (random() < 0.5) {
@@ -2544,20 +2544,12 @@ test('the output is already the spelling a URL parser writes', t => {
 	An output that a parser would rewrite is not finished. Every custom protocol is named, since an unnamed one is returned as written.
 	*/
 	const named = ['s3', 'sindre', 'a'];
-
-	// A small generator with a fixed seed, so a failure names a reproducible input.
-	let seed = 20_260_927;
-	const random = () => {
-		seed = ((seed * 1_103_515_245) + 12_345) % 2_147_483_648;
-		return seed / 2_147_483_648;
-	};
-
-	const pick = list => list[Math.floor(random() * list.length)];
-	const take = (list, count) => Array.from({length: count}, () => pick(list));
+	const {random, pick, take} = createSeededRandom();
 
 	const build = () => {
 		const scheme = pick(['http://', 'https://', 'file://', '//', 's3://', 'sindre://', 'a://']);
-		const authority = pick(['x.com',
+		const authority = pick(['',
+			'x.com',
 			'www.x.com',
 			'X.COM',
 			'x.com.',
@@ -2622,8 +2614,7 @@ test('the output is already the spelling a URL parser writes', t => {
 			'?=',
 			'?a=%20']);
 		const hash = pick(['', '#h', '#a b', '#a#:~:text=x', '#:~:text=x', '#a:~:text=x', '#%2%45', '#%7E', '#é']);
-		const hasAuthority = !scheme.endsWith('://') && scheme !== '//';
-		return `${scheme}${hasAuthority ? authority : ''}/${path}${search}${hash}`;
+		return `${scheme}${authority}/${path}${search}${hash}`;
 	};
 
 	const optionSets = [{},
@@ -2811,16 +2802,19 @@ test('a search that spells the token base twice keeps its value', t => {
 	/*
 	The round trip prefix must not occur in the search, or part of the value becomes an escape that the next pass decodes.
 	*/
+	// The inputs spell the library's internal token, so a rename must fail here rather than leave them testing nothing.
+	t.true(fs.readFileSync(new URL('index.js', import.meta.url), 'utf8').includes('\'__normalize_url_encoded_reserved__\''));
 	const doubled = '__normalize_url_encoded_reserved__0__normalize_url_encoded_reserved__1__';
 	t.is(normalizeUrl(`https://example.com/?q=a%2Fb&k=${doubled}2F`), `https://example.com/?k=${doubled}2F&q=a%2Fb`);
 	t.is(normalizeUrl(`https://example.com/?q=a%2Fb&k=${doubled}2F`, {removeQueryParameters: false}), `https://example.com/?k=${doubled}2F&q=a%2Fb`);
 	t.is(normalizeUrl(`https://example.com/?${doubled}2F=1&q=a%2Fb`), `https://example.com/?${doubled}2F=1&q=a%2Fb`);
 
-	// Every byte value, since a fixed point has to hold for all of them.
+	// Every byte value, since the value has to come back as written for all of them.
 	for (let value = 0; value < 256; value++) {
 		const suffix = value.toString(16).toUpperCase().padStart(2, '0');
-		const url = `https://example.com/?q=a%2Fb&k=${doubled}${suffix}`;
-		t.is(normalizeUrl(url), normalizeUrl(normalizeUrl(url)), `byte 0x${suffix}`);
+		const output = normalizeUrl(`https://example.com/?q=a%2Fb&k=${doubled}${suffix}`);
+		t.is(output, `https://example.com/?k=${doubled}${suffix}&q=a%2Fb`, `byte 0x${suffix}`);
+		t.is(normalizeUrl(output), output, `byte 0x${suffix} is a fixed point`);
 	}
 });
 
@@ -2895,38 +2889,21 @@ test('a pair of options only changes what each of them documents', t => {
 		String.raw`http://sindresorhus.com\a`,
 	];
 
-	// The WHATWG percent-decode, so a malformed escape compares as a browser reads it.
-	const read = input => percentDecode(input);
-
 	const NAMES = Object.keys(VALUES);
 	let checked = 0;
 
-	for (const nameA of NAMES) {
-		for (const nameB of NAMES) {
-			if (nameA === nameB) {
-				continue;
-			}
-
+	// Each unordered pair once, since the order of two options does not matter.
+	for (const [indexA, nameA] of NAMES.entries()) {
+		for (const nameB of NAMES.slice(indexA + 1)) {
 			for (const valueA of VALUES[nameA]) {
-				// The two cannot be used together, which the library throws on by design.
-				if ((nameA === 'forceHttp' && valueA) || (nameA === 'forceHttps' && valueA)) {
-					continue;
-				}
-
 				for (const valueB of VALUES[nameB]) {
-					if ((nameB === 'forceHttp' && valueB) || (nameB === 'forceHttps' && valueB)) {
-						continue;
-					}
-
-					if (nameA === 'forceHttp' && valueA && nameB === 'forceHttps') {
-						continue;
-					}
-
-					if (nameB === 'forceHttp' && valueB && nameA === 'forceHttps' && valueA) {
-						continue;
-					}
-
 					const options = {[nameA]: valueA, [nameB]: valueB};
+
+					// The two cannot be used together, which the library throws on by design.
+					if (options.forceHttp && options.forceHttps) {
+						continue;
+					}
+
 					const allowed = new Set([...(PARTS[nameA] ?? []), ...(PARTS[nameB] ?? [])]);
 
 					for (const url of URLS) {
@@ -2959,11 +2936,11 @@ test('a pair of options only changes what each of them documents', t => {
 						}
 
 						if (!allowed.has('path')) {
-							t.is(read(after.pathname), read(before.pathname), `the path of ${label}`);
+							t.is(percentDecode(after.pathname), percentDecode(before.pathname), `the path of ${label}`);
 						}
 
 						if (!allowed.has('hash')) {
-							t.is(read(after.hash), read(before.hash), `the hash of ${label}`);
+							t.is(percentDecode(after.hash), percentDecode(before.hash), `the hash of ${label}`);
 						}
 
 						if (!allowed.has('query')) {
@@ -2980,7 +2957,7 @@ test('a pair of options only changes what each of them documents', t => {
 
 test('a data URL keeps the bytes it decodes to', async t => {
 	/*
-	`fetch` runs the browser `data:` URL processor, so it is the oracle. The body must survive byte for byte, and the media type may only lose a default `text/plain` or `charset` and have its `charset` lowercased.
+	`fetch` runs the browser `data:` URL processor, so it is the oracle. The body must survive byte for byte. The media type is not compared here, since the tests above cover its documented changes.
 	*/
 	const TYPES = [
 		'',
@@ -3147,7 +3124,7 @@ test('a text fragment strip reaches a line separator inside the fragment', t => 
 		t.is(normalizeUrl(`data:,a#:~:text=x${character}`), 'data:,a', 'at the end of the fragment');
 		t.is(normalizeUrl(`data:,a#:~:text=x${character}y${paragraphSeparator}z`), 'data:,a', 'both of them');
 		t.is(normalizeUrl(`data:text/html;a=${character}b#:~:text=x${character}y`), `data:text/html;a=${character}b`, 'after a media type');
-		t.is(normalizeUrl(`data:,a#${character}:~:text=x`), `data:,a#${character}`, 'before the delimiter');
+		t.is(normalizeUrl(`data:,a#${character}:~:text=x`), `data:,a#${encodeURIComponent(character)}`, 'before the delimiter');
 		// The directive reaches the end of the fragment, so a `#` after it goes with it.
 		t.is(normalizeUrl(`data:,a#:~:text=x${character}y#h`), 'data:,a', 'with a second hash after');
 	}
