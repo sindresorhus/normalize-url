@@ -173,7 +173,7 @@ Strip the [text fragment](https://web.dev/text-fragments/) part of the URL.
 
 ```js
 normalizeUrl('http://sindresorhus.com/about.html#:~:text=hello');
-//=> 'http://sindresorhus.com/about.html#'
+//=> 'http://sindresorhus.com/about.html'
 
 normalizeUrl('http://sindresorhus.com/about.html#section:~:text=hello');
 //=> 'http://sindresorhus.com/about.html#section'
