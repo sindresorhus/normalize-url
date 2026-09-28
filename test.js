@@ -3326,6 +3326,31 @@ test('decoding a percent escape cannot join into a new one', t => {
 	}
 });
 
+test('base64 data that ends in a control is written as an escape', t => {
+	// A URL processor strips ASCII whitespace from base64 data, which is tab, line feed, form feed, carriage return and space. A C0 control that is not one of the five is not whitespace to a processor either, so it is a character of the data and a URL parser writes it as an escape. That is also what keeps the result a fixed point: written raw, the input trim takes it off on the next pass, which both changes the URL and can turn one a browser refuses into one it reads.
+	for (const [name, character, escape] of [
+		['null', '\u0000', '%00'],
+		['start of heading', '\u0001', '%01'],
+		['vertical tab', '\u000B', '%0B'],
+		['unit separator', '\u001F', '%1F'],
+	]) {
+		t.is(normalizeUrl(`data:;base64,QUJD${character}#`), `data:;base64,QUJD${escape}`, `a bare media type: ${name}`);
+		t.is(normalizeUrl(`data:text/plain;base64,QUJD${character}#`), `data:text/plain;base64,QUJD${escape}`, `a named media type: ${name}`);
+	}
+
+	// A base64 payload goes through a forgiving decode, so one that is not valid base64 stays not valid rather than being repaired into something a browser will read.
+	for (const character of ['\u0000', '\u0001', '\u001F']) {
+		const input = `data:;base64,ab${character}#`;
+		const output = normalizeUrl(input);
+		t.is(normalizeUrl(output), output, `a fixed point: ${input}`);
+		t.regex(output, /%[\dA-F]{2}$/, `written as an escape: ${input}`);
+	}
+
+	// The non-base64 case already wrote one as an escape, since a URL parser writes a control in a path that way. This is the base64 case the same rule was missing from.
+	t.is(normalizeUrl('data:,ab\u001F#'), 'data:,ab%1F');
+	t.is(normalizeUrl('data:;base64,QUJD\u001F'), 'data:;base64,QUJD');
+});
+
 test('a text fragment strip leaves the hashes the fragment has', t => {
 	// Only a `#` at the start of the fragment is part of the delimiter, since that is the only place a URL writes one. A `#` further along is content, so `#a#:~:text=x` keeps it and `#a` would not.
 	t.is(normalizeUrl('http://sindresorhus.com/about#a#:~:text=hello'), 'http://sindresorhus.com/about#a#');

@@ -498,20 +498,11 @@ const normalizeDataURL = (urlString, {stripHash, stripTextFragment}) => {
 	const escapedHash = escapeTrailingAsciiWhitespace(canonicalizePercentEscapes(normalizedHash));
 	const hashPart = escapedHash ? `#${escapedHash}` : '';
 
-	// The data is the path of the data URL, so an unreserved escape in it is decoded the same way.
-	// Whitespace is stripped from around base64 data, which a URL processor does. Whitespace at the end
-	// of the rest is escaped rather than stripped, since a URL parser writes a space in a path as `%20`
-	// and it is a byte of the data: dropping a hash must not take one with it, and an escape is a fixed
-	// point where a trailing space would be taken away again on the next pass.
-	const normalizedData = canonicalizePercentEscapes(decodeUnreservedPercentEscapes(isBase64 ? stripSurrounding(data, isAsciiWhitespace) : (hashPart ? data : escapeTrailingAsciiWhitespace(data))));
-	// The separator is written when the input had one, even with nothing after it to separate, since a
-	// URL parser reads a data URL with no comma as a failure and one with an empty data after it as a
-	// load. A data URL that came without a comma does not gain one, so that it does not change on every
-	// pass.
-	// A C0 control or a space at the end of the media type is written as an escape, the same as in the
-	// data below. The input trim takes one off either end of the URL, and a media type with no comma after
-	// it ends the URL, so written raw it would be taken by the next pass and the result would change. Only
-	// a space is gone by the time the media type is read, so this is the step that writes the rest.
+	// The data is the path of the data URL, so an unreserved escape in it is decoded the same way. Whitespace is stripped from around base64 data, which a URL processor does, and what that leaves is escaped: a C0 control that is not one of the five is not whitespace to a processor either, so it is a character of the data and a parser writes it as an escape. Whitespace at the end of the rest is escaped rather than stripped, since a URL parser writes a space in a path as `%20` and it is a byte of the data: dropping a hash must not take one with it, and an escape is a fixed point where a trailing space would be taken away again on the next pass.
+	const normalizedData = canonicalizePercentEscapes(decodeUnreservedPercentEscapes(isBase64
+		? escapeTrailingAsciiWhitespace(stripSurrounding(data, isAsciiWhitespace))
+		: (hashPart ? data : escapeTrailingAsciiWhitespace(data))));
+	// The separator is written when the input had one, even with nothing after it to separate, since a URL parser reads a data URL with no comma as a failure and one with an empty data after it as a load. A data URL that came without a comma does not gain one, so that it does not change on every pass. A C0 control or a space at the end of the media type is written as an escape, the same as in the data below. The input trim takes one off either end of the URL, and a media type with no comma after it ends the URL, so written raw it would be taken by the next pass and the result would change. Only a space is gone by the time the media type is read, so this is the step that writes the rest.
 	const joinedType = normalizedMediaType.join(';');
 	const normalizedType = separatorIndex === -1 ? escapeTrailingAsciiWhitespace(joinedType) : joinedType;
 
