@@ -7,7 +7,7 @@ Useful when you need to display, store, deduplicate, sort, compare, etc, URLs.
 > [!NOTE]
 > This package does **not** do URL sanitization. [Garbage in, garbage out.](https://en.wikipedia.org/wiki/Garbage_in,_garbage_out) If you use this in a server context and accept URLs as user input, it's up to you to protect against invalid URLs, [path traversal attacks](https://owasp.org/www-community/attacks/Path_Traversal), etc.
 
-Leading and trailing whitespace is removed, and only the part of it a URL parser removes: ASCII tab, carriage return and line feed from anywhere, and C0 controls and spaces from the two ends. A space of another kind, such as U+00A0, is a character of the URL, so it is percent-encoded in the path, the query and the fragment and left as it stands in the data of a data URL. A URL with one in its host or its scheme is usually rejected, the way a URL parser rejects it, though a format character such as U+FEFF or U+200B at the very front is one the parser can absorb, and the result is then a URL of your input's prefix rather than of the input.
+Whitespace is removed the way a URL parser removes it: tab, carriage return, and line feed from anywhere, and C0 controls and spaces from the ends. Other whitespace, such as U+00A0, is part of the URL.
 
 ## Install
 
@@ -50,8 +50,7 @@ Type: `object`
 ##### defaultProtocol
 
 Type: `string`\
-Default: `'http'`\
-Values: `'https' | 'http'`
+Default: `'http'`
 
 Any protocol is accepted, and a trailing colon is stripped however many there are, so `'https:'` and `'https::'` both name it. A value that is not a scheme is ignored and the default applies.
 
@@ -168,7 +167,7 @@ Default: `false`
 
 Remove the protocol from the URL: `http://sindresorhus.com` → `sindresorhus.com`.
 
-It will only remove `https://` and `http://` protocols.
+It removes an `https://`, an `http://` or a leading `//` from a protocol-relative URL, and nothing else.
 
 __Note:__ The result is not a full URL, so normalizing it again can change it: a port that the removed protocol kept is the default one of the protocol that gets prepended next.
 
@@ -208,10 +207,9 @@ normalizeUrl('http://sindresorhus.com/about.html#section:~:text=hello', {stripTe
 Type: `boolean`\
 Default: `true`
 
-Remove `www.` from the URL. A trailing dot on a domain hostname is removed as well, since the name and
-the one it spells are the same, unless doing so would change the name, as it would for `159.189.213..`,
-which a URL parser reads as the address `159.189.0.213`. The host of a custom protocol is opaque rather
-than a domain, so a dot there is a character of the name and is left alone.
+Remove `www.` from the URL.
+
+__Note:__ Trailing dots on a domain hostname are always removed, whatever this option says, unless doing so would change the name: `159.189.213..` keeps them, since `159.189.213` is the IPv4 address `159.189.0.213`. The host of a custom protocol is opaque, so a dot there is part of the name and is kept.
 
 __Note:__ A `www.` that is not followed by a proper domain is left alone, so `www.com` and `www.a.b` are not changed.
 
@@ -317,7 +315,7 @@ normalizeUrl('https://sindresorhus.com/', {removeSingleSlash: false});
 Type: `boolean | Array<RegExp | string>`\
 Default: `false`
 
-Removes the default directory index file from path that matches any of the provided strings or regexes. The match is against the percent-decoded component, the same as `transformPath` is given, so `index.html` matches a path spelled `index%2Ehtml`.
+Removes the default directory index file from path that matches any of the provided strings or regexes. The match is against the percent-decoded component, the same as `transformPath` is given, so `index.html` matches a path spelled `index%2Ehtml`. It runs after `transformPath`, so it also removes an index file the function leaves at the end.
 
 When `true`, the regex `/^index\.[a-z]+$/` is used.
 
@@ -405,7 +403,7 @@ normalizeUrl('https://example.com/path/to/page', {
 Type: `Function | false`\
 Default: `false`
 
-Custom function to transform the URL path components. The function receives an array of non-empty path components and should return a modified array. Returning nothing removes the path. The array it returns is only read, so a frozen one is as good as a mutable one. The components are percent-decoded, so an unreserved escape has become the character it stands for by the time the function sees it, and one it returns is not decoded again.
+Custom function to transform the URL path components. The function receives an array of non-empty path components and should return a modified array. Returning nothing removes the path. The array it returns is only read, so a frozen one is as good as a mutable one. The components are percent-decoded, so an unreserved escape has become the character it stands for by the time the function sees it, and one it returns is not decoded again. It runs before `removeDirectoryIndex`, so the function still sees the index file, and it is skipped when `removePath` is set.
 
 ```js
 // Keep only the first path component

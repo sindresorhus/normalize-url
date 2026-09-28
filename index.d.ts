@@ -1,7 +1,6 @@
 export type Options = {
 	/**
-	Any protocol, though `'https'` and `'http'` are the ones to use. A value that is not a scheme is ignored
-	and the default applies, and the legacy trailing colon is accepted too.
+	Any protocol is accepted, and a trailing colon is stripped however many there are, so `'https:'` and `'https::'` both name it. A value that is not a scheme is ignored and the default applies. `'https'` and `'http'` are the ones to use.
 
 	@default 'http'
 	*/
@@ -122,7 +121,7 @@ export type Options = {
 	/**
 	Remove the protocol from the URL: `http://sindresorhus.com` → `sindresorhus.com`.
 
-	It will only remove `https://` and `http://` protocols.
+	It removes an `https://`, an `http://` or a leading `//` from a protocol-relative URL, and nothing else.
 
 	__Note:__ The result is not a full URL, so normalizing it again can change it: a port that the removed protocol kept is the default one of the protocol that gets prepended next.
 
@@ -164,10 +163,9 @@ export type Options = {
 	readonly stripTextFragment?: boolean;
 
 	/**
-	Removes `www.` from the URL. A trailing dot on a domain hostname is removed as well, since the name and
-	the one it spells are the same, unless doing so would change the name, as it would for `159.189.213..`,
-	which a URL parser reads as the address `159.189.0.213`. The host of a custom protocol is opaque
-	rather than a domain, so a dot there is a character of the name and is left alone.
+	Removes `www.` from the URL.
+
+	__Note:__ Trailing dots on a domain hostname are always removed, whatever this option says, unless doing so would change the name: `159.189.213..` keeps them, since `159.189.213` is the IPv4 address `159.189.0.213`. The host of a custom protocol is opaque, so a dot there is part of the name and is kept.
 
 	__Note:__ A `www.` that is not followed by a proper domain is left alone, so `www.com` and `www.a.b` are not changed.
 
@@ -220,9 +218,9 @@ export type Options = {
 	readonly removeQueryParameters?: ReadonlyArray<RegExp | string> | boolean;
 
 	/**
-	Keeps only query parameters that matches any of the provided strings or regexes. The match is against the percent-decoded key, the same as `removeQueryParameters`.
+	Keeps only query parameters that matches any of the provided strings or regexes. The match is against the percent-decoded key, the same as `removeQueryParameters`. An empty array matches nothing, so it removes every parameter, the same as the `true` of `removeQueryParameters`.
 
-	__Note__: It overrides the `removeQueryParameters` option.
+	__Note:__ It overrides the `removeQueryParameters` option.
 
 	Global and sticky regex flags are stripped.
 
@@ -241,7 +239,9 @@ export type Options = {
 	/**
 	Removes trailing slash.
 
-	__Note__: Trailing slash is always removed if the URL doesn't have a pathname unless the `removeSingleSlash` option is set to `false`.
+	__Note:__ the sole `/` of a root path is removed too, unless the `removeSingleSlash` option is set to `false` **and** the input wrote that slash itself.
+
+	__Note:__ `removeSingleSlash: false` reads the trailing slash off the input as it was written, so a slash that belongs to a dot segment a URL parser resolves away still counts. `https://example.com/a/../` and `https://example.com/a/..` are the same URL, but only the first keeps the root slash.
 
 	@default true
 
@@ -276,9 +276,11 @@ export type Options = {
 	readonly removeSingleSlash?: boolean;
 
 	/**
-	Removes the default directory index file from path that matches any of the provided strings or regexes. The match is against the percent-decoded component, the same as `transformPath` is given, so `index.html` matches a path spelled `index%2Ehtml`.
+	Removes the default directory index file from path that matches any of the provided strings or regexes. The match is against the percent-decoded component, the same as `transformPath` is given, so `index.html` matches a path spelled `index%2Ehtml`. It runs after `transformPath`, so it also removes an index file the function leaves at the end.
 
 	When `true`, the regex `/^index\.[a-z]+$/` is used.
+
+	__Note:__ removing the index leaves a trailing slash on what is left, whether or not the input wrote one, so `http://example.com/foo/index.html` becomes `http://example.com/foo/` and then `http://example.com/foo`. The `removeTrailingSlash` option decides whether that slash stays.
 
 	Global and sticky regex flags are stripped.
 
@@ -366,7 +368,7 @@ export type Options = {
 	/**
 	Custom function to transform the URL path components.
 
-	The function receives an array of non-empty path components and should return a modified array. Returning nothing removes the path. The array it returns is only read, so a frozen one is as good as a mutable one. The components are percent-decoded, so an unreserved escape has become the character it stands for by the time the function sees it, and one it returns is not decoded again.
+	The function receives an array of non-empty path components and should return a modified array. Returning nothing removes the path. The array it returns is only read, so a frozen one is as good as a mutable one. The components are percent-decoded, so an unreserved escape has become the character it stands for by the time the function sees it, and one it returns is not decoded again. It runs before `removeDirectoryIndex`, so the function still sees the index file, and it is skipped when `removePath` is set.
 
 	@default false
 
