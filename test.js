@@ -326,12 +326,15 @@ test('defaultProtocol option', t => {
 	t.is(normalizeUrl('sindresorhus.com', {defaultProtocol: 'http:'}), 'http://sindresorhus.com');
 
 	/*
-	A value that is not a scheme, which starts with a letter, falls back to the default. It must not reach the replacement, where a `$` is a substitution pattern.
+	A value that is not a scheme, which starts with a letter, throws rather than silently falling back to `http`, since `'https://'` is an easy mistake. It must not reach the replacement either, where a `$` is a substitution pattern.
 	*/
-	for (const defaultProtocol of [undefined, null, '', 123, [], '1http', 'ht tp', 'a b', '-', '.', '/x', 'a%20b', 'http::', 'x$\'y', '$&y', 'a$$b', ':']) {
-		t.is(normalizeUrl('sindresorhus.com', {defaultProtocol}), 'http://sindresorhus.com');
-		t.is(normalizeUrl('//sindresorhus.com', {defaultProtocol}), 'http://sindresorhus.com');
+	for (const defaultProtocol of [null, '', 123, [], '1http', 'ht tp', 'a b', '-', '.', '/x', 'a%20b', 'https://', 'x$\'y', '$&y', 'a$$b', ':']) {
+		t.throws(() => {
+			normalizeUrl('sindresorhus.com', {defaultProtocol});
+		}, {instanceOf: TypeError, message: /defaultProtocol/}, `${JSON.stringify(defaultProtocol)}`);
 	}
+
+	t.is(normalizeUrl('sindresorhus.com', {defaultProtocol: undefined}), 'http://sindresorhus.com');
 
 	// A scheme can still be any protocol, not only the two the readme lists.
 	t.is(normalizeUrl('//sindresorhus.com', {defaultProtocol: 'ftp'}), 'ftp://sindresorhus.com');
@@ -3267,7 +3270,7 @@ test('an opaque path has its percent escapes canonicalized', t => {
 
 test('a protocol option is read however it is written', t => {
 	/*
-	A value that is not a scheme is ignored. Any number of trailing colons is accepted, so one too many does not silently do nothing.
+	Any number of trailing colons is accepted, so one too many does not silently do nothing.
 	*/
 	for (const entry of ['sindre', 'sindre:', 'sindre::', 'sindre:::', 'SINDRE', ' sindre ']) {
 		t.is(normalizeUrl('sindre://www.sindresorhus.com/a/', {customProtocols: [entry]}), 'sindre://sindresorhus.com/a', `${entry}`);

@@ -52,7 +52,7 @@ Type: `object`
 Type: `string`\
 Default: `'http'`
 
-Any protocol is accepted, and a trailing colon is stripped however many there are, so `'https:'` and `'https::'` both name it. A value that is not a scheme is ignored and the default applies.
+Any protocol is accepted, and a trailing colon is stripped however many there are, so `'https:'` and `'https::'` both name it. A value that is not a scheme, such as `'https://'`, throws a `TypeError`.
 
 ##### customProtocols
 

@@ -199,7 +199,7 @@ const missingProtocolPattern = new RegExp(String.raw`^\/\/|^(?!(?:${supportedPro
 const schemeRegex = /^[a-z][\da-z+\-.]*$/i;
 
 /*
-The protocol a `customProtocols` entry or `defaultProtocol` names, with a `:` appended, or `undefined` for a value that is not a scheme. That drops an invalid `customProtocols` entry, which would match nothing, and makes `defaultProtocol` fall back to its default rather than prepend text the URL parser rejects.
+The protocol a `customProtocols` entry or `defaultProtocol` names, with a `:` appended, or `undefined` for a value that is not a scheme. An invalid `customProtocols` entry is dropped, since it would match nothing, and an invalid `defaultProtocol` throws.
 */
 const normalizeProtocolOption = protocol => {
 	if (typeof protocol !== 'string') {
@@ -463,9 +463,13 @@ export default function normalizeUrl(urlString, options) {
 		...Object.fromEntries(Object.entries(options ?? {}).filter(([, value]) => value !== undefined)),
 	};
 
-	const defaultProtocol = normalizeProtocolOption(options.defaultProtocol) ?? 'http:';
+	const defaultProtocol = normalizeProtocolOption(options.defaultProtocol);
 
-	// Checked before anything else, so the error does not depend on the URL or its protocol.
+	// Checked before anything else, so the errors do not depend on the URL or its protocol.
+	if (!defaultProtocol) {
+		throw new TypeError(`Expected \`defaultProtocol\` to be a protocol like \`https\`, got \`${String(options.defaultProtocol)}\``);
+	}
+
 	if (options.forceHttp && options.forceHttps) {
 		throw new Error('The `forceHttp` and `forceHttps` options cannot be used together');
 	}
