@@ -42,7 +42,7 @@ Whatever the options, a normalized URL also gets these changes:
 - Trailing dots are removed from a domain host, unless that changes the name: `159.189.213..` keeps them, since `159.189.213` is the IPv4 address `159.189.0.213`. The host of a custom protocol is opaque, so its dots are kept.
 - Duplicate slashes in the path are removed, except the two of a protocol-like segment such as `/https://`.
 - Percent escapes are uppercased (`%2f` → `%2F`), except in the media type of a data URL, where percent-looking text is literal MIME content. Escapes of unreserved characters (letters, digits, `-`, `.`, `_`, `~`) are decoded (`%7E` → `~`), except in a fragment, the media type of a data URL, the host of a custom protocol, and a path that does not start with `/`. Fragment escapes stay encoded so they cannot become text directives. The path and the query also decode other escapes where the character means the same unescaped, as in `%5B` → `[`. Escapes that would change the structure, like `%2F`, `%3F`, `%23`, and `%26`, stay escaped, so `%2F` and `/` stay different.
-- The query is written the way `URLSearchParams` writes it: a space in a value is `+`, a space in a key is `%20`, a `?` is `%3F`, and a `%` that starts no escape is `%25`. Empty parameters, as in `?a=1&&b=2`, are removed.
+- The query is written the way `URLSearchParams` writes it: a space in a value is `+`, a space in a key is `%20`, a `?` is `%3F`, and a `%` that starts no escape is `%25`. Empty parameters, as in `?a=1&&b=2`, are removed. This happens with `sortQueryParameters: false` too. An escape that is not valid UTF-8 becomes U+FFFD, as `URLSearchParams` decodes it, so `?q=%E9` becomes `?q=%EF%BF%BD`, which changes the value for a server that reads the query as Latin-1.
 - A data URL gets its MIME type and `charset` value lowercased. `text/plain` is removed when nothing follows it, and so is `charset=us-ascii` on `text/plain`. Quotes are removed from a parameter value that does not need them, and whitespace is removed from the ends of base64 data.
 
 #### url
@@ -60,7 +60,9 @@ Type: `object`
 Type: `string`\
 Default: `'http'`
 
-Any protocol is accepted, and a trailing colon is stripped however many there are, so `'https:'` and `'https::'` both name it. A value that is not a scheme, such as `'https://'`, throws a `TypeError`.
+Usually `'https'` or `'http'`. A trailing `:` is accepted. A value that is not a scheme, such as `'https://'`, throws a `TypeError`.
+
+__Note:__ A protocol that is not built in, such as `'ftp'`, is best-effort. The URL it creates is normalized, while the same URL written with that protocol is passed through as a custom protocol, unless the protocol is in `customProtocols`.
 
 ##### customProtocols
 
@@ -71,7 +73,7 @@ Protocols to normalize in addition to the built-in ones (`https`, `http`, `file`
 
 Useful for HTTP-like custom protocols such as Electron schemes or app-specific protocols.
 
-The protocols should be specified without `:`, though a trailing one is accepted however many there are, and the name is matched without regard to case.
+The protocols should be specified without `:`, though a trailing one is accepted. The name is case-insensitive.
 
 __Note:__ Options that rewrite the path (`removePath`, `transformPath`, `removeDirectoryIndex`, and the percent-decoding of the path) only apply when the path starts with a `/`, as in `sindre://host/a/b` and `sindre:/a/b`. A URL whose path is opaque, such as `sindre:a/b`, has no segments for those options to work on, and a URL parser does not let the library change it, so they are silently ignored for it.
 
@@ -359,7 +361,7 @@ normalizeUrl('sindresorhus.com:123', {
 Type: `boolean`\
 Default: `true`
 
-Sorts the query parameters by key, in code unit order, so an uppercase letter sorts before a lowercase one and a digit before a letter. Parameters that share a key keep the order they were written in, since for a repeated key the order can be what the server reads. The library does that sort itself rather than through `URLSearchParams#sort`, which the URL standard has order by name alone without saying what happens to two names that are equal.
+Sorts the query parameters by key, in code unit order, so an uppercase letter sorts before a lowercase one and a digit before a letter. Parameters that share a key keep the order they were written in.
 
 __Note:__ The option only changes the order. The query is written the same way either way (see [`normalizeUrl`](#normalizeurlurl-options)).
 
@@ -381,8 +383,6 @@ Controls how query parameters with empty values are formatted.
 - `'preserve'` - Keep the original format (`?key` stays `?key`, `?key=` stays `?key=`). If the same key appears with both formats (`?a&a=`), all instances will use the format without `=`.
 - `'always'` - Always include `=` for empty values (`?key` becomes `?key=`)
 - `'never'` - Never include `=` for empty values (`?key=` becomes `?key`)
-
-A value outside the three behaves as `'preserve'`.
 
 ```js
 normalizeUrl('www.sindresorhus.com?a&b=', {emptyQueryValue: 'always'});
@@ -411,7 +411,7 @@ normalizeUrl('https://example.com/path/to/page', {
 Type: `Function | false`\
 Default: `false`
 
-Custom function to transform the URL path components. The function receives an array of non-empty path components and should return a modified array. Returning nothing removes the path. The array it returns is only read, so a frozen one is as good as a mutable one. The components are percent-decoded, so an unreserved escape has become the character it stands for by the time the function sees it, and one it returns is not decoded again. It runs before `removeDirectoryIndex`, so the function still sees the index file, and it is skipped when `removePath` is set.
+Custom function to transform the URL path components. The function receives an array of non-empty path components and should return a modified array. Returning nothing removes the path. The components are percent-decoded, so an unreserved escape has become the character it stands for by the time the function sees it, and one it returns is not decoded again. It runs before `removeDirectoryIndex`, so the function still sees the index file, and it is skipped when `removePath` is set.
 
 ```js
 // Keep only the first path component
