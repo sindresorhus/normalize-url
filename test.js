@@ -282,10 +282,10 @@ test('normalizeProtocol option', t => {
 	t.is(normalizeUrl('//sindresorhus.com'), 'http://sindresorhus.com');
 	t.is(normalizeUrl('sindresorhus.com', options), 'http://sindresorhus.com');
 
-	// A protocol that is not followed by an authority is left alone, not sliced into.
-	t.is(normalizeUrl('//sindresorhus.com', {...options, defaultProtocol: 'sindre'}), 'sindre:sindresorhus.com');
-	t.is(normalizeUrl('//sindresorhus.com/a', {...options, defaultProtocol: 'sindre'}), 'sindre:sindresorhus.com/a');
-	t.is(normalizeUrl('//sindresorhus.com', {...options, defaultProtocol: 'file'}), 'file:///sindresorhus.com');
+	// The relative protocol is restored for a non-special scheme too, since the host is written with its `//`.
+	t.is(normalizeUrl('//sindresorhus.com', {...options, defaultProtocol: 'sindre'}), '//sindresorhus.com');
+	t.is(normalizeUrl('//sindresorhus.com/a', {...options, defaultProtocol: 'sindre'}), '//sindresorhus.com/a');
+	t.is(normalizeUrl('//sindresorhus.com', {...options, defaultProtocol: 'file'}), '//sindresorhus.com');
 	t.is(normalizeUrl('//sindresorhus.com:8080/a', options), '//sindresorhus.com:8080/a');
 });
 
@@ -335,6 +335,10 @@ test('defaultProtocol option', t => {
 	}
 
 	t.is(normalizeUrl('sindresorhus.com', {defaultProtocol: undefined}), 'http://sindresorhus.com');
+
+	// A non-special scheme keeps the host a host rather than reading it as a path.
+	t.is(normalizeUrl('sindresorhus.com/a', {defaultProtocol: 'sindre'}), 'sindre://sindresorhus.com/a');
+	t.is(normalizeUrl('//sindresorhus.com/a', {defaultProtocol: 'git+ssh'}), 'git+ssh://sindresorhus.com/a');
 
 	// A scheme can still be any protocol, not only the two the readme lists.
 	t.is(normalizeUrl('//sindresorhus.com', {defaultProtocol: 'ftp'}), 'ftp://sindresorhus.com');
@@ -3274,7 +3278,7 @@ test('a protocol option is read however it is written', t => {
 	*/
 	for (const entry of ['sindre', 'sindre:', 'sindre::', 'sindre:::', 'SINDRE', ' sindre ']) {
 		t.is(normalizeUrl('sindre://www.sindresorhus.com/a/', {customProtocols: [entry]}), 'sindre://sindresorhus.com/a', `${entry}`);
-		t.is(normalizeUrl('sindresorhus.com/a', {defaultProtocol: entry}), `${entry.trim().toLowerCase().replace(/:+$/, '')}:sindresorhus.com/a`, `${entry}`);
+		t.is(normalizeUrl('sindresorhus.com/a', {defaultProtocol: entry}), `${entry.trim().toLowerCase().replace(/:+$/, '')}://sindresorhus.com/a`, `${entry}`);
 	}
 
 	// A value that is not a scheme at all never matches a protocol, so dropping it changes nothing.

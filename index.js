@@ -495,9 +495,9 @@ export default function normalizeUrl(urlString, options) {
 	const hasRelativeProtocol = urlString.startsWith('//');
 	const isRelativeUrl = !hasRelativeProtocol && /^\.*\//.test(urlString);
 
-	// Prepend protocol
+	// Prepend protocol. The `//` is written out, since a non-special scheme would otherwise read the host as a path.
 	if (!isRelativeUrl && !customProtocol) {
-		urlString = urlString.replace(missingProtocolPattern, defaultProtocol);
+		urlString = urlString.replace(missingProtocolPattern, `${defaultProtocol}//`);
 	}
 
 	// The path as the input wrote it, for `removeSingleSlash` below.
