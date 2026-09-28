@@ -3351,6 +3351,28 @@ test('base64 data that ends in a control is written as an escape', t => {
 	t.is(normalizeUrl('data:;base64,QUJD\u001F'), 'data:;base64,QUJD');
 });
 
+test('a quoted charset in front of a base64 parameter is not dropped', t => {
+	// `charset="us-ascii"` and `charset=us-ascii` are the same parameter, since the quotes are transport syntax. Dropping the default charset must not leave the media type ending in the bare word `base64`, which a browser reads as the marker and would decode the data as, so the parameter is kept. The comparison is over the parsed parameters, or the quoted spelling is not seen and one URL keeps a charset that the other spelling of it drops.
+	for (const [input, output] of [
+		['data:text/plain;base64;charset="us-ascii",aGVsbG8=', 'data:text/plain;base64;charset=us-ascii,aGVsbG8='],
+		['data:text/plain;base64;charset="US-ASCII",aGVsbG8=', 'data:text/plain;base64;charset=us-ascii,aGVsbG8='],
+		['data:text/plain;charset="us-ascii";base64,aGVsbG8=', 'data:text/plain;base64,aGVsbG8='],
+		['data:;base64;charset="us-ascii",aGVsbG8=', 'data:;base64;charset=us-ascii,aGVsbG8='],
+	]) {
+		t.is(normalizeUrl(input), output, `the charset is kept: ${input}`);
+		t.is(normalizeUrl(output), output, `a fixed point: ${input}`);
+	}
+
+	// A value that is not the default is not this at all. A quoted token is written without its quotes the same way, but one that is not a token keeps them, since a leading space is a character of the value rather than whitespace around it and writing it bare would name a different parameter.
+	t.is(normalizeUrl('data:text/plain;base64;charset="utf-8",aGVsbG8='), 'data:text/plain;base64;charset=utf-8,aGVsbG8=');
+	t.is(normalizeUrl('data:text/plain;base64;charset=" us-ascii",aGVsbG8='), 'data:text/plain;base64;charset=" us-ascii",aGVsbG8=');
+
+	// A `base64` with a value is an ordinary parameter, so dropping the charset exposes no bare word at the end and nothing is invented. The charset is dropped, as it is for `text/plain` anywhere else.
+	t.is(normalizeUrl('data:text/plain;base64=,aGVsbG8='), 'data:text/plain;base64=,aGVsbG8=');
+	t.is(normalizeUrl('data:text/plain;base64=1;charset=us-ascii,aGVsbG8='), 'data:text/plain;base64=1,aGVsbG8=');
+	t.is(normalizeUrl('data:text/html;base64=1;charset=us-ascii,aGVsbG8='), 'data:text/html;base64=1;charset=us-ascii,aGVsbG8=');
+});
+
 test('a text fragment strip leaves the hashes the fragment has', t => {
 	// Only a `#` at the start of the fragment is part of the delimiter, since that is the only place a URL writes one. A `#` further along is content, so `#a#:~:text=x` keeps it and `#a` would not.
 	t.is(normalizeUrl('http://sindresorhus.com/about#a#:~:text=hello'), 'http://sindresorhus.com/about#a#');

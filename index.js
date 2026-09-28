@@ -459,14 +459,12 @@ const normalizeDataURL = (urlString, {stripHash, stripTextFragment}) => {
 
 	// A duplicate `charset` is not redundant, because the first one is the one that applies. Dropping the default charset there would silently promote the next one and change what the URL means.
 	const hasDuplicateCharset = attributes.filter(([key]) => key === 'charset').length > 1;
-	// Dropping the default charset must not leave the media type ending in the bare word `base64` either,
-	// which a browser reads as the marker: `;base64;charset=us-ascii` is not a marker and the same media
-	// type without the charset is, so that would change what the data decodes to. The last part that is
-	// not empty is the one the charset is, since a trailing `;` is dropped as an empty part.
-	const nonEmptyParts = mediaType.filter(Boolean);
+	// Dropping the default charset must not leave the media type ending in the bare word `base64` either, which a browser reads as the marker: `;base64;charset=us-ascii` is not a marker and the same media type without the charset is, so that would change what the data decodes to. The last part that is not empty is the one the charset is, since a trailing `;` is dropped as an empty part. The parameters are compared as they were parsed rather than as they were written, or a quoted `charset="us-ascii"`, which is the same parameter, would not be seen and the one spelling of a URL would keep a charset that the other drops.
 	const exposesBase64Marker = !isBase64
-		&& nonEmptyParts.at(-1)?.toLowerCase() === `charset=${DATA_URL_DEFAULT_CHARSET}`
-		&& nonEmptyParts.at(-2)?.toLowerCase() === 'base64';
+		&& attributes.at(-1)?.[0] === 'charset'
+		&& attributes.at(-1)[1] === DATA_URL_DEFAULT_CHARSET
+		&& attributes.at(-2)?.[0] === 'base64'
+		&& attributes.at(-2)[1] === null;
 
 	// The default charset is only the default for `text/plain` and nothing else, since a body of any other type is decoded by sniffing rather than as US-ASCII. Dropping it from another media type changes the encoding a consumer applies, so it is kept there. An empty media type is `text/plain`.
 	const isRedundantCharset = mimeType === '' || mimeType === DATA_URL_DEFAULT_MIME_TYPE;
