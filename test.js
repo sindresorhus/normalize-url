@@ -2909,14 +2909,7 @@ test('a data URL keeps the bytes it decodes to', async t => {
 			for (const fragment of FRAGMENTS) {
 				// A comma is optional, and the data may hold one, so build it both ways round.
 				for (const url of [`data:${type},${data}${fragment}`, `data:${type}${data}${fragment}`]) {
-					let output;
-					try {
-						output = normalizeUrl(url);
-					} catch (error) {
-						t.regex(error.message, /Invalid URL/, `${url} should be rejected as Invalid URL`);
-						continue;
-					}
-
+					const output = normalizeUrl(url);
 					t.is(normalizeUrl(output), output, `${url} should be a fixed point`);
 
 					// A URL no browser reads has nothing to preserve.

@@ -397,35 +397,20 @@ const normalizeEmptyQueryParameters = (search, emptyQueryValue, originalSearch) 
 };
 
 const normalizeDataURL = (urlString, {stripHash, stripTextFragment}) => {
-	// The `data:` scheme is case-insensitive, so the prefix must be matched case-insensitively too.
-	// The comma is optional: a URL parser accepts a `data:` URL without one and reads the whole thing as
-	// the media type with empty data, and this library takes URLs from a URL parser.
-	// The fragment is matched with `[^]` rather than `.`, since a dot leaves out the line separators,
-	// which a URL parser keeps. With that the pattern matches every string, so the guard below is a
-	// guard rather than a case: no input reaches it.
-	const match = /^data:(?<typeAndData>[^#]*)(?:#(?<hash>[^]*))?$/i.exec(urlString);
-
-	if (!match) {
-		throw new Error(`Invalid URL: ${urlString}`);
-	}
-
-	const {typeAndData, hash} = match.groups;
+	// The `data:` scheme is case-insensitive, so the prefix must be matched case-insensitively too. The comma is optional: a URL parser accepts a `data:` URL without one and reads the whole thing as the media type with empty data, and this library takes URLs from a URL parser. The fragment is matched with `[^]` rather than `.`, since a dot leaves out the line separators, which a URL parser keeps. With that the pattern matches every remainder of a `data:` URL, so there is no input it rejects: the `data:` scheme is the only thing the URL standard leaves to the media type.
+	const {typeAndData, hash} = /^data:(?<typeAndData>[^#]*)(?:#(?<hash>[^]*))?$/i.exec(urlString).groups;
 
 	// The data ends at the first comma, which a quoted value does not hide: that is what a browser reads, and it keeps a parameter written after a quoted comma in the data where it belongs. The data itself comes from the raw input, since it is the payload and a parser's spelling of it is not what a browser decodes.
 	const separatorIndex = typeAndData.indexOf(',');
 	const data = separatorIndex === -1 ? '' : typeAndData.slice(separatorIndex + 1);
 	// The media type comes from the raw input, since a parser reads `data://host,` as an authority and would hand back the wrong one. What a parser does first is remove a tab, a carriage return and a line feed from anywhere in the input, and write anything else that is not a URL code point as an escape, so by the time a browser reads the media type the only whitespace left in it is a space. That is what the trim below and the marker test may treat as whitespace, and taking a form feed or any other control for it would spell a marker a browser does not see there, and the data would come out decoded when it was not.
 	const type = separatorIndex === -1 ? typeAndData : typeAndData.slice(0, separatorIndex);
-	// A `#` in the media type would be read as the fragment again on the next pass, so it is encoded here,
-	// where it belongs. The fragment takes every `#` that is left, so this is a guard that no input reaches
-	// now that the fragment is matched over the line separators too.
-	const encodedType = type.replaceAll('#', '%23');
 	/*
 	The media type is not percent-decoded, since a browser does not decode it either, and decoding could turn a parameter into the marker, as in `;%62ase64`. Percent-looking text stays as spelled, apart from the lowercasing below. Only spaces are trimmed (see `isSpace`).
 
 	The marker is a plain suffix test that ignores quoting, as in a browser, so a value with an unterminated quote can still end in it. It is therefore taken off before the parameters are parsed.
 	*/
-	const trimmedType = stripSurrounding(encodedType, isSpace);
+	const trimmedType = stripSurrounding(type, isSpace);
 	const isBase64 = base64MarkerAtEndPattern.test(trimmedType);
 	const typeWithoutMarker = isBase64 ? trimmedType.replace(base64MarkerAtEndPattern, '') : trimmedType;
 	const mediaType = splitOutsideQuotes(typeWithoutMarker, ';').map(part => stripSurrounding(part, isSpace));
