@@ -1,15 +1,30 @@
 export type Options = {
 	/**
+	Any protocol, though `'https'` and `'http'` are the ones to use. A value that is not a scheme is ignored
+	and the default applies, and the legacy trailing colon is accepted too.
+
 	@default 'http'
 	*/
-	readonly defaultProtocol?: 'https' | 'http';
+	readonly defaultProtocol?: string;
 
 	/**
 	Protocols to normalize in addition to the built-in ones (`https`, `http`, `file`, `data`).
 
 	Useful for HTTP-like custom protocols such as Electron schemes or app-specific protocols.
 
-	The protocols should be specified without `:`.
+	The protocols should be specified without `:`, though a trailing one is accepted however many there are, and the name is matched without regard to case.
+
+	__Note:__ Options that rewrite the path (`removePath`, `transformPath`, `removeDirectoryIndex`, and the
+	percent-decoding of the path) only apply when the path starts with a `/`, as in `sindre://host/a/b` and
+	`sindre:/a/b`. A URL whose path is opaque, such as `sindre:a/b`, has no segments for those options to work
+	on, and a URL parser does not let the library change it, so they are silently ignored for it.
+
+	__Note:__ `transformPath` and `removeDirectoryIndex` rebuild the path from its components, which cannot
+	spell the two slashes of a protocol lookalike such as `sindre://host/a/s3://b/index.html`. One of them is
+	dropped for those two options, while the library keeps both everywhere else.
+
+	__Note:__ a duplicate slash in a path is removed whatever `removeTrailingSlash` says, since that option is
+	about a slash at the end of the path and not about the ones in the middle of it.
 
 	@default undefined
 
@@ -45,6 +60,11 @@ export type Options = {
 
 	@default false
 
+	__Note:__ changing the scheme drops the port that was the default one for the old scheme, so
+	`forceHttp` turns `https://example.com:443` into `http://example.com` and `forceHttps` turns
+	`http://example.com:80` into `https://example.com`. A port that is not a default for either scheme is
+	kept.
+
 	@example
 	```
 	normalizeUrl('https://sindresorhus.com');
@@ -62,6 +82,11 @@ export type Options = {
 	This option cannot be used with the `forceHttp` option at the same time.
 
 	@default false
+
+	__Note:__ changing the scheme drops the port that was the default one for the old scheme, so
+	`forceHttp` turns `https://example.com:443` into `http://example.com` and `forceHttps` turns
+	`http://example.com:80` into `https://example.com`. A port that is not a default for either scheme is
+	kept.
 
 	@example
 	```
@@ -111,6 +136,8 @@ export type Options = {
 
 	It will only remove `https://` and `http://` protocols.
 
+	__Note:__ The result is not a full URL, so normalizing it again can change it: a port that the removed protocol kept is the default one of the protocol that gets prepended next.
+
 	@default false
 
 	@example
@@ -118,7 +145,7 @@ export type Options = {
 	normalizeUrl('https://sindresorhus.com');
 	//=> 'https://sindresorhus.com'
 
-	normalizeUrl('sindresorhus.com', {stripProtocol: true});
+	normalizeUrl('https://sindresorhus.com', {stripProtocol: true});
 	//=> 'sindresorhus.com'
 	```
 	*/
@@ -149,7 +176,12 @@ export type Options = {
 	readonly stripTextFragment?: boolean;
 
 	/**
-	Removes `www.` from the URL.
+	Removes `www.` from the URL. A trailing dot on a domain hostname is removed as well, since the name and
+	the one it spells are the same, unless doing so would change the name, as it would for `159.189.213..`,
+	which a URL parser reads as the address `159.189.0.213`. The host of a custom protocol is opaque
+	rather than a domain, so a dot there is a character of the name and is left alone.
+
+	__Note:__ A `www.` that is not followed by a proper domain is left alone, so `www.com` and `www.a.b` are not changed.
 
 	@default true
 
@@ -165,7 +197,7 @@ export type Options = {
 	readonly stripWWW?: boolean;
 
 	/**
-	Removes query parameters that matches any of the provided strings or regexes.
+	Removes query parameters that matches any of the provided strings or regexes. The match is against the percent-decoded key, the way `URLSearchParams` reads one, so `+` is a space and `%2F` is a slash: write `a/b` rather than `a%2Fb`.
 
 	Global and sticky regex flags are stripped.
 
@@ -194,13 +226,13 @@ export type Options = {
 	normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
 		removeQueryParameters: false
 	});
-	//=> 'http://www.sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test'
+	//=> 'http://sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test'
 	```
 	*/
 	readonly removeQueryParameters?: ReadonlyArray<RegExp | string> | boolean;
 
 	/**
-	Keeps only query parameters that matches any of the provided strings or regexes.
+	Keeps only query parameters that matches any of the provided strings or regexes. The match is against the percent-decoded key, the same as `removeQueryParameters`.
 
 	__Note__: It overrides the `removeQueryParameters` option.
 
@@ -256,7 +288,7 @@ export type Options = {
 	readonly removeSingleSlash?: boolean;
 
 	/**
-	Removes the default directory index file from path that matches any of the provided strings or regexes.
+	Removes the default directory index file from path that matches any of the provided strings or regexes. The match is against the percent-decoded component, the same as `transformPath` is given, so `index.html` matches a path spelled `index%2Ehtml`.
 
 	When `true`, the regex `/^index\.[a-z]+$/` is used.
 
@@ -292,7 +324,12 @@ export type Options = {
 	readonly removeExplicitPort?: boolean;
 
 	/**
-	Sorts the query parameters alphabetically by key.
+	Sorts the query parameters by key, in code unit order, so an uppercase letter sorts before a lowercase
+	one and a digit before a letter. Parameters that share a key keep the order they were written in, since
+	for a repeated key the order can be what the server reads.
+
+	__Note:__ The option only changes the order. The parameters are still normalized, the same as when the
+	option is on, so a space in a value is written as `+`, a space in a key as `%20`, and a lone `%` as `%25`.
 
 	@default true
 
@@ -313,6 +350,8 @@ export type Options = {
 	- `'always'` - Always include `=` for empty values (`?key` becomes `?key=`)
 	- `'never'` - Never include `=` for empty values (`?key=` becomes `?key`)
 
+	A value outside the three behaves as `'preserve'`.
+
 	@default 'preserve'
 
 	@example
@@ -327,7 +366,7 @@ export type Options = {
 	readonly emptyQueryValue?: 'preserve' | 'always' | 'never';
 
 	/**
-	Removes the entire URL path, leaving only the domain.
+	Removes the entire URL path, leaving the host with no path. The query and the hash stay. It takes precedence over the `transformPath` option.
 
 	@default false
 
@@ -344,7 +383,7 @@ export type Options = {
 	/**
 	Custom function to transform the URL path components.
 
-	The function receives an array of non-empty path components and should return a modified array.
+	The function receives an array of non-empty path components and should return a modified array. Returning nothing removes the path. The array it returns is only read, so a frozen one is as good as a mutable one. The components are percent-decoded, so an unreserved escape has become the character it stands for by the time the function sees it, and one it returns is not decoded again.
 
 	@default false
 
@@ -363,7 +402,7 @@ export type Options = {
 	//=> 'https://example.com/users'
 	```
 	*/
-	readonly transformPath?: (pathComponents: string[]) => string[];
+	readonly transformPath?: ((pathComponents: string[]) => readonly string[] | undefined) | false;
 };
 
 /**

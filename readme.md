@@ -7,6 +7,8 @@ Useful when you need to display, store, deduplicate, sort, compare, etc, URLs.
 > [!NOTE]
 > This package does **not** do URL sanitization. [Garbage in, garbage out.](https://en.wikipedia.org/wiki/Garbage_in,_garbage_out) If you use this in a server context and accept URLs as user input, it's up to you to protect against invalid URLs, [path traversal attacks](https://owasp.org/www-community/attacks/Path_Traversal), etc.
 
+Leading and trailing whitespace is removed, and only the part of it a URL parser removes: ASCII tab, carriage return and line feed from anywhere, and C0 controls and spaces from the two ends. A space of another kind, such as U+00A0, is a character of the URL, so it is percent-encoded in the path, the query and the fragment and left as it stands in the data of a data URL. A URL with one in its host or its scheme is usually rejected, the way a URL parser rejects it, though a format character such as U+FEFF or U+200B at the very front is one the parser can absorb, and the result is then a URL of your input's prefix rather than of the input.
+
 ## Install
 
 ```sh
@@ -33,6 +35,11 @@ URLs with custom protocols are not normalized and just passed through by default
 
 Human-friendly URLs with basic auth (for example, `user:password@sindresorhus.com`) are not handled because basic auth conflicts with custom protocols. [Basic auth URLs are also deprecated.](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#access_using_credentials_in_the_url)
 
+__Note:__ a scheme with a dot in it followed by `//` is a custom protocol, so it is passed through as
+well and nothing in the URL is normalized. `example.com/path` is a host and gets `http:` prepended, but
+`example.com://host/path` is a scheme named `example.com` and is left alone. Use the
+[`customProtocols`](#customprotocols) option to normalize one on purpose.
+
 #### url
 
 Type: `string`
@@ -49,6 +56,8 @@ Type: `string`\
 Default: `'http'`\
 Values: `'https' | 'http'`
 
+Any protocol is accepted, and a trailing colon is stripped however many there are, so `'https:'` and `'https::'` both name it. A value that is not a scheme is ignored and the default applies.
+
 ##### customProtocols
 
 Type: `string[]`\
@@ -58,7 +67,19 @@ Protocols to normalize in addition to the built-in ones (`https`, `http`, `file`
 
 Useful for HTTP-like custom protocols such as Electron schemes or app-specific protocols.
 
-The protocols should be specified without `:`.
+The protocols should be specified without `:`, though a trailing one is accepted however many there are, and the name is matched without regard to case.
+
+__Note:__ Options that rewrite the path (`removePath`, `transformPath`, `removeDirectoryIndex`, and the
+percent-decoding of the path) only apply when the path starts with a `/`, as in `sindre://host/a/b` and
+`sindre:/a/b`. A URL whose path is opaque, such as `sindre:a/b`, has no segments for those options to work
+on, and a URL parser does not let the library change it, so they are silently ignored for it.
+
+__Note:__ `transformPath` and `removeDirectoryIndex` rebuild the path from its components, which cannot
+spell the two slashes of a protocol lookalike such as `sindre://host/a/s3://b/index.html`. One of them is
+dropped for those two options, while the library keeps both everywhere else.
+
+__Note:__ a duplicate slash in a path is removed whatever `removeTrailingSlash` says, since that option is
+about a slash at the end of the path and not about the ones in the middle of it.
 
 ```js
 normalizeUrl('sindre://www.sorhus.com', {customProtocols: ['sindre']});
@@ -90,6 +111,11 @@ Default: `false`
 
 Normalize HTTPS to HTTP.
 
+__Note:__ changing the scheme drops the port that was the default one for the old scheme, so
+`forceHttp` turns `https://example.com:443` into `http://example.com` and `forceHttps` turns
+`http://example.com:80` into `https://example.com`. A port that is not a default for either scheme is
+kept.
+
 ```js
 normalizeUrl('https://sindresorhus.com');
 //=> 'https://sindresorhus.com'
@@ -104,6 +130,11 @@ Type: `boolean`\
 Default: `false`
 
 Normalize HTTP to HTTPS.
+
+__Note:__ changing the scheme drops the port that was the default one for the old scheme, so
+`forceHttp` turns `https://example.com:443` into `http://example.com` and `forceHttps` turns
+`http://example.com:80` into `https://example.com`. A port that is not a default for either scheme is
+kept.
 
 ```js
 normalizeUrl('http://sindresorhus.com');
@@ -154,6 +185,8 @@ Remove the protocol from the URL: `http://sindresorhus.com` → `sindresorhus.co
 
 It will only remove `https://` and `http://` protocols.
 
+__Note:__ The result is not a full URL, so normalizing it again can change it: a port that the removed protocol kept is the default one of the protocol that gets prepended next.
+
 ```js
 normalizeUrl('https://sindresorhus.com');
 //=> 'https://sindresorhus.com'
@@ -190,7 +223,12 @@ normalizeUrl('http://sindresorhus.com/about.html#section:~:text=hello', {stripTe
 Type: `boolean`\
 Default: `true`
 
-Remove `www.` from the URL.
+Remove `www.` from the URL. A trailing dot on a domain hostname is removed as well, since the name and
+the one it spells are the same, unless doing so would change the name, as it would for `159.189.213..`,
+which a URL parser reads as the address `159.189.0.213`. The host of a custom protocol is opaque rather
+than a domain, so a dot there is a character of the name and is left alone.
+
+__Note:__ A `www.` that is not followed by a proper domain is left alone, so `www.com` and `www.a.b` are not changed.
 
 ```js
 normalizeUrl('http://www.sindresorhus.com');
@@ -205,7 +243,7 @@ normalizeUrl('http://www.sindresorhus.com', {stripWWW: false});
 Type: `Array<RegExp | string> | boolean`\
 Default: `[/^utm_\w+/i]`
 
-Remove query parameters that matches any of the provided strings or regexes.
+Remove query parameters that matches any of the provided strings or regexes. The match is against the percent-decoded key, the way `URLSearchParams` reads one, so `+` is a space and `%2F` is a slash: write `a/b` rather than `a%2Fb`.
 
 Global and sticky regex flags are stripped.
 
@@ -231,7 +269,7 @@ normalizeUrl('www.sindresorhus.com?foo=bar', {
 normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
 	removeQueryParameters: false
 });
-//=> 'http://www.sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test'
+//=> 'http://sindresorhus.com/?foo=bar&ref=test_ref&utm_medium=test'
 ```
 
 ##### keepQueryParameters
@@ -239,7 +277,8 @@ normalizeUrl('www.sindresorhus.com?foo=bar&utm_medium=test&ref=test_ref', {
 Type: `Array<RegExp | string>`\
 Default: `undefined`
 
-Keeps only query parameters that matches any of the provided strings or regexes.
+Keeps only query parameters that matches any of the provided strings or regexes. The match is against the percent-decoded key, the same as `removeQueryParameters`. An empty array
+matches nothing, so it removes every parameter, the same as the `true` of `removeQueryParameters`.
 
 **Note:** It overrides the `removeQueryParameters` option.
 
@@ -259,7 +298,12 @@ Default: `true`
 
 Remove trailing slash.
 
-**Note:** Trailing slash is always removed if the URL doesn't have a pathname unless the `removeSingleSlash` option is set to `false`.
+**Note:** the sole `/` of a root path is removed too, unless the `removeSingleSlash` option is set to
+`false` **and** the input wrote that slash itself.
+
+__Note:__ `removeSingleSlash: false` reads the trailing slash off the input as it was written, so a slash
+that belongs to a dot segment a URL parser resolves away still counts. `https://example.com/a/../` and
+`https://example.com/a/..` are the same URL, but only the first keeps the root slash.
 
 ```js
 normalizeUrl('http://sindresorhus.com/redirect/');
@@ -292,9 +336,13 @@ normalizeUrl('https://sindresorhus.com/', {removeSingleSlash: false});
 Type: `boolean | Array<RegExp | string>`\
 Default: `false`
 
-Removes the default directory index file from path that matches any of the provided strings or regexes.
+Removes the default directory index file from path that matches any of the provided strings or regexes. The match is against the percent-decoded component, the same as `transformPath` is given, so `index.html` matches a path spelled `index%2Ehtml`.
 
 When `true`, the regex `/^index\.[a-z]+$/` is used.
+
+__Note:__ removing the index leaves a trailing slash on what is left, whether or not the input wrote one,
+so `http://example.com/foo/index.html` becomes `http://example.com/foo/` and then `http://example.com/foo`.
+The `removeTrailingSlash` option decides whether that slash stays.
 
 Global and sticky regex flags are stripped.
 
@@ -326,7 +374,12 @@ normalizeUrl('sindresorhus.com:123', {
 Type: `boolean`\
 Default: `true`
 
-Sorts the query parameters alphabetically by key.
+Sorts the query parameters by key, in code unit order, so an uppercase letter sorts before a lowercase
+one and a digit before a letter. Parameters that share a key keep the order they were written in, since
+for a repeated key the order can be what the server reads.
+
+__Note:__ The option only changes the order. The parameters are still normalized, the same as when the
+option is on, so a space in a value is written as `+`, a space in a key as `%20`, and a lone `%` as `%25`.
 
 ```js
 normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {
@@ -347,6 +400,8 @@ Controls how query parameters with empty values are formatted.
 - `'always'` - Always include `=` for empty values (`?key` becomes `?key=`)
 - `'never'` - Never include `=` for empty values (`?key=` becomes `?key`)
 
+A value outside the three behaves as `'preserve'`.
+
 ```js
 normalizeUrl('www.sindresorhus.com?a&b=', {emptyQueryValue: 'always'});
 //=> 'http://sindresorhus.com/?a=&b='
@@ -360,7 +415,7 @@ normalizeUrl('www.sindresorhus.com?a&b=', {emptyQueryValue: 'never'});
 Type: `boolean`\
 Default: `false`
 
-Removes the entire URL path, leaving only the domain.
+Removes the entire URL path, leaving the host with no path. The query and the hash stay. It takes precedence over the `transformPath` option.
 
 ```js
 normalizeUrl('https://example.com/path/to/page', {
@@ -371,10 +426,10 @@ normalizeUrl('https://example.com/path/to/page', {
 
 ##### transformPath
 
-Type: `Function`\
+Type: `Function | false`\
 Default: `false`
 
-Custom function to transform the URL path components. The function receives an array of non-empty path components and should return a modified array.
+Custom function to transform the URL path components. The function receives an array of non-empty path components and should return a modified array. Returning nothing removes the path. The array it returns is only read, so a frozen one is as good as a mutable one. The components are percent-decoded, so an unreserved escape has become the character it stands for by the time the function sees it, and one it returns is not decoded again.
 
 ```js
 // Keep only the first path component

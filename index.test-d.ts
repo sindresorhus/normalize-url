@@ -5,6 +5,7 @@ expectType<string>(normalizeUrl('sindresorhus.com'));
 expectType<string>(normalizeUrl('HTTP://xn--xample-hva.com:80/?b=bar&a=foo'));
 
 normalizeUrl('//sindresorhus.com:80/', {defaultProtocol: 'https'});
+normalizeUrl('//sindresorhus.com:80/', {defaultProtocol: 'https:'});
 normalizeUrl('//sindresorhus.com:80/', {normalizeProtocol: false});
 normalizeUrl('https://sindresorhus.com:80/', {forceHttp: true});
 normalizeUrl('http://sindresorhus.com:80/', {forceHttps: true});
@@ -36,3 +37,16 @@ normalizeUrl('www.sindresorhus.com?b=two&a=one&c=three', {
 normalizeUrl('www.sindresorhus.com/about#:~:text=hello', {
 	stripTextFragment: false,
 });
+normalizeUrl('https://sindresorhus.com/api/v1', {transformPath: pathComponents => pathComponents.slice(0, 1)});
+normalizeUrl('https://sindresorhus.com/api/v1', {transformPath: () => undefined});
+// The documented default of `transformPath` is `false`, so it has to be assignable.
+normalizeUrl('https://sindresorhus.com/api/v1', {transformPath: false});
+
+// The runtime accepts any scheme as `defaultProtocol`.
+normalizeUrl('//sindresorhus.com', {defaultProtocol: 'ws'});
+normalizeUrl('//sindresorhus.com', {defaultProtocol: 'ftp'});
+normalizeUrl('//sindresorhus.com', {defaultProtocol: 'git+ssh'});
+
+// The components the transform returns are only read, so a frozen array is as good as a mutable one.
+normalizeUrl('https://sindresorhus.com/a/b', {transformPath: pathComponents => Object.freeze(pathComponents.slice(0, 1))});
+normalizeUrl('https://sindresorhus.com/a/b', {transformPath: () => Object.freeze([])});
