@@ -303,14 +303,10 @@ const getTemporaryEncodedReservedTokenPrefix = search => {
 	return `${temporaryEncodedReservedTokenBase}${tokenIndex}__`;
 };
 
+// Sorts by key in code unit order, leaving parameters that share a key in the order they were written in, since for a repeated key the order can be what the server reads. A key carrying a temporary token sorts on the character the token stands for, so an encoded reserved character sorts as the same character written literally does. `URLSearchParams#sort` is not used for this: the URL standard has it order by name alone without saying what happens to two names that are equal, so the order of a repeated key would be the engine's to decide. `Array#sort` is stable, so this one keeps them where the input wrote them.
 const sortSearchParameters = (searchParameters, encodedReservedTokenRegex) => {
-	if (!encodedReservedTokenRegex) {
-		searchParameters.sort();
-		return searchParameters.toString();
-	}
-
-	const getSortableKey = key => key.replace(encodedReservedTokenRegex, (_, hexCode) => String.fromCodePoint(Number.parseInt(hexCode, 16)));
-	const entries = [...searchParameters.entries()];
+	const getSortableKey = key => encodedReservedTokenRegex ? key.replace(encodedReservedTokenRegex, (_, hexCode) => String.fromCodePoint(Number.parseInt(hexCode, 16))) : key;
+	const entries = [...searchParameters];
 	entries.sort(([leftKey], [rightKey]) => {
 		const left = getSortableKey(leftKey);
 		const right = getSortableKey(rightKey);

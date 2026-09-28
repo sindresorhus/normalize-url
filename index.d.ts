@@ -312,9 +312,7 @@ export type Options = {
 	readonly removeExplicitPort?: boolean;
 
 	/**
-	Sorts the query parameters by key, in code unit order, so an uppercase letter sorts before a lowercase
-	one and a digit before a letter. Parameters that share a key keep the order they were written in, since
-	for a repeated key the order can be what the server reads.
+	Sorts the query parameters by key, in code unit order, so an uppercase letter sorts before a lowercase one and a digit before a letter. Parameters that share a key keep the order they were written in, since for a repeated key the order can be what the server reads. The library does that sort itself rather than through `URLSearchParams#sort`, which the URL standard has order by name alone without saying what happens to two names that are equal.
 
 	__Note:__ The option only changes the order. The parameters are still normalized, the same as when the option is on, so a space in a value is written as `+`, a space in a key as `%20`, and a lone `%` as `%25`.
 

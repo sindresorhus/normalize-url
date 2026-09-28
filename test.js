@@ -3373,6 +3373,23 @@ test('a quoted charset in front of a base64 parameter is not dropped', t => {
 	t.is(normalizeUrl('data:text/html;base64=1;charset=us-ascii,aGVsbG8='), 'data:text/html;base64=1;charset=us-ascii,aGVsbG8=');
 });
 
+test('a repeated query key keeps its order whatever else is in the search', t => {
+	// The order of a repeated key can be what the server reads, so `?a=1&a=2` and `?a=2&a=1` are not the same URL. The URL standard has `URLSearchParams#sort` order by name alone without saying what happens to two names that are equal, so the library sorts by name itself. An encoded reserved character in the search is what used to put the sort on a different code path, so the order has to be the same either way.
+	t.is(normalizeUrl('http://x.com/?a=2&a=1'), 'http://x.com/?a=2&a=1');
+	t.is(normalizeUrl('http://x.com/?b=2&a=2&a=1'), 'http://x.com/?a=2&a=1&b=2');
+	t.is(normalizeUrl('http://x.com/?a=2&a=1&z=%2F'), 'http://x.com/?a=2&a=1&z=%2F');
+	t.is(normalizeUrl('http://x.com/?a=2&a=1&z=%3A'), 'http://x.com/?a=2&a=1&z=%3A');
+	t.is(normalizeUrl('http://x.com/?a=2&a=1&z=1'), 'http://x.com/?a=2&a=1&z=1');
+
+	// The key the sort reads is the decoded one, so an encoded reserved character in a key sorts as the character it stands for, and `:` is below `a` in code unit order.
+	t.is(normalizeUrl('http://x.com/?%3A=1&a=2'), 'http://x.com/?%3A=1&a=2');
+	t.is(normalizeUrl('http://x.com/?%3A=1&a=2&z=%2F'), 'http://x.com/?%3A=1&a=2&z=%2F');
+
+	for (const url of ['http://x.com/?a=2&a=1', 'http://x.com/?a=2&a=1&z=%2F', 'http://x.com/?%3A=1&a=2&z=%2F']) {
+		t.is(normalizeUrl(normalizeUrl(url)), normalizeUrl(url), `a fixed point: ${url}`);
+	}
+});
+
 test('a text fragment strip leaves the hashes the fragment has', t => {
 	// Only a `#` at the start of the fragment is part of the delimiter, since that is the only place a URL writes one. A `#` further along is content, so `#a#:~:text=x` keeps it and `#a` would not.
 	t.is(normalizeUrl('http://sindresorhus.com/about#a#:~:text=hello'), 'http://sindresorhus.com/about#a#');
