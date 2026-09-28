@@ -153,20 +153,12 @@ const splitOutsideQuotes = (text, delimiter) => {
 	return parts;
 };
 
-// Decodes the percent escapes of unreserved characters, and writes a `%` that starts no escape but is
-// followed by a hexadecimal digit as `%25`. Without that, decoding the escape after such a `%` joins the
-// two into an escape the input never had, so the text comes out spelled one way on this pass and another
-// on the next. The second alternative is the lone digit that follows it, so the two never overlap.
-// Only what has to change is matched, so the replacement runs once per escape that moves rather than
-// once per escape of any kind, which is what keeps a long run of them linear.
-// The scan continues after each replacement, so the `%25` just written is not read again. That is what
-// makes `%2%45` come out as `%252E`, which the URL standard decodes to the `%2E` the input decodes to.
-const unreservedPercentEscapeOrLonePercentRegex = /%(?:2d|2e|5f|7e|3\d|4[1-9a-f]|5[\da]|6[1-9a-f]|7[\da])|%([\da-f])(?![\da-f])/gi;
+// Decodes the percent escapes of unreserved characters, and writes as `%25` a `%` that starts no escape but has something after it that could end up a hexadecimal digit right beside it. Without that, decoding the escape beside such a `%` joins the two into an escape the input never had, so the text comes out spelled one way on this pass and another on the next. The follower is a hexadecimal digit, or an escape that decodes to one, which is `0-9`, `A-F` and `a-f`. A `%` followed by anything else is left as it stands, since nothing can form an escape with it: `%zz` and a trailing `%` are what a URL parser writes, too. Only what has to change is matched, so the replacement runs once per escape that moves rather than once per escape of any kind, which is what keeps a long run of them linear. The two alternatives never match at one index, since the first fires only on a complete escape and the second only on a `%` that is not one. The scan continues after each replacement, so the `%25` just written is not read again, which is what makes `%2%45` come out as `%252E`, the spelling the URL standard decodes to the `%2E` the input decodes to.
+const unreservedPercentEscapeOrLonePercentRegex = /%(?:2d|2e|5f|7e|3\d|4[1-9a-f]|5[\da]|6[1-9a-f]|7[\da])|%(?![\da-f]{2})(?=[\da-f]|%(?:3\d|4[1-6]|6[1-6]))/gi;
 
-const decodeUnreservedPercentEscapes = text => text.replaceAll(unreservedPercentEscapeOrLonePercentRegex, (match, digit) =>
-	// A reserved character is not matched at all, so it stays encoded and decoding it cannot change what
-	// the URL means.
-	digit === undefined ? String.fromCodePoint(Number.parseInt(match.slice(1), 16)) : `%25${digit}`);
+const decodeUnreservedPercentEscapes = text => text.replaceAll(unreservedPercentEscapeOrLonePercentRegex, match =>
+	// A reserved character is not matched at all, so it stays encoded and decoding it cannot change what the URL means.
+	match.length === 3 ? String.fromCodePoint(Number.parseInt(match.slice(1), 16)) : '%25');
 
 // Doubles a percent sign so that decoding leaves the escape it belongs to untouched.
 const doubleEncodePercentSign = match => `%25${match.slice(1)}`;

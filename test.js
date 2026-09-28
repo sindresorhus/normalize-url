@@ -3299,6 +3299,31 @@ test('decoding a percent escape cannot join into a new one', t => {
 	t.is(normalizeUrl('http://x.com/p#50%'), 'http://x.com/p#50%');
 	t.is(normalizeUrl('http://x.com/p#%zz'), 'http://x.com/p#%zz');
 	t.is(normalizeUrl('data:,%'), 'data:,%');
+
+	/*
+	Where unreserved escapes are decoded, a `%` right before an escape also becomes `%25`, since decoding can leave a hexadecimal digit beside it. Fragments keep both the `%` and the escape.
+	*/
+	t.is(normalizeUrl('http://x.com/p#%%41'), 'http://x.com/p#%%41');
+	t.is(normalizeUrl('http://x.com/p#%%41B'), 'http://x.com/p#%%41B');
+	t.is(normalizeUrl('http://x.com/p#%%30'), 'http://x.com/p#%%30');
+	t.is(normalizeUrl('http://x.com/p#%%61'), 'http://x.com/p#%%61');
+	t.is(normalizeUrl('http://x.com/p#%%4F'), 'http://x.com/p#%%4F');
+	t.is(normalizeUrl('http://x.com/p#%%7e'), 'http://x.com/p#%%7E');
+	t.is(normalizeUrl('data:,a%%41b'), 'data:,a%25Ab');
+	t.is(normalizeUrl('data:,a#b%%41c'), 'data:,a#b%%41c');
+	t.is(normalizeUrl('http://u%%41:pw@x.com/p', {stripAuthentication: false}), 'http://u%25A:pw@x.com/p');
+
+	/*
+	An escape in a fragment is only canonicalized, so a `%` beside it stays regardless of which character the escape represents.
+	*/
+	t.is(normalizeUrl('http://x.com/p#%%3d'), 'http://x.com/p#%%3D');
+	t.is(normalizeUrl('http://x.com/p#%%2F'), 'http://x.com/p#%%2F');
+	t.is(normalizeUrl('http://x.com/p#%%zz'), 'http://x.com/p#%%zz');
+	t.is(normalizeUrl('http://x.com/p#%%'), 'http://x.com/p#%%');
+
+	for (const url of ['http://x.com/p#%%41', 'http://x.com/p#%%41B', 'http://x.com/p#%%4F', 'http://x.com/p#%%3d', 'http://x.com/p#%%2F', 'data:,a%%41b', 'data:,a#b%%41c']) {
+		t.is(normalizeUrl(normalizeUrl(url)), normalizeUrl(url), `a fixed point: ${url}`);
+	}
 });
 
 test('a text fragment strip leaves the hashes the fragment has', t => {
