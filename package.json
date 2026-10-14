@@ -1,6 +1,6 @@
 {
 	"name": "normalize-url",
-	"version": "9.0.1",
+	"version": "10.0.0",
 	"description": "Normalize a URL",
 	"license": "MIT",
 	"repository": "sindresorhus/normalize-url",
